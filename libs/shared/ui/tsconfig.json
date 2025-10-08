@@ -4,7 +4,7 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@longpoint/web-ui/*": ["./src/*"]
+      "@longpoint/ui/*": ["./src/*"]
     }
   },
   "include": ["."],

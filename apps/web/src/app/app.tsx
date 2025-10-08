@@ -1,11 +1,13 @@
-import { Button } from '@longpoint/web-ui/components/button';
-import { Badge } from '@longpoint/web-ui/components/badge';
+import { Button } from '@longpoint/ui/components/button';
+import { Badge } from '@longpoint/ui/components/badge';
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@longpoint/web-ui/components/card';
+} from '@longpoint/ui/components/card';
+import { Input } from '@longpoint/ui/components/input';
 
 export function App() {
   return (
@@ -18,6 +20,9 @@ export function App() {
           <CardTitle>Card Title</CardTitle>
           <CardDescription>Card Description</CardDescription>
         </CardHeader>
+        <CardContent>
+          <Input />
+        </CardContent>
       </Card>
     </div>
   );

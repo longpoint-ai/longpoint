@@ -19,7 +19,7 @@
       "path": "./apps/web"
     },
     {
-      "path": "./libs/web/ui"
+      "path": "./libs/shared/ui"
     }
   ]
 }

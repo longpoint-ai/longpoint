@@ -11,10 +11,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@longpoint/web-ui/components",
-    "utils": "@longpoint/web-ui/lib/utils",
-    "hooks": "@longpoint/web-ui/hooks",
-    "lib": "@longpoint/web-ui/lib",
-    "ui": "@longpoint/web-ui/components"
+    "components": "@longpoint/ui/components",
+    "utils": "@longpoint/ui/lib/utils",
+    "hooks": "@longpoint/ui/hooks",
+    "lib": "@longpoint/ui/lib",
+    "ui": "@longpoint/ui/components"
   }
 }

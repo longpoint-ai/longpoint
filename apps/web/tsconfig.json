@@ -5,12 +5,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@longpoint/web-ui/*": ["../../libs/web/ui/src/*"]
+      "@longpoint/ui/*": ["../../libs/shared/ui/src/*"]
     }
   },
   "references": [
     {
-      "path": "../../libs/web/ui"
+      "path": "../../libs/shared/ui"
     },
     {
       "path": "./tsconfig.app.json"

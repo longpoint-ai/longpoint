@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@longpoint/web-ui/*": ["../../libs/web/ui/src/*"]
+      "@longpoint/ui/*": ["../../libs/shared/ui/src/*"]
     }
   },
   "exclude": [
@@ -42,7 +42,7 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../../libs/web/ui"
+      "path": "../../libs/shared/ui"
     }
   ]
 }

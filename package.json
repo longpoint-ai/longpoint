@@ -87,6 +87,7 @@
     "libs/api/services/*",
     "libs/*",
     "libs/web/*",
-    "libs/api/*"
+    "libs/api/*",
+    "libs/shared/*"
   ]
 }
