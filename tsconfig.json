@@ -13,10 +13,10 @@
       "path": "./libs/api/services"
     },
     {
-      "path": "./apps/dashboard-e2e"
+      "path": "./apps/web-e2e"
     },
     {
-      "path": "./apps/dashboard"
+      "path": "./apps/web"
     }
   ]
 }

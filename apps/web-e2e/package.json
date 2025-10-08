@@ -4,7 +4,8 @@
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@longpoint/dashboard"
-    ]
+      "web"
+    ],
+    "name": "web-e2e"
   }
 }
