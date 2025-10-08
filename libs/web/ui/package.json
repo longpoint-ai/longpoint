@@ -1,0 +1,11 @@
+{
+  "name": "@longpoint/web-ui",
+  "type": "module",
+  "version": "0.0.0",
+  "exports": {
+    "./globals.css": "./src/styles/globals.css",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./hooks/*": "./src/hooks/*.ts"
+  }
+}

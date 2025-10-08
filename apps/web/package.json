@@ -1,7 +1,11 @@
 {
-  "name": "@longpoint/dashboard",
+  "name": "@longpoint/web",
   "version": "0.0.1",
   "private": true,
+  "dependencies": {
+    "@longpoint/web-ui": "*",
+    "@radix-ui/react-slot": "^1.2.3"
+  },
   "nx": {
     "name": "web"
   }

@@ -1,6 +1,13 @@
 {
   "files": [],
   "include": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@longpoint/web-ui/*": ["../../libs/web/ui/src/*"]
+    }
+  },
   "references": [
     {
       "path": "./tsconfig.app.json"
