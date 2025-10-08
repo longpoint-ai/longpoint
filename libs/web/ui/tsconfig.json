@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "jsx": "react-jsx",
+    "composite": true,
     "baseUrl": ".",
     "paths": {
       "@longpoint/web-ui/*": ["./src/*"]

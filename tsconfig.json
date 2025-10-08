@@ -17,6 +17,9 @@
     },
     {
       "path": "./apps/web"
+    },
+    {
+      "path": "./libs/web/ui"
     }
   ]
 }
