@@ -4,6 +4,7 @@
 dist
 tmp
 out-tsc
+**/generated/prisma
 
 # dependencies
 node_modules

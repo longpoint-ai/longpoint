@@ -1,5 +1,5 @@
 {
-  "name": "@longpoint-nx/source",
+  "name": "@longpoint/source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {},
@@ -10,7 +10,8 @@
     "@nestjs/platform-express": "^11.0.0",
     "axios": "^1.6.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -46,6 +47,9 @@
     "webpack-cli": "^5.1.4"
   },
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "libs/api/services/*",
+    "libs/*",
+    "libs/api/*"
   ]
 }
