@@ -11,6 +11,12 @@
     },
     {
       "path": "./libs/api/services"
+    },
+    {
+      "path": "./apps/dashboard-e2e"
+    },
+    {
+      "path": "./apps/dashboard"
     }
   ]
 }
