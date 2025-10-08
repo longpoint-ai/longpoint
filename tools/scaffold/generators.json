@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "web-feature": {
+      "factory": "./dist/generators/web-feature/web-feature",
+      "schema": "./dist/generators/web-feature/schema.json",
+      "description": "web-feature generator"
+    }
+  }
+}

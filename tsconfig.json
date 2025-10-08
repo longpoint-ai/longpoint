@@ -20,6 +20,9 @@
     },
     {
       "path": "./libs/shared/ui"
+    },
+    {
+      "path": "./tools/scaffold"
     }
   ]
 }
