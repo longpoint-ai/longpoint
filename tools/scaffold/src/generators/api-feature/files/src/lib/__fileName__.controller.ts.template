@@ -1,0 +1,7 @@
+import { Controller } from "@nestjs/common"
+import { <%= serviceName %> } from "./<%= fileName %>.service.ts"
+
+@Controller()
+export class <%= controllerName %> {
+  constructor(private readonly <%= serviceVariableName %>:<%= serviceName %>) {}
+}

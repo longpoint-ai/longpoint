@@ -4,6 +4,11 @@
       "factory": "./dist/generators/web-feature/web-feature",
       "schema": "./dist/generators/web-feature/schema.json",
       "description": "web-feature generator"
+    },
+    "api-feature": {
+      "factory": "./dist/generators/api-feature/api-feature",
+      "schema": "./dist/generators/api-feature/schema.json",
+      "description": "api-feature generator"
     }
   }
 }

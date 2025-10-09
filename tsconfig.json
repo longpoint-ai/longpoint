@@ -23,6 +23,9 @@
     },
     {
       "path": "./tools/scaffold"
+    },
+    {
+      "path": "./libs/shared/utils"
     }
   ]
 }
