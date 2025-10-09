@@ -5,6 +5,9 @@
   "nx": {
     "targets": {
       "build": {
+        "dependsOn": [
+          "@longpoint/db:gen"
+        ],
         "executor": "nx:run-commands",
         "options": {
           "command": "webpack-cli build",
@@ -79,6 +82,11 @@
         "options": {
           "passWithNoTests": true
         }
+      },
+      "docker:build": {
+        "dependsOn": [
+          "build"
+        ]
       }
     }
   },

@@ -1,25 +1,25 @@
-import { z } from "zod";
-import { loadEnvFiles } from "./env.loader";
+import { z } from 'zod';
+import { loadEnvFiles } from './env.loader';
 
 loadEnvFiles();
 
 const envSchema = z.object({
   // Server
-  PORT: z.string().transform(Number).default("3000"),
+  PORT: z.string().transform(Number).default(3000),
   NODE_ENV: z
     .string()
     .transform((val) => val.toLowerCase())
-    .pipe(z.enum(["development", "production"]))
-    .default("development"),
-  BASE_API_URL: z.string().url(),
+    .pipe(z.enum(['development', 'production']))
+    .default('development'),
+  BASE_API_URL: z.string().optional(),
   LOG_LEVEL: z
     .string()
     .transform((val) => val.toLowerCase())
-    .pipe(z.enum(["debug", "info", "warn", "error"]))
-    .default("debug"),
+    .pipe(z.enum(['debug', 'info', 'warn', 'error']))
+    .default('debug'),
 
   // Database
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string().optional(),
 
   // Async task
   // ASYNC_TASK_SECRET: z.string(),
@@ -58,7 +58,7 @@ const envSchema = z.object({
   //         "CORS_ORIGINS must be a comma-separated list of valid URLs. Wildcard (*) is not allowed.",
   //     }
   //   ),
-}) satisfies z.ZodType<any, any, NodeJS.ProcessEnv>;
+});
 
 export type Env = z.infer<typeof envSchema>;
 
@@ -66,7 +66,7 @@ export function validateEnv(): Env {
   const parsed = envSchema.safeParse(process.env);
 
   if (!parsed.success) {
-    console.error("❌ Invalid environment variables:", parsed.error.format());
+    console.error('❌ Invalid environment variables:', parsed.error.format());
     process.exit(1);
   }
 
@@ -80,6 +80,6 @@ export const createConfig = (env: Env) =>
     baseApiUrl: env.BASE_API_URL,
     logLevel: env.LOG_LEVEL,
     databaseUrl: env.DATABASE_URL,
-  }) as const;
+  } as const);
 
 export type Config = ReturnType<typeof createConfig>;
