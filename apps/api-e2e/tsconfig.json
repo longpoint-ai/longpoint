@@ -1,14 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "out-tsc/@longpoint-nx/api-e2e",
+    "outDir": "out-tsc/@longpoint/api-e2e",
     "esModuleInterop": true,
     "noUnusedLocals": false,
     "noImplicitAny": false
   },
-  "include": [
-    "jest.config.ts",
-    "src/**/*.ts"
-  ],
+  "include": ["jest.config.ts", "src/**/*.ts"],
   "references": []
 }

@@ -1,10 +1,10 @@
 {
-  "name": "@longpoint-nx/api-e2e",
+  "name": "@longpoint/api-e2e",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@longpoint-nx/api"
+      "@longpoint/api"
     ],
     "targets": {
       "e2e": {
@@ -17,8 +17,8 @@
           "passWithNoTests": true
         },
         "dependsOn": [
-          "@longpoint-nx/api:build",
-          "@longpoint-nx/api:serve"
+          "@longpoint/api:build",
+          "@longpoint/api:serve"
         ]
       }
     }

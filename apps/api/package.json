@@ -1,5 +1,5 @@
 {
-  "name": "@longpoint-nx/api",
+  "name": "@longpoint/api",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -66,15 +66,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@longpoint-nx/api:build",
+          "buildTarget": "@longpoint/api:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@longpoint-nx/api:build:development"
+            "buildTarget": "@longpoint/api:build:development"
           },
           "production": {
-            "buildTarget": "@longpoint-nx/api:build:production"
+            "buildTarget": "@longpoint/api:build:production"
           }
         }
       },

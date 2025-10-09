@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Launch & Debug API",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@longpoint-nx/api"],
+      "runtimeArgs": ["nx", "serve", "@longpoint/api"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
