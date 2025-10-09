@@ -4,13 +4,18 @@
   "license": "MIT",
   "scripts": {
     "dev": "npx nx run-many --target=serve",
-    "shad": "cd apps/web && npx shadcn@latest add"
+    "shad": "cd apps/web && npx shadcn@latest add",
+    "build": "node tools/build.js",
+    "build:web": "npx nx build web",
+    "build:api": "npx nx build api",
+    "serve:api": "npx nx serve api"
   },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/serve-static": "^5.0.3",
     "axios": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

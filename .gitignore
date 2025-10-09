@@ -5,6 +5,7 @@ dist
 tmp
 out-tsc
 **/generated/prisma
+apps/api/src/assets
 
 # dependencies
 node_modules
