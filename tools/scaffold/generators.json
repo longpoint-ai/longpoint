@@ -9,6 +9,11 @@
       "factory": "./dist/generators/api-feature/api-feature",
       "schema": "./dist/generators/api-feature/schema.json",
       "description": "api-feature generator"
+    },
+    "api-category": {
+      "factory": "./dist/generators/api-category/api-category",
+      "schema": "./dist/generators/api-category/schema.json",
+      "description": "api-category generator"
     }
   }
 }
