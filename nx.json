@@ -118,5 +118,8 @@
         "unitTestRunner": "vitest"
       }
     }
+  },
+  "tui": {
+    "autoExit": true
   }
 }
