@@ -1,0 +1,9 @@
+{
+  "name": "@longpoint/api-filters",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/filters/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project @longpoint/api-filters --web",
+  "targets": {}
+}

@@ -28,7 +28,12 @@
           "watchDepsName": "watch-deps"
         }
       },
-      "exclude": ["libs/api/services/*", "libs/shared/utils/*"]
+      "exclude": [
+        "libs/api/services/*",
+        "libs/shared/utils/*",
+        "libs/api/filters/*",
+        "libs/api/errors/*"
+      ]
     },
     {
       "plugin": "@nx/webpack/plugin",
@@ -56,7 +61,12 @@
     },
     {
       "plugin": "@nx/js/typescript",
-      "include": ["libs/api/services/*", "libs/shared/utils/*"],
+      "include": [
+        "libs/api/services/*",
+        "libs/shared/utils/*",
+        "libs/api/filters/*",
+        "libs/api/errors/*"
+      ],
       "options": {
         "typecheck": {
           "targetName": "typecheck"

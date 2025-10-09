@@ -7,6 +7,8 @@ import {
 } from '@longpoint/api-services';
 import { AppController } from './app.controller';
 import { LoggerModule } from 'nestjs-pino';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from '@longpoint/api-filters';
 
 @Module({
   imports: [
@@ -65,5 +67,11 @@ import { LoggerModule } from 'nestjs-pino';
     CommonApiServicesModule,
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

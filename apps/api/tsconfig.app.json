@@ -22,6 +22,12 @@
   ],
   "references": [
     {
+      "path": "../../libs/api/errors/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/api/filters/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/api/services/tsconfig.lib.json"
     }
   ]

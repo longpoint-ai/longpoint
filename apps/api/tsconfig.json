@@ -4,6 +4,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/api/errors"
+    },
+    {
+      "path": "../../libs/api/filters"
+    },
+    {
       "path": "../../libs/api/services"
     },
     {

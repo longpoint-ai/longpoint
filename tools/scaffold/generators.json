@@ -10,10 +10,10 @@
       "schema": "./dist/generators/api-feature/schema.json",
       "description": "api-feature generator"
     },
-    "api-category": {
-      "factory": "./dist/generators/api-category/api-category",
-      "schema": "./dist/generators/api-category/schema.json",
-      "description": "api-category generator"
+    "generic": {
+      "factory": "./dist/generators/generic/generic",
+      "schema": "./dist/generators/generic/schema.json",
+      "description": "generic generator"
     }
   }
 }
