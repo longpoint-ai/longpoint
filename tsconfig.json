@@ -4,34 +4,22 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/api-e2e"
-    },
-    {
-      "path": "./apps/api"
-    },
-    {
-      "path": "./libs/api/services"
-    },
-    {
-      "path": "./apps/web-e2e"
-    },
-    {
-      "path": "./apps/web"
-    },
-    {
-      "path": "./libs/shared/ui"
-    },
-    {
       "path": "./tools/scaffold"
     },
     {
-      "path": "./libs/shared/utils"
+      "path": "./packages/types"
     },
     {
-      "path": "./libs/api/filters"
+      "path": "./packages/admin"
     },
     {
-      "path": "./libs/api/errors"
+      "path": "./packages/utils"
+    },
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/ui"
     }
   ]
 }

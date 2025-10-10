@@ -20,6 +20,7 @@ Longpoint is a media asset management (MAM) system built AI-first, not AI-added.
 - **Bring Your Own Everything** - Your storage, your AI models, your infrastructure
 - **Privacy First** - Self-hosted with local model support
 - **Open Source** - MIT licensed, fully extensible
+
 ## Development Roadmap
 
 ### Phase 1: Foundation ✅ (Month 1)

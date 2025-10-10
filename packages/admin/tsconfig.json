@@ -1,0 +1,23 @@
+{
+  "files": [],
+  "include": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@longpoint/ui/*": ["../../libs/shared/ui/src/*"]
+    }
+  },
+  "references": [
+    {
+      "path": "../ui"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
+  "extends": "../../tsconfig.base.json"
+}

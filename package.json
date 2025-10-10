@@ -113,6 +113,7 @@
     "libs/shared/*",
     "tools/*",
     "libs/web/features/*",
-    "libs/api/features/*"
+    "libs/api/features/*",
+    "packages/*"
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "name": "@longpoint/admin",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@longpoint/ui": "*",
+    "@radix-ui/react-checkbox": "^1.3.3",
+    "@radix-ui/react-slot": "^1.2.3"
+  },
+  "nx": {
+    "name": "@longpoint/admin"
+  }
+}
