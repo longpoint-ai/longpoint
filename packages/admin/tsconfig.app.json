@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@longpoint/ui/*": ["../../libs/shared/ui/src/*"]
+      "@longpoint/ui/*": ["../ui/src/*"]
     }
   },
   "exclude": [

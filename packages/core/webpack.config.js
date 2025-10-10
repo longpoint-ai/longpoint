@@ -9,6 +9,11 @@ module.exports = {
       devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     }),
   },
+  resolve: {
+    alias: {
+      '@': join(__dirname, 'src'),
+    },
+  },
   ignoreWarnings: [
     // Ignore sourcemap warnings for Prisma client
     /Failed to parse source map from.*prisma.*\.js\.map/,
@@ -20,28 +25,30 @@ module.exports = {
       compiler: 'tsc',
       main: './src/server/main.ts',
       tsConfig: './tsconfig.app.json',
-      assets: ['./src/assets'],
       optimization: false,
       outputHashing: 'none',
       generatePackageJson: true,
       sourceMaps: true,
     }),
-    // Copy the prisma schema and the prisma engine to the dist folder
     new CopyPlugin({
       patterns: [
+        // Prisma engines
         {
-          from: join(
-            __dirname,
-            './src/database/generated/prisma/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node'
-          ),
-          to: 'generated/prisma/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node',
+          from: join(__dirname, './src/database/generated/prisma/*.node'),
+          to: 'generated/prisma/[name][ext]',
         },
+        // Prisma schema
         {
           from: join(
             __dirname,
             './src/database/generated/prisma/schema.prisma'
           ),
           to: 'generated/prisma/schema.prisma',
+        },
+        // static assets
+        {
+          from: join(__dirname, './src/admin-placeholder'),
+          to: 'assets',
         },
       ],
     }),

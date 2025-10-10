@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Longpoint Admin - Not Installed</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #f8fafc;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        max-width: 600px;
+        text-align: center;
+        margin: 2rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        color: #718096;
+        margin-bottom: 2rem;
+        font-weight: 400;
+      }
+
+      .message {
+        font-size: 1.1rem;
+        color: #4a5568;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+
+      .install-section {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border-left: 4px solid #4a5568;
+      }
+
+      .install-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+      }
+
+      .package-managers {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .pm-button {
+        background: #e2e8f0;
+        border: 1px solid #cbd5e0;
+        color: #4a5568;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .pm-button:hover {
+        background: #cbd5e0;
+        border-color: #a0aec0;
+      }
+
+      .pm-button.active {
+        background: #4a5568;
+        color: white;
+        border-color: #2d3748;
+      }
+
+      .code-container {
+        position: relative;
+        display: inline-block;
+        margin: 1rem 0;
+      }
+
+      .code-block {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 1rem 1.5rem;
+        padding-right: 5rem;
+        border-radius: 8px;
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        font-size: 1rem;
+        border: 1px solid #4a5568;
+        display: inline-block;
+      }
+
+      .copy-button {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #4a5568;
+        border: none;
+        color: #e2e8f0;
+        padding: 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background-color 0.2s;
+      }
+
+      .copy-button:hover {
+        background: #718096;
+      }
+
+      .copy-button:active {
+        background: #2d3748;
+      }
+
+      .copy-button.copied {
+        background: #38a169;
+        color: white;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        background: #e6fffa;
+        color: #234e52;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        border: 1px solid #81e6d9;
+      }
+
+      .status-badge::before {
+        content: 'ℹ️';
+        margin-right: 0.5rem;
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          padding: 2rem;
+          margin: 1rem;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Longpoint Server</h1>
+
+      <div class="status-badge">Headless Mode Active</div>
+
+      <p class="message">
+        Your server is running successfully! For admin UI functionality, install
+        the admin package.
+      </p>
+
+      <div class="install-section">
+        <div class="package-managers">
+          <button class="pm-button active" data-pm="npm">npm</button>
+          <button class="pm-button" data-pm="yarn">yarn</button>
+          <button class="pm-button" data-pm="pnpm">pnpm</button>
+          <button class="pm-button" data-pm="bun">bun</button>
+        </div>
+        <div class="code-container">
+          <div class="code-block" id="command-text">
+            npm install @longpoint/admin
+          </div>
+          <button class="copy-button">Copy</button>
+        </div>
+        <p style="font-size: 0.9rem; color: #718096; margin-top: 0.5rem">
+          After installation, restart your server to access the admin interface.
+        </p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

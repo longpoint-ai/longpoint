@@ -106,14 +106,7 @@
   },
   "workspaces": [
     "apps/*",
-    "libs/api/services/*",
-    "libs/*",
-    "libs/web/*",
-    "libs/api/*",
-    "libs/shared/*",
-    "tools/*",
-    "libs/web/features/*",
-    "libs/api/features/*",
-    "packages/*"
+    "packages/*",
+    "tools/*"
   ]
 }

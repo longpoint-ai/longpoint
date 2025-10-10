@@ -115,8 +115,7 @@ async function bootstrap() {
   // ------------------------------------------------------------
   // Miscellaneous setup
   // ------------------------------------------------------------
-  app.enableVersioning({ defaultVersion: '1', type: VersioningType.URI });
-  app.setGlobalPrefix('api', {
+  app.setGlobalPrefix('api/v1', {
     exclude: [
       { path: '/', method: RequestMethod.GET },
       { path: '/health', method: RequestMethod.GET },

@@ -22,7 +22,7 @@
     {
       "name": "Attach to API",
       "request": "attach",
-      "cwd": "${workspaceFolder}/apps/api",
+      "cwd": "${workspaceFolder}/packages/core",
       "type": "node",
       "port": 9229,
       "restart": true,

@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { AppController } from './app.controller';
 import { LoggerModule } from 'nestjs-pino';
 import { APP_FILTER } from '@nestjs/core';
 import { CommonModule } from '../common/common.module';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { ConfigService } from '../common/services';
+import { getStaticModule } from './load-static.utils';
 
 @Module({
   imports: [
@@ -57,14 +55,9 @@ import { ConfigService } from '../common/services';
         };
       },
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, 'assets'),
-      serveRoot: '/',
-      exclude: ['/api*'],
-    }),
+    getStaticModule(),
     CommonModule,
   ],
-  controllers: [AppController],
   providers: [
     {
       provide: APP_FILTER,
