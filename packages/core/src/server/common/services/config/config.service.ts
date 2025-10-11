@@ -3,9 +3,15 @@ import { Config, createConfig, validateEnv } from './env.config';
 
 type DotNotation<T extends object, Prefix extends string = ''> = {
   [K in keyof T]: T[K] extends object
-    ? DotNotation<T[K], `${Prefix}${K & string}.`>
+    ? T[K] extends any[]
+      ? `${Prefix}${K & string}`
+      : DotNotation<T[K], `${Prefix}${K & string}.`>
     : `${Prefix}${K & string}`;
-}[keyof T];
+}[keyof T] extends infer U
+  ? U extends string
+    ? U
+    : never
+  : never;
 
 type DeepGet<T, K extends string> = K extends keyof T
   ? T[K]
@@ -24,7 +30,7 @@ export class ConfigService {
     this.config = createConfig(input);
   }
 
-  get<K extends DotNotation<Config>>(path: K): DeepGet<Config, K> {
+  get<K extends DotNotation<Config> & string>(path: K): DeepGet<Config, K> {
     const keys = path.split('.');
     let result: unknown = this.config;
 

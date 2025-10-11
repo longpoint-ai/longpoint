@@ -4,14 +4,14 @@ import { loadEnvFiles } from './env.loader';
 loadEnvFiles();
 
 const envSchema = z.object({
-  // Server
+  AUTH_SECRET: z.string(),
   PORT: z.string().transform(Number).default(3000),
   NODE_ENV: z
     .string()
     .transform((val) => val.toLowerCase())
     .pipe(z.enum(['development', 'production']))
     .default('development'),
-  BASE_API_URL: z.string().optional(),
+  BASE_URL: z.string(),
   LOG_LEVEL: z
     .string()
     .transform((val) => val.toLowerCase())
@@ -32,32 +32,31 @@ const envSchema = z.object({
   // CDN_DOMAIN: z.string().optional(),
 
   // CORS
-  // CORS_ORIGINS: z
-  //   .string()
-  //   .default("http://localhost:3000,http://localhost:3001")
-  //   .refine(
-  //     (origins) => {
-  //       const originList = origins.split(",").map((o) => o.trim());
+  CORS_ORIGINS: z
+    .string()
+    .default('http://localhost:4200')
+    .transform((origins) => origins.split(',').map((o) => o.trim()))
+    .refine(
+      (originList) => {
+        for (const origin of originList) {
+          if (origin === '*') {
+            return false;
+          }
 
-  //       for (const origin of originList) {
-  //         if (origin === "*") {
-  //           return false;
-  //         }
+          try {
+            new URL(origin);
+          } catch (e) {
+            return false;
+          }
+        }
 
-  //         try {
-  //           new URL(origin);
-  //         } catch (e) {
-  //           return false;
-  //         }
-  //       }
-
-  //       return true;
-  //     },
-  //     {
-  //       message:
-  //         "CORS_ORIGINS must be a comma-separated list of valid URLs. Wildcard (*) is not allowed.",
-  //     }
-  //   ),
+        return true;
+      },
+      {
+        message:
+          'CORS_ORIGINS must be a comma-separated list of valid URLs. Wildcard (*) is not allowed.',
+      }
+    ),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -75,11 +74,13 @@ export function validateEnv(): Env {
 
 export const createConfig = (env: Env) =>
   ({
+    authSecret: env.AUTH_SECRET,
+    baseUrl: env.BASE_URL,
+    corsOrigins: env.CORS_ORIGINS,
+    databaseUrl: env.DATABASE_URL,
+    logLevel: env.LOG_LEVEL,
     nodeEnv: env.NODE_ENV,
     port: env.PORT,
-    baseApiUrl: env.BASE_API_URL,
-    logLevel: env.LOG_LEVEL,
-    databaseUrl: env.DATABASE_URL,
   } as const);
 
 export type Config = ReturnType<typeof createConfig>;

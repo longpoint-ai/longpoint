@@ -3,7 +3,6 @@ import {
   RequestMethod,
   ValidationError,
   ValidationPipe,
-  VersioningType,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
@@ -52,6 +51,11 @@ async function bootstrap() {
       frameguard: { action: 'deny' },
     })
   );
+
+  app.enableCors({
+    origin: configService.get('corsOrigins'),
+    credentials: true,
+  });
 
   // ------------------------------------------------------------
   // Logger
