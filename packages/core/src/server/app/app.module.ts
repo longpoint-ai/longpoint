@@ -5,6 +5,7 @@ import { CommonModule } from '../common/common.module';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { ConfigService } from '../common/services';
 import { getStaticModule } from './load-static.utils';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { getStaticModule } from './load-static.utils';
     }),
     getStaticModule(),
     CommonModule,
+    AuthModule,
   ],
   providers: [
     {

@@ -49,3 +49,8 @@ test-output
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# Environment variables
+.env
+.env.*
+!.env.template

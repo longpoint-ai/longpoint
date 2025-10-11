@@ -1,0 +1,22 @@
+model MediaContainer {
+  id     String       @id @default(cuid(2))
+  name   String
+  images ImageMedia[]
+}
+
+model ImageMedia {
+  id          String         @id @default(cuid(2))
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  containerId String
+  container   MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  variant     MediaVariant   @default(ORIGINAL)
+  extension   String
+  width       Int
+  height      Int
+  size        Int
+}
+
+enum MediaVariant {
+  ORIGINAL
+}
