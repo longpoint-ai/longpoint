@@ -6,7 +6,8 @@
     "./globals.css": "./src/styles/globals.css",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./hooks/*": "./src/hooks/*.ts",
+    "./utils": "./src/lib/utils.ts"
   },
   "nx": {
     "name": "@longpoint/ui"

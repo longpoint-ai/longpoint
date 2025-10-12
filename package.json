@@ -96,6 +96,7 @@
     "nx": "21.6.3",
     "openapi-typescript": "^7.4.4",
     "prettier": "^2.6.2",
+    "shadcn": "^3.4.0",
     "tailwindcss": "^4.1.14",
     "tree-kill": "^1.2.2",
     "ts-jest": "^29.4.0",
