@@ -12,7 +12,7 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "hooks": "@/hooks",
+    "hooks": "@longpoint/ui/hooks",
     "lib": "@/lib",
     "utils": "@longpoint/ui/lib/utils",
     "ui": "@longpoint/ui/components"

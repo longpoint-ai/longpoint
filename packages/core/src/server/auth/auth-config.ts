@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { createAuthMiddleware } from 'better-auth/api';
@@ -5,7 +6,8 @@ import { ConfigService, PrismaService } from '../common/services';
 
 export const getAuthConfig = (
   configService: ConfigService,
-  prismaService: PrismaService
+  prismaService: PrismaService,
+  logger: Logger
 ) => {
   return betterAuth({
     appName: 'Longpoint',
@@ -31,6 +33,27 @@ export const getAuthConfig = (
     },
     hooks: {
       after: signUpMiddleware(prismaService),
+    },
+    logger: {
+      log(level, message, ...args) {
+        switch (level) {
+          case 'error':
+            logger.error(message, ...args);
+            break;
+          case 'warn':
+            logger.warn(message, ...args);
+            break;
+          case 'info':
+            logger.log(message, ...args);
+            break;
+          case 'debug':
+            logger.debug(message, ...args);
+            break;
+          default:
+            logger.log(message, ...args);
+            break;
+        }
+      },
     },
   });
 };

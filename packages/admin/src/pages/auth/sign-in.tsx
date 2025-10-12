@@ -138,9 +138,9 @@ export function SignIn() {
             form="sign-in-form"
             className="w-full"
             disabled={form.formState.isSubmitting}
-            isLoading={false}
+            isLoading={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
+            Sign In
           </Button>
         </Field>
       </CardFooter>
