@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { authClient } from '../clients/auth-client';
+import { authClient } from './auth-client';
 
 interface AuthContextValue {
   session: ReturnType<typeof authClient.useSession>['data'];

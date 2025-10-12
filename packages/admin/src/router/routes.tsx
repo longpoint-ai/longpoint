@@ -1,15 +1,15 @@
 import { Route, Routes } from 'react-router-dom';
-import { AuthLayout } from './layouts/auth-layout';
-import { DashboardLayout } from './layouts/dashboard-layout';
+import { AuthLayout } from '../layouts/auth-layout';
+import { DashboardLayout } from '../layouts/dashboard-layout';
+import { SignIn } from '../pages/auth/sign-in';
+import { DashboardHome } from '../pages/dashboard/home';
+import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,
   AuthenticatedGuard,
   SetupCompleteGuard,
   SetupGuard,
-} from './lib/guards/route-guards';
-import { SignIn } from './pages/auth/sign-in';
-import { DashboardHome } from './pages/dashboard/home';
-import { FirstAdminSetup } from './pages/setup/first-admin';
+} from './guards';
 
 export function AppRoutes() {
   return (

@@ -1,6 +1,6 @@
 import { Toaster } from '@longpoint/ui/components/sonner';
-import { AuthProvider } from './lib/auth/auth-context';
-import { AppRoutes } from './routes';
+import { AuthProvider } from './auth/auth-context';
+import { AppRoutes } from './router';
 
 export function App() {
   return (

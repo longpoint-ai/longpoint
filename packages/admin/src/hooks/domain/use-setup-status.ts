@@ -1,5 +1,5 @@
+import { apiClient } from '@/api';
 import { useCallback, useEffect, useState } from 'react';
-import { apiClient } from '../clients/api-client';
 
 interface SetupStatus {
   isFirstTimeSetup: boolean;

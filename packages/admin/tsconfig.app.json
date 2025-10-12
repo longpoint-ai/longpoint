@@ -16,7 +16,7 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/app/*"],
+      "@/*": ["./src/*"],
       "@longpoint/ui/*": ["../ui/src/*"]
     }
   },

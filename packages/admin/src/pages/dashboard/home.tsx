@@ -1,4 +1,4 @@
-import { useAuth } from '@/lib/auth/auth-context';
+import { useAuth } from '@/auth/auth-context';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
