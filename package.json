@@ -9,6 +9,7 @@
     "build:web": "npx nx build web",
     "build:api": "npx nx build api",
     "serve:api": "npx nx serve api",
+    "generate:api-types": "ts-node tools/generate-api-types.ts",
     "prepare": "husky"
   },
   "private": true,
@@ -93,8 +94,10 @@
     "jsdom": "~22.1.0",
     "jsonc-eslint-parser": "^2.1.0",
     "nx": "21.6.3",
+    "openapi-typescript": "^7.4.4",
     "prettier": "^2.6.2",
     "tailwindcss": "^4.1.14",
+    "tree-kill": "^1.2.2",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
@@ -102,6 +105,7 @@
     "typescript-eslint": "^8.40.0",
     "vite": "^7.0.0",
     "vitest": "^3.0.0",
+    "wait-port": "^1.1.0",
     "webpack-cli": "^5.1.4"
   },
   "workspaces": [

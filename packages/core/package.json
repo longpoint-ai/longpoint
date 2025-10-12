@@ -132,6 +132,13 @@
           "command": "prisma db push",
           "cwd": "packages/core/src/database"
         }
+      },
+      "db:seed": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "prisma db seed",
+          "cwd": "packages/core/src/database"
+        }
       }
     },
     "name": "@longpoint/core"

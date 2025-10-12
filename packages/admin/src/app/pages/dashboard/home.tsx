@@ -1,11 +1,23 @@
+import { apiClient } from '@/lib/api-client';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
+import { useEffect, useState } from 'react';
 
 export function DashboardHome() {
+  const [isFirstTimeSetup, setIsFirstTimeSetup] = useState(false);
+
+  useEffect(() => {
+    console.log('fetching setup status');
+    apiClient.GET('/setup/status').then(({ data }) => {
+      setIsFirstTimeSetup(data?.isFirstTimeSetup ?? true);
+    });
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
@@ -14,6 +26,16 @@ export function DashboardHome() {
           Welcome to your Longpoint admin dashboard
         </p>
       </div>
+      {isFirstTimeSetup && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Setup Required</CardTitle>
+            <CardDescription>
+              Please create your first administrator account to get started.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

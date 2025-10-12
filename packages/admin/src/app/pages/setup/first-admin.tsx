@@ -26,7 +26,6 @@ export function FirstAdminSetup() {
     setIsSubmitting(true);
 
     // Stub out the API call - simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     const result = await authClient.signUp.email({
       email: formData.email,
       name: formData.name,

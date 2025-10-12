@@ -13,6 +13,9 @@
       "path": "../ui"
     },
     {
+      "path": "../types"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

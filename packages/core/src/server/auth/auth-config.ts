@@ -1,12 +1,15 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { PrismaClient } from '@/database';
-import { ConfigService } from '../common/services';
+import { createAuthMiddleware } from 'better-auth/api';
+import { ConfigService, PrismaService } from '../common/services';
 
-export const getAuthConfig = (configService: ConfigService) => {
+export const getAuthConfig = (
+  configService: ConfigService,
+  prismaService: PrismaService
+) => {
   return betterAuth({
     appName: 'Longpoint',
-    database: prismaAdapter(new PrismaClient(), {
+    database: prismaAdapter(prismaService, {
       provider: 'postgresql',
     }),
     emailAndPassword: {
@@ -26,5 +29,37 @@ export const getAuthConfig = (configService: ConfigService) => {
     advanced: {
       cookiePrefix: 'longpoint',
     },
+    hooks: {
+      after: signUpMiddleware(prismaService),
+    },
   });
 };
+
+function signUpMiddleware(prismaService: PrismaService) {
+  return createAuthMiddleware(async (ctx) => {
+    const isSignUp = ctx.path.startsWith('/sign-up');
+    const newSession = ctx.context.newSession;
+    if (isSignUp && newSession) {
+      const userCount = await prismaService.user.count();
+      if (userCount === 1) {
+        const superAdminRole = await prismaService.role.findFirst({
+          where: {
+            name: {
+              equals: 'Super Admin',
+              mode: 'insensitive',
+            },
+          },
+        });
+        if (!superAdminRole) {
+          throw new Error('Expected Super Admin role - not found');
+        }
+        await prismaService.userRole.create({
+          data: {
+            roleId: superAdminRole.id,
+            userId: newSession.user.id,
+          },
+        });
+      }
+    }
+  });
+}

@@ -5,13 +5,13 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
-import { ConfigService } from './common/services';
-import helmet from 'helmet';
-import { LoggerErrorInterceptor, Logger as PinoLogger } from 'nestjs-pino';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
+import helmet from 'helmet';
+import { LoggerErrorInterceptor, Logger as PinoLogger } from 'nestjs-pino';
+import { AppModule } from './app/app.module';
 import { InvalidInput } from './common/errors/invalid-input.error.js';
+import { ConfigService } from './common/services';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -107,7 +107,7 @@ async function bootstrap() {
     .addBearerAuth();
 
   if (nodeEnv === 'development') {
-    docBuilder.addServer(`http://localhost:${port}`);
+    docBuilder.addServer(`http://localhost:${port}/api`);
   }
 
   SwaggerModule.setup('docs', app, () =>
