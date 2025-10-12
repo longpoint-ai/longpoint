@@ -1,6 +1,5 @@
 import { useAuth } from '@/lib/auth/auth-context';
 import { authClient } from '@/lib/clients/auth-client';
-import { useSetupStatus } from '@/lib/hooks/use-setup-status';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
@@ -11,48 +10,43 @@ import {
 } from '@longpoint/ui/components/card';
 import { Input } from '@longpoint/ui/components/input';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-export function FirstAdminSetup() {
+export function SignIn() {
   const navigate = useNavigate();
-  const { refetch } = useSetupStatus();
+  const [searchParams] = useSearchParams();
   const { refreshSession } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const result = await authClient.signUp.email({
+      const result = await authClient.signIn.email({
         email: formData.email,
-        name: formData.name,
         password: formData.password,
       });
 
       if (result.error) {
-        toast.error('Error creating account', {
-          description: result.error.message,
-        });
+        toast.error('Sign in failed', { description: result.error.message });
         return;
       }
-
-      // Refetch setup status to update the guards
-      await refetch();
 
       // Refresh the session to ensure the auth context is updated
       await refreshSession();
 
-      toast.success('Welcome to Longpoint!');
-      navigate('/');
+      toast.success('Welcome back!');
+      navigate(redirectTo);
     } catch (error) {
-      toast.error('Error creating account', {
+      toast.error('Sign in failed', {
         description:
           error instanceof Error
             ? error.message
@@ -74,29 +68,13 @@ export function FirstAdminSetup() {
   return (
     <Card className="shadow-lg">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-semibold">
-          Welcome to Longpoint
-        </CardTitle>
+        <CardTitle className="text-2xl font-semibold">Sign In</CardTitle>
         <CardDescription className="text-muted-foreground">
-          Create your first administrator account to get started
+          Enter your credentials to access the admin dashboard
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Full Name
-            </label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChange={handleInputChange('name')}
-              required
-            />
-          </div>
-
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
               Email Address
@@ -118,16 +96,15 @@ export function FirstAdminSetup() {
             <Input
               id="password"
               type="password"
-              placeholder="Create a secure password"
+              placeholder="Enter your password"
               value={formData.password}
               onChange={handleInputChange('password')}
               required
-              minLength={8}
             />
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Create Admin Account'}
+            {isSubmitting ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>
       </CardContent>

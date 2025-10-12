@@ -1,8 +1,15 @@
-import { Routes, Route } from 'react-router-dom';
-import { SetupLayout } from './layouts/setup-layout';
+import { Route, Routes } from 'react-router-dom';
+import { AuthLayout } from './layouts/auth-layout';
 import { DashboardLayout } from './layouts/dashboard-layout';
-import { FirstAdminSetup } from './pages/setup/first-admin';
+import {
+  AuthGuard,
+  AuthenticatedGuard,
+  SetupCompleteGuard,
+  SetupGuard,
+} from './lib/guards/route-guards';
+import { SignIn } from './pages/auth/sign-in';
 import { DashboardHome } from './pages/dashboard/home';
+import { FirstAdminSetup } from './pages/setup/first-admin';
 
 export function AppRoutes() {
   return (
@@ -10,17 +17,35 @@ export function AppRoutes() {
       <Route
         path="/setup"
         element={
-          <SetupLayout>
-            <FirstAdminSetup />
-          </SetupLayout>
+          <SetupCompleteGuard>
+            <AuthLayout>
+              <FirstAdminSetup />
+            </AuthLayout>
+          </SetupCompleteGuard>
+        }
+      />
+      <Route
+        path="/sign-in"
+        element={
+          <AuthenticatedGuard>
+            <SetupGuard>
+              <AuthLayout>
+                <SignIn />
+              </AuthLayout>
+            </SetupGuard>
+          </AuthenticatedGuard>
         }
       />
       <Route
         path="/"
         element={
-          <DashboardLayout>
-            <DashboardHome />
-          </DashboardLayout>
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <DashboardHome />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
         }
       />
     </Routes>

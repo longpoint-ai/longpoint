@@ -1,4 +1,5 @@
-import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/lib/auth/auth-context';
+import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
   CardContent,
@@ -6,45 +7,35 @@ import {
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
-import { useEffect, useState } from 'react';
 
 export function DashboardHome() {
-  const [isFirstTimeSetup, setIsFirstTimeSetup] = useState(false);
-
-  useEffect(() => {
-    console.log('fetching setup status');
-    apiClient.GET('/setup/status').then(({ data }) => {
-      setIsFirstTimeSetup(data?.isFirstTimeSetup ?? true);
-    });
-  }, []);
+  const { session, signOut } = useAuth();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Dashboard</h2>
-        <p className="text-muted-foreground mt-2">
-          Welcome to your Longpoint admin dashboard
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold">Dashboard</h2>
+          <p className="text-muted-foreground mt-2">
+            Welcome back, {session?.user?.name || session?.user?.email}!
+          </p>
+        </div>
+        <Button variant="outline" onClick={signOut}>
+          Sign Out
+        </Button>
       </div>
-      {isFirstTimeSetup && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Setup Required</CardTitle>
-            <CardDescription>
-              Please create your first administrator account to get started.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Setup Complete</CardTitle>
+          <CardTitle>Welcome to Longpoint</CardTitle>
+          <CardDescription>
+            Your administrator account is set up and ready to go.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Your administrator account has been successfully created. You can
-            now manage your Longpoint instance from this dashboard.
+            You can now manage your Longpoint instance from this dashboard. All
+            features are available and your account is fully configured.
           </p>
         </CardContent>
       </Card>
