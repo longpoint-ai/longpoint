@@ -1,38 +1,61 @@
 import { authClient, useAuth } from '@/auth';
 import { useSetupStatus } from '@/hooks/domain/use-setup-status';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
-import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import * as z from 'zod';
+
+const formSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters.')
+    .max(50, 'Name must be at most 50 characters.'),
+  email: z
+    .email('Please enter a valid email address.')
+    .min(1, 'Email is required.'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters.')
+    .max(100, 'Password must be at most 100 characters.'),
+});
 
 export function FirstAdminSetup() {
   const navigate = useNavigate();
   const { refetch } = useSetupStatus();
   const { refreshSession } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
       const result = await authClient.signUp.email({
-        email: formData.email,
-        name: formData.name,
-        password: formData.password,
+        email: data.email,
+        name: data.name,
+        password: data.password,
       });
 
       if (result.error) {
@@ -57,21 +80,11 @@ export function FirstAdminSetup() {
             ? error.message
             : 'An unexpected error occurred',
       });
-    } finally {
-      setIsSubmitting(false);
     }
-  };
-
-  const handleInputChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: e.target.value,
-      }));
-    };
+  }
 
   return (
-    <Card className="shadow-lg">
+    <Card className="w-full sm:max-w-md shadow-lg">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-semibold">
           Welcome to Longpoint
@@ -81,55 +94,89 @@ export function FirstAdminSetup() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Full Name
-            </label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChange={handleInputChange('name')}
-              required
+        <form id="first-admin-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup>
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="first-admin-form-name">
+                    Full Name
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="first-admin-form-name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="name"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email Address
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email address"
-              value={formData.email}
-              onChange={handleInputChange('email')}
-              required
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="first-admin-form-email">
+                    Email Address
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="first-admin-form-email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="email"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a secure password"
-              value={formData.password}
-              onChange={handleInputChange('password')}
-              required
-              minLength={8}
+            <Controller
+              name="password"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="first-admin-form-password">
+                    Password
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="first-admin-form-password"
+                    type="password"
+                    placeholder="Create a secure password"
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="new-password"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </div>
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Create Admin Account'}
-          </Button>
+          </FieldGroup>
         </form>
       </CardContent>
+      <CardFooter>
+        <Field orientation="vertical">
+          <Button
+            type="submit"
+            form="first-admin-form"
+            disabled={form.formState.isSubmitting}
+            isLoading={form.formState.isSubmitting}
+          >
+            Create Account
+          </Button>
+        </Field>
+      </CardFooter>
     </Card>
   );
 }
