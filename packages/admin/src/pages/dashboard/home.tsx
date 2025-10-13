@@ -1,5 +1,4 @@
-import { useAuth } from '@/auth/auth-context';
-import { Button } from '@longpoint/ui/components/button';
+import { useAuth } from '@/auth';
 import {
   Card,
   CardContent,
@@ -9,7 +8,7 @@ import {
 } from '@longpoint/ui/components/card';
 
 export function DashboardHome() {
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -20,9 +19,6 @@ export function DashboardHome() {
             Welcome back, {session?.user?.name || session?.user?.email}!
           </p>
         </div>
-        <Button variant="outline" onClick={signOut}>
-          Sign Out
-        </Button>
       </div>
 
       <Card>

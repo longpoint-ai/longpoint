@@ -24,9 +24,6 @@ export function AuthGuard({ children }: GuardProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex items-center space-x-2">
           <Spinner />
-          <span className="text-muted-foreground">
-            Checking authentication...
-          </span>
         </div>
       </div>
     );
