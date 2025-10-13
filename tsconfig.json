@@ -20,6 +20,9 @@
     },
     {
       "path": "./packages/ui"
+    },
+    {
+      "path": "./packages/validations"
     }
   ]
 }

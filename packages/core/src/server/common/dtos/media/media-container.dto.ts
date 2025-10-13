@@ -1,5 +1,9 @@
 import { MediaContainerStatus, MediaType } from '@/database';
 import { type SelectedMediaContainer } from '@/server/common/selectors/media.selectors';
+import {
+  IsValidMediaContainerName,
+  IsValidMediaContainerPath,
+} from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -11,11 +15,19 @@ export class MediaContainerDto {
   })
   id: string;
 
+  @IsValidMediaContainerName()
   @ApiProperty({
     description: 'A descriptive name for the underlying media',
     example: 'Blissful Fields',
   })
   name: string;
+
+  @IsValidMediaContainerPath()
+  @ApiProperty({
+    description: 'The directory path of the media container',
+    example: '/',
+  })
+  path: string;
 
   @ApiProperty({
     description: 'The primary media type.',
@@ -40,6 +52,7 @@ export class MediaContainerDto {
   constructor(data: SelectedMediaContainer) {
     this.id = data.id;
     this.name = data.name;
+    this.path = data.path;
     this.type = data.type;
     this.status = data.status;
     this.createdAt = data.createdAt;

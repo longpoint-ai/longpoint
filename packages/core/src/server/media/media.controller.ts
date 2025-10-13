@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -8,6 +16,7 @@ import { ApiSdkTag } from '../common/decorators/api-sdk-tag.decorator';
 import { MediaContainerDto } from '../common/dtos/media';
 import { ApiMediaContainerNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
+import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
 import { MediaService } from './media.service';
 
 @Controller('media')
@@ -25,7 +34,9 @@ export class MediaController {
   @ApiCreatedResponse({
     description: 'Use the returned signed url to upload the original asset.',
   })
-  async createMediaContainer() {}
+  async createMediaContainer(@Body() body: CreateMediaContainerDto) {
+    return this.mediaService.createMediaContainer(body);
+  }
 
   @Get(':containerId')
   @ApiOperation({

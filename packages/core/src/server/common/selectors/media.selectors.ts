@@ -6,6 +6,7 @@ export const selectMediaContainer = () => {
     name: true,
     type: true,
     status: true,
+    path: true,
     createdAt: true,
   } satisfies Prisma.MediaContainerSelect;
 };
