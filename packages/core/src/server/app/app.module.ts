@@ -3,6 +3,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { AuthModule } from '../auth/auth.module';
 import { CommonModule } from '../common/common.module';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
+import { MediaModule } from '../media/media.module';
 import { SetupModule } from '../setup/setup.module';
 import { getLoggerModule } from './get-logger-module';
 import { getStaticModule } from './get-static-module';
@@ -14,6 +15,7 @@ import { getStaticModule } from './get-static-module';
     CommonModule,
     // Features modules
     AuthModule,
+    MediaModule,
     SetupModule,
   ],
   providers: [

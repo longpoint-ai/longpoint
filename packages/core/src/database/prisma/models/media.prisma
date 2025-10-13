@@ -1,22 +1,78 @@
 model MediaContainer {
-  id     String       @id @default(cuid(2))
-  name   String
+  id        String               @id @default(cuid(2))
+  name      String
+  status    MediaContainerStatus
+  /// The primary media type hosted by the container
+  type      MediaType
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  deletedAt DateTime?
+
   images ImageMedia[]
+
+  @@index([status])
+}
+
+model UploadToken {
+  id                 String    @id @default(cuid(2))
+  token              String    @unique
+  createdAt          DateTime  @default(now())
+  expiresAt          DateTime
+  uploadInProgressAt DateTime?
+
+  images ImageMedia[]
+
+  @@index([expiresAt])
 }
 
 model ImageMedia {
-  id          String         @id @default(cuid(2))
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  containerId String
-  container   MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  variant     MediaVariant   @default(ORIGINAL)
-  extension   String
-  width       Int
-  height      Int
-  size        Int
+  id        String   @id @default(cuid(2))
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variant   MediaVariant       @default(ORIGINAL)
+  status    MediaVariantStatus
+  extension String
+  width     Int
+  height    Int
+  size      Int
+
+  containerId   String
+  container     MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  uploadToken   UploadToken?   @relation(fields: [uploadTokenId], references: [id], onDelete: SetNull)
+  uploadTokenId String?
+
+  @@index([containerId, status])
 }
 
 enum MediaVariant {
   ORIGINAL
+}
+
+enum MediaContainerStatus {
+  /// The container is waiting for the original asset to be uploaded
+  WAITING_FOR_UPLOAD
+  /// One or more variants are being processed
+  PROCESSING
+  /// The entire container is ready for use
+  READY
+  /// The original asset failed to upload
+  FAILED
+  /// One or more variants failed to process, but some are ready for use
+  PARTIALLY_FAILED
+  /// The container has been soft deleted
+  DELETED
+}
+
+enum MediaVariantStatus {
+  /// The variant is being processed
+  PROCESSING
+  /// The variant is ready for use
+  READY
+  /// The variant failed to process or be uploaded
+  FAILED
+}
+
+enum MediaType {
+  IMAGE
 }
