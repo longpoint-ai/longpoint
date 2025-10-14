@@ -9,6 +9,7 @@ import { MediaContainerDto } from '../common/dtos/media';
 import { MediaContainerNotFound } from '../common/errors';
 import { selectMediaContainer } from '../common/selectors/media.selectors';
 import {
+  CommonMediaService,
   ConfigService,
   PrismaService,
   StorageService,
@@ -24,7 +25,8 @@ export class MediaService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly storageService: StorageService
+    private readonly storageService: StorageService,
+    private readonly commonMediaService: CommonMediaService
   ) {}
 
   async createMediaContainer(data: CreateMediaContainerDto) {
@@ -79,7 +81,9 @@ export class MediaService {
       throw new MediaContainerNotFound(id);
     }
 
-    return new MediaContainerDto(media);
+    const [hydrated] = await this.commonMediaService.hydrateContainer(media);
+
+    return new MediaContainerDto(hydrated);
   }
 
   async deleteMediaContainer(id: string, data: DeleteMediaContainerDto) {

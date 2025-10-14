@@ -1,7 +1,7 @@
 import {
   MediaAsset,
+  MediaAssetStatus,
   MediaContainerStatus,
-  MediaVariantStatus,
   Prisma,
 } from '@/database';
 import { PrismaService, StorageService } from '@/server/common/services';
@@ -144,12 +144,12 @@ export class UploadService {
         },
       });
 
-      const statusBreakdown = Object.values(MediaVariantStatus).reduce(
+      const statusBreakdown = Object.values(MediaAssetStatus).reduce(
         (acc, status) => {
           acc[status] = 0;
           return acc;
         },
-        {} as Record<MediaVariantStatus, number>
+        {} as Record<MediaAssetStatus, number>
       );
 
       for (const asset of allAssetsForContainer) {

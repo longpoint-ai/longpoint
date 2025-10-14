@@ -29,9 +29,9 @@ model UploadToken {
 }
 
 model MediaAsset {
-  id      String             @id @default(cuid(2))
-  variant MediaVariant       @default(ORIGINAL)
-  status  MediaVariantStatus
+  id      String            @id @default(cuid(2))
+  variant MediaAssetVariant @default(ORIGINAL)
+  status  MediaAssetStatus
 
   // asset metadata
   mimeType    String
@@ -50,7 +50,7 @@ model MediaAsset {
   @@index([containerId, status])
 }
 
-enum MediaVariant {
+enum MediaAssetVariant {
   ORIGINAL
 }
 
@@ -69,7 +69,7 @@ enum MediaContainerStatus {
   DELETED
 }
 
-enum MediaVariantStatus {
+enum MediaAssetStatus {
   /// The variant is waiting for an asset to be uploaded
   WAITING_FOR_UPLOAD
   /// The variant is being processed
