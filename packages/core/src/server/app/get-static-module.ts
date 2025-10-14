@@ -1,27 +1,16 @@
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join, dirname } from 'path';
-import { existsSync } from 'fs';
 import { DynamicModule } from '@nestjs/common';
-
-function findNodeModulesPath(startPath: string): string | null {
-  let currentPath = startPath;
-
-  while (currentPath !== dirname(currentPath)) {
-    const nodeModulesPath = join(currentPath, 'node_modules');
-    if (existsSync(nodeModulesPath)) {
-      return nodeModulesPath;
-    }
-    currentPath = dirname(currentPath);
-  }
-
-  return null;
-}
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { existsSync } from 'fs';
+import { dirname, join } from 'path';
 
 export function getStaticModule(): DynamicModule {
+  const serveStaticConfigs = [];
+
+  // ------------------------------------------------------------
+  // Admin UI setup
+  // ------------------------------------------------------------
   const nodeModulesPath = findNodeModulesPath(__dirname);
-
   let adminDistPath: string;
-
   if (!nodeModulesPath) {
     // Fallback to process.cwd() if we can't find node_modules
     adminDistPath = join(
@@ -38,16 +27,44 @@ export function getStaticModule(): DynamicModule {
   const adminAvailable = existsSync(adminDistPath);
 
   if (adminAvailable) {
-    return ServeStaticModule.forRoot({
+    serveStaticConfigs.push({
       rootPath: adminDistPath,
       serveRoot: '/',
-      exclude: ['/api*'],
+      exclude: ['/api*', '/storage*'],
+    });
+  } else {
+    serveStaticConfigs.push({
+      rootPath: join(__dirname, 'assets'),
+      serveRoot: '/',
+      exclude: ['/api*', '/storage*'],
     });
   }
 
-  return ServeStaticModule.forRoot({
-    rootPath: join(__dirname, 'assets'),
-    serveRoot: '/',
-    exclude: ['/api*'],
-  });
+  // ------------------------------------------------------------
+
+  // Storage directory configuration for local storage provider
+  const storageBasePath = join(process.cwd(), 'data', 'storage');
+  console.log(storageBasePath);
+  if (existsSync(storageBasePath)) {
+    serveStaticConfigs.push({
+      rootPath: storageBasePath,
+      serveRoot: '/storage',
+    });
+  }
+
+  return ServeStaticModule.forRoot(...serveStaticConfigs);
+}
+
+function findNodeModulesPath(startPath: string): string | null {
+  let currentPath = startPath;
+
+  while (currentPath !== dirname(currentPath)) {
+    const nodeModulesPath = join(currentPath, 'node_modules');
+    if (existsSync(nodeModulesPath)) {
+      return nodeModulesPath;
+    }
+    currentPath = dirname(currentPath);
+  }
+
+  return null;
 }

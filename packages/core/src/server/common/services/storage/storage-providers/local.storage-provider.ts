@@ -43,26 +43,13 @@ export class LocalStorageProvider implements StorageProvider {
   async createSignedUrl(
     options: CreateSignedUrlOptions
   ): Promise<SignedUrlResponse> {
-    const fullPath = getMediaContainerPath(options.containerId, {
-      prefix: this.config.basePath,
-      suffix: options.path,
-    });
-    const url = new URL(fullPath, this.config.baseUrl).href;
+    const url = new URL(
+      `/storage/default/${options.containerId}/${options.path}`,
+      this.config.baseUrl
+    ).href;
     return {
       url,
       expiresAt: addSeconds(new Date(), options.expiresInSeconds ?? 3600),
     };
   }
-
-  // async getFileContents(path: string): Promise<Buffer> {
-  //   return await fs.promises.readFile(path);
-  // }
-
-  // async deleteFile(path: string): Promise<void> {
-  //   await fs.promises.unlink(path);
-  // }
-
-  // async deleteDirectory(path: string): Promise<void> {
-  //   await fs.promises.rmdir(path, { recursive: true });
-  // }
 }

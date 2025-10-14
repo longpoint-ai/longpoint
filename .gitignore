@@ -54,3 +54,6 @@ vitest.config.*.timestamp*
 .env
 .env.*
 !.env.template
+
+# Longpoint data
+data/
