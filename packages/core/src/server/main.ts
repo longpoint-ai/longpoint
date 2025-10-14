@@ -16,8 +16,8 @@ import { ConfigService } from './common/services';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   const configService = app.get(ConfigService);
-  const port = configService.get('port');
-  const nodeEnv = configService.get('nodeEnv');
+  const port = configService.get('server.port');
+  const nodeEnv = configService.get('server.nodeEnv');
 
   // ------------------------------------------------------------
   // Security headers
@@ -53,7 +53,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: configService.get('corsOrigins'),
+    origin: configService.get('server.corsOrigins'),
     credentials: true,
   });
 

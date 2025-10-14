@@ -1,7 +1,4 @@
-import {
-  mimeTypeToExtension,
-  mimeTypeToMediaType,
-} from '@longpoint/utils/media';
+import { mimeTypeToMediaType } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
@@ -24,18 +21,19 @@ export class MediaService {
   async createMediaContainer(data: CreateMediaContainerDto) {
     const path = data.path ?? '/';
     const { token, expiresAt } = this.generateUploadToken();
+    const mediaType = mimeTypeToMediaType(data.mimeType);
 
     const media = await this.prismaService.mediaContainer.create({
       data: {
         name: await this.getEffectiveName(data.path, data.name),
         path: path,
-        type: mimeTypeToMediaType(data.mimeType),
+        type: mediaType,
         status: 'WAITING_FOR_UPLOAD',
-        images: {
+        assets: {
           create: {
             variant: 'ORIGINAL',
             status: 'WAITING_FOR_UPLOAD',
-            extension: mimeTypeToExtension(data.mimeType),
+            mimeType: data.mimeType,
             uploadToken: {
               create: {
                 token,
@@ -53,7 +51,7 @@ export class MediaService {
       name: media.name,
       status: media.status,
       path: media.path,
-      url: `${this.configService.get('baseUrl')}/media/${
+      url: `${this.configService.get('server.baseUrl')}/media/${
         media.id
       }/upload?token=${token}`,
       expiresAt,

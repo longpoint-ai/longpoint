@@ -6,7 +6,7 @@ import { ConfigService } from '../config/config.service';
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(configService: ConfigService) {
     super({
-      datasourceUrl: configService.get('databaseUrl'),
+      datasourceUrl: configService.get('database.url'),
     });
   }
 

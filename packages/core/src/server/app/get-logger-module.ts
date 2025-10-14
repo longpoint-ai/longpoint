@@ -12,9 +12,11 @@ export function getLoggerModule() {
           customProps: (req, res) => ({
             context: 'HTTP',
           }),
-          level: configService.get('logLevel'),
+          level: configService.get('server.logLevel'),
           messageKey:
-            configService.get('nodeEnv') === 'development' ? 'msg' : 'message',
+            configService.get('server.nodeEnv') === 'development'
+              ? 'msg'
+              : 'message',
           formatters: {
             level: (label, number) => {
               return {
@@ -38,7 +40,7 @@ export function getLoggerModule() {
             remove: true,
           },
           transport:
-            configService.get('nodeEnv') === 'development'
+            configService.get('server.nodeEnv') === 'development'
               ? {
                   target: 'pino-pretty',
                   options: { singleLine: true },

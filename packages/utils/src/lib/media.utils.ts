@@ -1,4 +1,5 @@
 import { SupportedMimeType } from '@longpoint/types';
+import { join } from 'path';
 
 type MediaType = 'IMAGE';
 
@@ -13,6 +14,41 @@ export function mimeTypeToMediaType(mimeType: string): MediaType {
   }
 
   throw new Error(`Unsupported media type: ${mimeType}`);
+}
+
+export interface GetMediaContainerPathOptions {
+  /**
+   * The prefix to add to the path
+   * @example
+   * ```
+   * getMediaContainerPath('123', { prefix: 'public' });
+   * // returns 'public/default/123'
+   * ```
+   */
+  prefix?: string;
+  /**
+   * The suffix to add to the path
+   * @example
+   * ```
+   * getMediaContainerPath('123', { suffix: 'original.mp4' });
+   * // returns 'default/123/original.mp4'
+   * ```
+   */
+  suffix?: string;
+}
+
+/**
+ * Gets the storage path for a media container
+ * @param containerId The id of the media container
+ * @param options The options for the path
+ * @returns
+ */
+export function getMediaContainerPath(
+  containerId: string,
+  options?: GetMediaContainerPathOptions
+) {
+  const { prefix = '', suffix = '' } = options ?? {};
+  return join(prefix, 'default', containerId, suffix);
 }
 
 /**

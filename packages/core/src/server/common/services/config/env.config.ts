@@ -1,35 +1,32 @@
+import path from 'path';
 import { z } from 'zod';
 import { loadEnvFiles } from './env.loader';
 
 loadEnvFiles();
 
 const envSchema = z.object({
-  AUTH_SECRET: z.string(),
+  // Server
+  BASE_URL: z.string(),
   PORT: z.string().transform(Number).default(3000),
   NODE_ENV: z
     .string()
     .transform((val) => val.toLowerCase())
     .pipe(z.enum(['development', 'production']))
     .default('development'),
-  BASE_URL: z.string(),
   LOG_LEVEL: z
     .string()
     .transform((val) => val.toLowerCase())
     .pipe(z.enum(['debug', 'info', 'warn', 'error']))
     .default('debug'),
 
+  // Auth
+  AUTH_SECRET: z.string(),
+
   // Database
   DATABASE_URL: z.string().optional(),
 
-  // Async task
-  // ASYNC_TASK_SECRET: z.string(),
-  // ASYNC_TASK_DEFAULT_QUEUE: z.string().default("default"),
-
-  // CDN
-  // CDN_ENABLED: z.enum(["true", "false"]).default("false"),
-  // CDN_SIGNING_KEY_NAME: z.string(),
-  // CDN_SIGNING_KEY: z.string().optional(),
-  // CDN_DOMAIN: z.string().optional(),
+  // Storage
+  STORAGE_LOCAL_BASE_PATH: z.string().default(path.join('data', 'storage')),
 
   // CORS
   CORS_ORIGINS: z
@@ -74,13 +71,22 @@ export function validateEnv(): Env {
 
 export const createConfig = (env: Env) =>
   ({
-    authSecret: env.AUTH_SECRET,
-    baseUrl: env.BASE_URL,
-    corsOrigins: env.CORS_ORIGINS,
-    databaseUrl: env.DATABASE_URL,
-    logLevel: env.LOG_LEVEL,
-    nodeEnv: env.NODE_ENV,
-    port: env.PORT,
+    auth: {
+      secret: env.AUTH_SECRET,
+    },
+    database: {
+      url: env.DATABASE_URL,
+    },
+    server: {
+      baseUrl: env.BASE_URL,
+      corsOrigins: env.CORS_ORIGINS,
+      logLevel: env.LOG_LEVEL,
+      nodeEnv: env.NODE_ENV,
+      port: env.PORT,
+    },
+    storage: {
+      localBasePath: env.STORAGE_LOCAL_BASE_PATH,
+    },
   } as const);
 
 export type Config = ReturnType<typeof createConfig>;

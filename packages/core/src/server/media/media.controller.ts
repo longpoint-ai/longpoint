@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -57,13 +49,4 @@ export class MediaController {
   })
   @ApiOkResponse({ description: 'The media container was deleted' })
   async deleteMediaContainer(@Param('containerId') containerId: string) {}
-
-  @Put(':containerId/upload')
-  @ApiOperation({
-    summary: 'Upload an asset to a media container',
-    operationId: 'upload',
-  })
-  @ApiOkResponse({ description: 'The asset was uploaded' })
-  @ApiMediaContainerNotFoundResponse()
-  async upload(@Param('containerId') containerId: string) {}
 }

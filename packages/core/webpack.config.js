@@ -3,11 +3,10 @@ const { join } = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
+  devtool: 'source-map',
   output: {
     path: join(__dirname, 'dist'),
-    ...(process.env.NODE_ENV !== 'production' && {
-      devtoolModuleFilenameTemplate: '[absolute-resource-path]',
-    }),
+    devtoolModuleFilenameTemplate: '[absolute-resource-path]',
   },
   resolve: {
     alias: {

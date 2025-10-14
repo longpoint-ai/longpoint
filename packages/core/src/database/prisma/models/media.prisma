@@ -9,7 +9,7 @@ model MediaContainer {
   updatedAt DateTime             @updatedAt
   deletedAt DateTime?
 
-  images ImageMedia[]
+  assets MediaAsset[]
 
   @@unique([path, name])
   @@index([path])
@@ -23,27 +23,30 @@ model UploadToken {
   expiresAt          DateTime
   uploadInProgressAt DateTime?
 
-  images ImageMedia[]
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  mediaAssetId String     @unique
 
   @@index([expiresAt])
 }
 
-model ImageMedia {
-  id        String   @id @default(cuid(2))
+model MediaAsset {
+  id      String             @id @default(cuid(2))
+  variant MediaVariant       @default(ORIGINAL)
+  status  MediaVariantStatus
+
+  // asset metadata
+  mimeType    String
+  width       Int?
+  height      Int?
+  size        Int?
+  aspectRatio Float?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  variant   MediaVariant       @default(ORIGINAL)
-  status    MediaVariantStatus
-  extension String
-  width     Int?
-  height    Int?
-  size      Int?
-
-  containerId   String
-  container     MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  uploadToken   UploadToken?   @relation(fields: [uploadTokenId], references: [id], onDelete: SetNull)
-  uploadTokenId String?
+  containerId String
+  container   MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  uploadToken UploadToken?
 
   @@index([containerId, status])
 }

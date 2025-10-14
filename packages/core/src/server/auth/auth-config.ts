@@ -17,9 +17,9 @@ export const getAuthConfig = (
     emailAndPassword: {
       enabled: true,
     },
-    baseURL: configService.get('baseUrl'),
-    trustedOrigins: configService.get('corsOrigins'),
-    secret: configService.get('authSecret'),
+    baseURL: configService.get('server.baseUrl'),
+    trustedOrigins: configService.get('server.corsOrigins'),
+    secret: configService.get('auth.secret'),
     telemetry: {
       enabled: false,
     },
