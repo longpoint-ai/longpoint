@@ -1,21 +1,30 @@
-import { mimeTypeToMediaType } from '@longpoint/utils/media';
+import {
+  getMediaContainerPath,
+  mimeTypeToMediaType,
+} from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
 import { MediaContainerDto } from '../common/dtos/media';
 import { MediaContainerNotFound } from '../common/errors';
 import { selectMediaContainer } from '../common/selectors/media.selectors';
-import { ConfigService, PrismaService } from '../common/services';
+import {
+  ConfigService,
+  PrismaService,
+  StorageService,
+} from '../common/services';
 import { PLACEHOLDER_CONTAINER_NAME } from '../constants/media.constants';
 import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
+import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
 import { MediaContainerAlreadyExists } from './media.errors';
 
 @Injectable()
 export class MediaService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly storageService: StorageService
   ) {}
 
   async createMediaContainer(data: CreateMediaContainerDto) {
@@ -58,7 +67,7 @@ export class MediaService {
     });
   }
 
-  async getMedia(id: string) {
+  async getMediaContainer(id: string) {
     const media = await this.prismaService.mediaContainer.findUnique({
       where: {
         id,
@@ -71,6 +80,38 @@ export class MediaService {
     }
 
     return new MediaContainerDto(media);
+  }
+
+  async deleteMediaContainer(id: string, data: DeleteMediaContainerDto) {
+    const container = await this.prismaService.mediaContainer.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!container) {
+      throw new MediaContainerNotFound(id);
+    }
+
+    if (data.permanently) {
+      await this.prismaService.mediaContainer.delete({
+        where: {
+          id,
+        },
+      });
+      const storageProvider = await this.storageService.getDefaultProvider();
+      await storageProvider.deleteDirectory(getMediaContainerPath(id));
+    } else {
+      await this.prismaService.mediaContainer.update({
+        where: {
+          id,
+        },
+        data: {
+          status: 'DELETED',
+          deletedAt: new Date(),
+        },
+      });
+    }
   }
 
   private generateUploadToken() {

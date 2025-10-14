@@ -1,7 +1,6 @@
-import { getMediaContainerPath } from '@longpoint/utils/media';
 import { addSeconds } from 'date-fns';
 import fs from 'fs';
-import * as path from 'path';
+import { dirname, join } from 'path';
 import { Readable } from 'stream';
 import {
   CreateSignedUrlOptions,
@@ -24,29 +23,27 @@ export class LocalStorageProvider implements StorageProvider {
   constructor(private readonly config: LocalStorageProviderConfig) {}
 
   async upload(
-    containerId: string,
-    body: Readable | Buffer | string,
-    assetPath: string
+    path: string,
+    body: Readable | Buffer | string
   ): Promise<boolean> {
-    const fullPath = getMediaContainerPath(containerId, {
-      prefix: this.config.basePath,
-      suffix: assetPath,
-    });
-
-    const dirPath = path.dirname(fullPath);
+    const fullPath = join(this.config.basePath, path);
+    const dirPath = dirname(fullPath);
     await fs.promises.mkdir(dirPath, { recursive: true });
     await fs.promises.writeFile(fullPath, body);
-
     return true;
+  }
+
+  async deleteDirectory(path: string): Promise<void> {
+    const fullPath = join(this.config.basePath, path);
+    await fs.promises.rm(fullPath, { recursive: true, force: true });
   }
 
   async createSignedUrl(
     options: CreateSignedUrlOptions
   ): Promise<SignedUrlResponse> {
-    const url = new URL(
-      `/storage/default/${options.containerId}/${options.path}`,
-      this.config.baseUrl
-    ).href;
+    const strippedLeadingSlash = options.path.replace(/^\/+/, '');
+    const url = new URL(`/storage/${strippedLeadingSlash}`, this.config.baseUrl)
+      .href;
     return {
       url,
       expiresAt: addSeconds(new Date(), options.expiresInSeconds ?? 3600),

@@ -44,7 +44,6 @@ export function getStaticModule(): DynamicModule {
 
   // Storage directory configuration for local storage provider
   const storageBasePath = join(process.cwd(), 'data', 'storage');
-  console.log(storageBasePath);
   if (existsSync(storageBasePath)) {
     serveStaticConfigs.push({
       rootPath: storageBasePath,

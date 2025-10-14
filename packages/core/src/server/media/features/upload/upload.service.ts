@@ -8,6 +8,7 @@ import { PrismaService, StorageService } from '@/server/common/services';
 import { StorageProvider } from '@/server/common/services/storage/storage.types';
 import { SupportedMimeType } from '@longpoint/types';
 import {
+  getMediaContainerPath,
   mimeTypeToExtension,
   mimeTypeToMediaType,
 } from '@longpoint/utils/media';
@@ -60,16 +61,13 @@ export class UploadService {
     const extension = mimeTypeToExtension(
       uploadToken.mediaAsset.mimeType as SupportedMimeType
     );
-    const assetPath = `original.${extension}`;
+    const fullPath = getMediaContainerPath(containerId, {
+      suffix: `original.${extension}`,
+    });
 
     try {
-      await storageProvider.upload(containerId, req, assetPath);
-      await this.finalize(
-        containerId,
-        assetPath,
-        storageProvider,
-        uploadToken.mediaAsset
-      );
+      await storageProvider.upload(fullPath, req);
+      await this.finalize(fullPath, storageProvider, uploadToken.mediaAsset);
     } catch (error) {
       await this.updateAsset(uploadToken.mediaAsset.id, {
         status: 'FAILED',
@@ -79,15 +77,13 @@ export class UploadService {
   }
 
   private async finalize(
-    containerId: string,
-    path: string,
+    fullPath: string,
     storageProvider: StorageProvider,
     asset: Pick<MediaAsset, 'id' | 'containerId' | 'mimeType'>
   ) {
     try {
       const { url } = await storageProvider.createSignedUrl({
-        containerId,
-        path,
+        path: fullPath,
         action: 'read',
       });
 

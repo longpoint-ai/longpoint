@@ -17,11 +17,10 @@ model MediaContainer {
 }
 
 model UploadToken {
-  id                 String    @id @default(cuid(2))
-  token              String    @unique
-  createdAt          DateTime  @default(now())
-  expiresAt          DateTime
-  uploadInProgressAt DateTime?
+  id        String   @id @default(cuid(2))
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 
   mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
   mediaAssetId String     @unique

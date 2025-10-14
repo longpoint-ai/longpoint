@@ -1,15 +1,12 @@
 import { Readable } from 'stream';
 
 export interface StorageProvider {
-  upload(
-    containerId: string,
-    body: Readable | Buffer | string,
-    path: string
-  ): Promise<boolean>;
+  upload(path: string, body: Readable | Buffer | string): Promise<boolean>;
   // getFileContents(path: string): Promise<Buffer>;
   // exists(path: string): Promise<boolean>;
   // deleteFile(path: string): Promise<void>;
   // deleteDirectory(path: string): Promise<void>;
+  deleteDirectory(path: string): Promise<void>;
   createSignedUrl(options: CreateSignedUrlOptions): Promise<SignedUrlResponse>;
   // testConnection(): Promise<StorageProviderTestConnectionResult>;
 }
@@ -26,10 +23,6 @@ export interface SignedUrlResponse {
 }
 
 export interface CreateSignedUrlOptions {
-  /**
-   * The ID of the container the asset resides in
-   */
-  containerId: string;
   /**
    * The relative path to the asset within the container
    */

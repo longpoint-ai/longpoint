@@ -9,6 +9,7 @@ import { MediaContainerDto } from '../common/dtos/media';
 import { ApiMediaContainerNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
+import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
 import { MediaService } from './media.service';
 
 @Controller('media')
@@ -38,7 +39,7 @@ export class MediaController {
   @ApiOkResponse({ type: MediaContainerDto })
   @ApiMediaContainerNotFoundResponse()
   async getMediaContainer(@Param('containerId') containerId: string) {
-    return this.mediaService.getMedia(containerId);
+    return this.mediaService.getMediaContainer(containerId);
   }
 
   @Delete(':containerId')
@@ -48,5 +49,10 @@ export class MediaController {
     description: 'Deletes a media container and all associated assets.',
   })
   @ApiOkResponse({ description: 'The media container was deleted' })
-  async deleteMediaContainer(@Param('containerId') containerId: string) {}
+  async deleteMediaContainer(
+    @Param('containerId') containerId: string,
+    @Body() body: DeleteMediaContainerDto
+  ) {
+    return this.mediaService.deleteMediaContainer(containerId, body);
+  }
 }
