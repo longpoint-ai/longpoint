@@ -18,6 +18,7 @@ import { PLACEHOLDER_CONTAINER_NAME } from '../constants/media.constants';
 import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
 import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
+import { UpdateMediaContainerDto } from './dtos/update-media-container.dto';
 import { MediaContainerAlreadyExists } from './media.errors';
 
 @Injectable()
@@ -82,6 +83,63 @@ export class MediaService {
     }
 
     const [hydrated] = await this.commonMediaService.hydrateContainer(media);
+
+    return new MediaContainerDto(hydrated);
+  }
+
+  async updateMediaContainer(id: string, data: UpdateMediaContainerDto) {
+    const container = await this.prismaService.mediaContainer.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        name: true,
+        path: true,
+      },
+    });
+
+    if (!container) {
+      throw new MediaContainerNotFound(id);
+    }
+
+    const { name: newName, path: newPath } = data;
+
+    if (newName || newPath) {
+      const existingContainer =
+        await this.prismaService.mediaContainer.findUnique({
+          where: {
+            path_name: {
+              path: newPath ?? container.path,
+              name: newName ?? container.name,
+            },
+          },
+          select: {
+            id: true,
+          },
+        });
+
+      if (existingContainer && existingContainer.id !== id) {
+        throw new MediaContainerAlreadyExists(
+          newName ?? container.name,
+          newPath ?? container.path
+        );
+      }
+    }
+
+    const updatedContainer = await this.prismaService.mediaContainer.update({
+      where: {
+        id,
+      },
+      data: {
+        name: newName,
+        path: newPath,
+      },
+      select: selectMediaContainer(),
+    });
+
+    const [hydrated] = await this.commonMediaService.hydrateContainer(
+      updatedContainer
+    );
 
     return new MediaContainerDto(hydrated);
   }

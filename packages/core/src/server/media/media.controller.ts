@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -10,6 +18,8 @@ import { ApiMediaContainerNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
 import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
+import { UpdateMediaContainerDto } from './dtos/update-media-container.dto';
+import { ApiMediaContainerAlreadyExistsResponse } from './media.errors';
 import { MediaService } from './media.service';
 
 @Controller('media')
@@ -40,6 +50,21 @@ export class MediaController {
   @ApiMediaContainerNotFoundResponse()
   async getMediaContainer(@Param('containerId') containerId: string) {
     return this.mediaService.getMediaContainer(containerId);
+  }
+
+  @Patch(':containerId')
+  @ApiOperation({
+    summary: 'Update a media container',
+    operationId: 'updateMediaContainer',
+  })
+  @ApiOkResponse({ type: MediaContainerDto })
+  @ApiMediaContainerNotFoundResponse()
+  @ApiMediaContainerAlreadyExistsResponse()
+  async updateMediaContainer(
+    @Param('containerId') containerId: string,
+    @Body() body: UpdateMediaContainerDto
+  ) {
+    return this.mediaService.updateMediaContainer(containerId, body);
   }
 
   @Delete(':containerId')
