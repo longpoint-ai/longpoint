@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Public } from '../common/decorators';
 import { SetupStatusDto } from './dtos/setup-status.dto';
 import { SetupService } from './setup.service';
 
 @Controller('setup')
+@Public()
 export class SetupController {
   constructor(private readonly setupService: SetupService) {}
 

@@ -1,4 +1,3 @@
-import { BaseError } from '../errors/base.error.js';
 import { ErrorCode } from '@longpoint/types';
 import {
   type ArgumentsHost,
@@ -7,15 +6,20 @@ import {
   ForbiddenException,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
+import { BaseError } from '../errors/base.error.js';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger();
+
   catch(exception: Error, host: ArgumentsHost) {
     if (exception instanceof BaseError) {
-      console.error(JSON.stringify(exception.toJSON(), null, 2));
+      const error = exception.toJSON().messages.join(', ');
+      this.logger.error(error);
     } else {
-      console.error(exception);
+      this.logger.error(exception);
     }
 
     let errorResponse: ReturnType<BaseError['toJSON']> = {

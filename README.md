@@ -32,8 +32,9 @@ Longpoint is a media asset management (MAM) system built AI-first, not AI-added.
 - [ ] Storage abstraction layer
 - [ ] Content upload & retrieval
 - [ ] Basic web UI
+- [ ] CLI to generate project
 
-**Milestone**: Upload content and retrieve it
+**Milestone**: Create longpoint project, upload content, and display it
 
 ### Phase 2: AI Integration (Month 2)
 **Status**: Planned

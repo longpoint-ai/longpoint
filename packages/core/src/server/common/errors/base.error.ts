@@ -1,6 +1,12 @@
 import { ErrorCode } from '@longpoint/types';
 import { HttpException } from '@nestjs/common';
 
+export interface BaseErrorResponse {
+  errorCode: ErrorCode;
+  messages: string[];
+  details?: Record<string, any>;
+}
+
 export class BaseError extends HttpException {
   constructor(
     public readonly errorCode: ErrorCode,
@@ -8,7 +14,7 @@ export class BaseError extends HttpException {
     status: number,
     details?: Record<string, any>
   ) {
-    const response = {
+    const response: BaseErrorResponse = {
       errorCode,
       messages: Array.isArray(message) ? message : [message],
       ...(details ? { details } : {}),
@@ -17,7 +23,7 @@ export class BaseError extends HttpException {
   }
 
   public toJSON() {
-    const response = this.getResponse() as any;
+    const response = this.getResponse() as BaseErrorResponse;
     return {
       errorCode: this.errorCode,
       messages: response.messages || [this.message],

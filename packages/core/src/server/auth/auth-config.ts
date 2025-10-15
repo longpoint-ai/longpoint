@@ -23,11 +23,11 @@ export const getAuthConfig = (
     telemetry: {
       enabled: false,
     },
-    session: {
-      cookieCache: {
-        enabled: true,
-      },
-    },
+    // session: {
+    //   cookieCache: {
+    //     enabled: true,
+    //   },
+    // },
     advanced: {
       cookiePrefix: 'longpoint',
     },

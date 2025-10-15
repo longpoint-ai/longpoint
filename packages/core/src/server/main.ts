@@ -8,10 +8,11 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 import helmet from 'helmet';
-import { LoggerErrorInterceptor, Logger as PinoLogger } from 'nestjs-pino';
+import { LoggerErrorInterceptor } from 'nestjs-pino';
 import { AppModule } from './app/app.module';
 import { InvalidInput } from './common/errors/invalid-input.error.js';
 import { ConfigService } from './common/services';
+import { Logger as LongpointLogger } from './logger/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -60,7 +61,9 @@ async function bootstrap() {
   // ------------------------------------------------------------
   // Logger
   // ------------------------------------------------------------
-  app.useLogger(app.get(PinoLogger));
+  // const pinoLogger = app.get(PinoLogger);
+  // const filteredLogger = new FilteredLoggerService(pinoLogger, configService);
+  app.useLogger(app.get(LongpointLogger));
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 
   // ------------------------------------------------------------
@@ -136,7 +139,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  Logger.log(`🚀 Application is running on: http://localhost:${port}`);
+  Logger.log(`⛵️ Longpoint is running on: http://localhost:${port}`);
 }
 
 bootstrap();

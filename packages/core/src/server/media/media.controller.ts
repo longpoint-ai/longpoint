@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -24,6 +25,7 @@ import { MediaService } from './media.service';
 
 @Controller('media')
 @ApiSdkTag(SdkTag.Media)
+@ApiBearerAuth()
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
