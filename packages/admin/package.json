@@ -6,6 +6,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@longpoint/types": "*",
     "@longpoint/ui": "*",
+    "@longpoint/sdk": "*",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-slot": "^1.2.3",
     "better-auth": "^1.3.27",

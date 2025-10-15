@@ -12,6 +12,7 @@ import { LoggerErrorInterceptor } from 'nestjs-pino';
 import { AppModule } from './app/app.module';
 import { InvalidInput } from './common/errors/invalid-input.error.js';
 import { ConfigService } from './common/services';
+import { SdkTag } from './common/types/swagger.types';
 import { Logger as LongpointLogger } from './logger/logger';
 
 async function bootstrap() {
@@ -111,6 +112,10 @@ async function bootstrap() {
 
   if (nodeEnv === 'development') {
     docBuilder.addServer(`http://localhost:${port}/api`);
+  }
+
+  for (const tag of Object.values(SdkTag)) {
+    docBuilder.addTag(tag);
   }
 
   SwaggerModule.setup('docs', app, () =>

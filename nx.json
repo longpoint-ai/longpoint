@@ -28,7 +28,11 @@
           "watchDepsName": "watch-deps"
         }
       },
-      "exclude": ["packages/core/src/server/*", "packages/utils/*"]
+      "exclude": [
+        "packages/core/src/server/*",
+        "packages/utils/*",
+        "tools/sdk-generator/*"
+      ]
     },
     {
       "plugin": "@nx/webpack/plugin",
@@ -61,7 +65,8 @@
         "packages/utils/*",
         "packages/admin/*",
         "packages/ui/*",
-        "packages/types/*"
+        "packages/types/*",
+        "tools/sdk-generator/*"
       ],
       "options": {
         "typecheck": {

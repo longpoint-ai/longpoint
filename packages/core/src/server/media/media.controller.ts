@@ -19,6 +19,7 @@ import { ApiSdkTag } from '../common/decorators/api-sdk-tag.decorator';
 import { MediaContainerDto } from '../common/dtos/media';
 import { ApiMediaContainerNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
+import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
 import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
 import { UpdateMediaContainerDto } from './dtos/update-media-container.dto';
@@ -41,6 +42,7 @@ export class MediaController {
   })
   @ApiCreatedResponse({
     description: 'Use the returned signed url to upload the original asset.',
+    type: CreateMediaContainerResponseDto,
   })
   async createMediaContainer(@Body() body: CreateMediaContainerDto) {
     return this.mediaService.createMediaContainer(body);

@@ -23,6 +23,12 @@
     },
     {
       "path": "./packages/validations"
+    },
+    {
+      "path": "./tools/sdk-generator"
+    },
+    {
+      "path": "./packages/typescript-sdk"
     }
   ]
 }

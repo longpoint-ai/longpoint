@@ -1,11 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { Public } from '../common/decorators';
+import { ApiSdkTag, Public } from '../common/decorators';
+import { SdkTag } from '../common/types/swagger.types';
 import { SetupStatusDto } from './dtos/setup-status.dto';
 import { SetupService } from './setup.service';
 
 @Controller('setup')
 @Public()
+@ApiSdkTag(SdkTag.Tools)
 export class SetupController {
   constructor(private readonly setupService: SetupService) {}
 
