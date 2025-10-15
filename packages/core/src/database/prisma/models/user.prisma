@@ -54,11 +54,20 @@ model Verification {
 }
 
 model Role {
-  id          String     @id @default(cuid(2))
-  name        String     @unique
+  id          String           @id @default(cuid(2))
+  name        String           @unique
   description String?
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime         @default(now())
   userRoles   UserRole[]
+  permissions RolePermission[]
+}
+
+model RolePermission {
+  permission String
+  roleId     String
+  role       Role   @relation(fields: [roleId], references: [id])
+
+  @@id([roleId, permission])
 }
 
 model UserRole {

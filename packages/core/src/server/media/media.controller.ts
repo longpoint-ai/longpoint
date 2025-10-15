@@ -1,3 +1,4 @@
+import { Permission } from '@longpoint/types';
 import {
   Body,
   Controller,
@@ -13,6 +14,7 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
+import { RequirePermission } from '../common/decorators';
 import { ApiSdkTag } from '../common/decorators/api-sdk-tag.decorator';
 import { MediaContainerDto } from '../common/dtos/media';
 import { ApiMediaContainerNotFoundResponse } from '../common/errors';
@@ -30,6 +32,7 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post()
+  @RequirePermission(Permission.MEDIA_CONTAINER_CREATE)
   @ApiOperation({
     summary: 'Create a media container',
     operationId: 'createMediaContainer',
@@ -44,6 +47,7 @@ export class MediaController {
   }
 
   @Get(':containerId')
+  @RequirePermission(Permission.MEDIA_CONTAINER_READ)
   @ApiOperation({
     summary: 'Get a media container',
     operationId: 'getMediaContainer',
@@ -55,6 +59,7 @@ export class MediaController {
   }
 
   @Patch(':containerId')
+  @RequirePermission(Permission.MEDIA_CONTAINER_UPDATE)
   @ApiOperation({
     summary: 'Update a media container',
     operationId: 'updateMediaContainer',
@@ -70,6 +75,7 @@ export class MediaController {
   }
 
   @Delete(':containerId')
+  @RequirePermission(Permission.MEDIA_CONTAINER_DELETE)
   @ApiOperation({
     summary: 'Delete a media container',
     operationId: 'deleteMediaContainer',
