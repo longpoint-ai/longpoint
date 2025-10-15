@@ -17,7 +17,7 @@ export const getAuthConfig = (
     emailAndPassword: {
       enabled: true,
     },
-    baseURL: configService.get('server.baseUrl'),
+    baseURL: configService.get('server.origin'), // better-auth expects the origin, not including the path
     trustedOrigins: configService.get('server.corsOrigins'),
     secret: configService.get('auth.secret'),
     telemetry: {

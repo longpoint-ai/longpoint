@@ -7,12 +7,12 @@ import { type Request } from 'express';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { UploadService } from './upload.service';
 
-@Controller()
+@Controller('media')
 @ApiSdkTag(SdkTag.Media)
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  @Put('media/:containerId/upload')
+  @Put(':containerId/upload')
   @ApiOperation({
     summary: 'Upload an asset to a media container',
     operationId: 'upload',

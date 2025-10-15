@@ -82,6 +82,7 @@ export const createConfig = (env: Env) =>
       corsOrigins: env.CORS_ORIGINS,
       logLevel: env.LOG_LEVEL,
       nodeEnv: env.NODE_ENV,
+      origin: new URL(env.BASE_URL).origin,
       port: env.PORT,
     },
     storage: {
