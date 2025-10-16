@@ -14,11 +14,11 @@ import {
   PrismaService,
   StorageService,
 } from '../common/services';
-import { PLACEHOLDER_CONTAINER_NAME } from '../constants/media.constants';
 import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
 import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
 import { UpdateMediaContainerDto } from './dtos/update-media-container.dto';
+import { PLACEHOLDER_CONTAINER_NAME } from './media.constants';
 import { MediaContainerAlreadyExists } from './media.errors';
 
 @Injectable()

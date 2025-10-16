@@ -37,3 +37,25 @@ export function pascalCase(str: string, delimiter = '-') {
     camelCase(str, delimiter).slice(1)
   );
 }
+
+/**
+ * Encode a string to base64
+ * @param str - The string to encode
+ * @returns The base64 encoded string
+ * @example
+ * base64Encode('hello-world') // 'aGVsbG8td29ybGQ='
+ */
+export function base64Encode(str: string) {
+  return Buffer.from(str).toString('base64');
+}
+
+/**
+ * Decode a base64 encoded string
+ * @param str - The base64 encoded string
+ * @returns The decoded string
+ * @example
+ * base64Decode('aGVsbG8td29ybGQ=') // 'hello-world'
+ */
+export function base64Decode(str: string) {
+  return Buffer.from(str, 'base64').toString('utf-8');
+}

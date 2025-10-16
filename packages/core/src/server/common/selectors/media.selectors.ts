@@ -1,6 +1,6 @@
 import { Prisma } from '@/database';
 
-export const selectMediaContainer = () => {
+export const selectMediaContainerSummary = () => {
   return {
     id: true,
     name: true,
@@ -8,6 +8,16 @@ export const selectMediaContainer = () => {
     status: true,
     path: true,
     createdAt: true,
+  } satisfies Prisma.MediaContainerSelect;
+};
+
+export type SelectedMediaContainerSummary = Prisma.MediaContainerGetPayload<{
+  select: ReturnType<typeof selectMediaContainerSummary>;
+}>;
+
+export const selectMediaContainer = () => {
+  return {
+    ...selectMediaContainerSummary(),
     assets: {
       select: selectMediaAsset(),
     },
