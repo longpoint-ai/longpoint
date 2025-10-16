@@ -1,41 +1,33 @@
 import { base64Encode } from '@longpoint/utils/string';
+import { ApiProperty } from '@nestjs/swagger';
+import { PaginationMetadataDto } from './pagination-metadata.dto';
 import { PaginationQueryDto } from './pagination-query.dto';
 
 export interface PaginationResponseArgs<D> {
   query: PaginationQueryDto;
-  data: D[];
+  items: D[];
   path: string;
 }
 
 export abstract class PaginationResponseDto<T> {
-  metadata: {
-    /**
-     * The number of items per page.
-     * @example 10
-     */
-    pageSize: number;
-    /**
-     * The cursor to the next page.
-     */
-    nextCursor: string | null;
-    /**
-     * The link to the next page.
-     */
-    nextLink: string | null;
-  };
+  items: T[];
 
-  data: T[];
+  @ApiProperty({
+    description: 'The metadata for pagination',
+    type: PaginationMetadataDto,
+  })
+  metadata: PaginationMetadataDto;
 
   constructor(args: PaginationResponseArgs<any>) {
-    const { query, data, path } = args;
-    const nextCursor = this.nextCursor(query, data);
+    const { query, items, path } = args;
+    const nextCursor = this.nextCursor(query, items);
     let params = Object.entries(query);
     if (nextCursor) {
       // filter out the original cursor and replace it with this new one, if it existed
       params = params.filter(([key]) => key !== 'cursor');
       params.push(['cursor', nextCursor]);
     }
-    this.data = data;
+    this.items = items;
     this.metadata = {
       pageSize: query.pageSize,
       nextCursor,
@@ -45,11 +37,11 @@ export abstract class PaginationResponseDto<T> {
 
   private nextCursor(
     query: PaginationQueryDto,
-    data: any[],
+    items: any[],
     cursorKey = 'id'
   ): string | null {
-    if (data.length === query.pageSize) {
-      const lastItem = data[data.length - 1];
+    if (items.length === query.pageSize) {
+      const lastItem = items[items.length - 1];
       const cursor = lastItem[cursorKey]?.toString();
 
       if (cursor) {

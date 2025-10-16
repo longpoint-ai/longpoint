@@ -1,4 +1,5 @@
 export const SdkTag = {
+  Library: 'library',
   Media: 'media',
   Tools: 'tools',
 } as const;

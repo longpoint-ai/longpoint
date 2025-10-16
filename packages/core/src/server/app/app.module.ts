@@ -4,6 +4,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { AuthModule } from '../auth/auth.module';
 import { CommonModule } from '../common/common.module';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
+import { LibraryModule } from '../library/library.module';
 import { LoggerModule } from '../logger/logger.module';
 import { MediaModule } from '../media/media.module';
 import { SetupModule } from '../setup/setup.module';
@@ -14,8 +15,9 @@ import { getStaticModule } from './get-static-module';
     getStaticModule(),
     CommonModule,
     LoggerModule,
-    // Features modules
+    // Feature modules
     AuthModule,
+    LibraryModule,
     MediaModule,
     SetupModule,
   ],
