@@ -14,17 +14,16 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      {/* <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-xl font-semibold">Longpoint Admin</h1>
-        </div>
-      </header> */}
       <UploadProvider>
         <SidebarProvider>
           <AppSidebar />
-          <main>
-            <SidebarTrigger />
-            <div className="px-4 ">{children}</div>
+          <main className="flex-1">
+            <div className="flex items-center gap-2 p-4 border-b">
+              <SidebarTrigger className="h-8 w-8" />
+            </div>
+            <div className="container mx-auto px-6 py-8 max-w-7xl">
+              {children}
+            </div>
           </main>
         </SidebarProvider>
         <UploadDialog />

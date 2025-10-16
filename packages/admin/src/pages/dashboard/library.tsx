@@ -1,90 +1,123 @@
+import { LibraryBreadcrumb } from '@/components/library-breadcrumb';
+import { MediaGrid } from '@/components/media-grid';
 import { useUploadContext } from '@/contexts/upload-context';
+import { useClient } from '@/hooks/common/use-client';
 import { Button } from '@longpoint/ui/components/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@longpoint/ui/components/card';
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@longpoint/ui/components/empty';
+import { useQuery } from '@tanstack/react-query';
 import { UploadIcon } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 export function Library() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { openDialog } = useUploadContext();
+  const client = useClient();
+
+  const currentPath = searchParams.get('path') || '/';
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['library-tree', currentPath],
+    queryFn: () => client.library.getTree({ path: currentPath }),
+  });
+
+  const handleFolderClick = (path: string) => {
+    setSearchParams({ path });
+  };
+
+  const handleUpload = () => {
+    openDialog();
+  };
+
+  const items = data?.items || [];
+  const isEmpty = !isLoading && items.length === 0 && currentPath === '/';
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">Library</h2>
-          <p className="text-muted-foreground mt-2">
+    <div className="space-y-8">
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">Library</h1>
+          <p className="text-lg text-muted-foreground">
             Manage your media files and content library
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => openDialog()}>
-            <UploadIcon className="h-4 w-4" />
-            Upload
-          </Button>
+        <Button onClick={handleUpload} size="lg" className="shrink-0">
+          <UploadIcon className="h-5 w-5" />
+          Upload Media
+        </Button>
+      </div>
+
+      {currentPath !== '/' && (
+        <div className="border-b pb-6">
+          <LibraryBreadcrumb currentPath={currentPath} />
         </div>
-      </div>
+      )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Images</CardTitle>
-            <CardDescription>
-              Manage your image files and galleries
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Upload, organize, and manage your image assets.
+      {error && (
+        <div className="text-center py-12">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-destructive">
+              Failed to load library contents
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {error instanceof Error
+                ? error.message
+                : 'Unknown error occurred'}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Videos</CardTitle>
-            <CardDescription>
-              Handle video content and media files
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Manage video uploads and streaming content.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Documents</CardTitle>
-            <CardDescription>Store and organize document files</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Upload and manage PDFs, text files, and other documents.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>
-            Your latest library activities and uploads
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            No recent activity to display. Start by uploading some files to your
-            library.
-          </p>
-        </CardContent>
-      </Card>
+      {isEmpty ? (
+        <div className="py-12">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <UploadIcon className="h-12 w-12" />
+              </EmptyMedia>
+              <EmptyTitle className="text-2xl">
+                No media in your library
+              </EmptyTitle>
+              <EmptyDescription className="text-base">
+                Get started by uploading your first media files to organize and
+                manage your content.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button onClick={handleUpload} size="lg">
+                <UploadIcon className="h-5 w-5" />
+                Upload Media
+              </Button>
+            </EmptyContent>
+          </Empty>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">
+                {currentPath === '/'
+                  ? 'All Items'
+                  : `Items in ${currentPath.split('/').pop()}`}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {items.length} {items.length === 1 ? 'item' : 'items'}
+              </p>
+            </div>
+          </div>
+          <MediaGrid
+            items={items}
+            isLoading={isLoading}
+            onFolderClick={handleFolderClick}
+          />
+        </div>
+      )}
     </div>
   );
 }

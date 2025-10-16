@@ -4,6 +4,7 @@ import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
 import { DashboardHome } from '../pages/dashboard/home';
 import { Library } from '../pages/dashboard/library';
+import { MediaDetail } from '../pages/dashboard/media-detail';
 import { Settings } from '../pages/dashboard/settings';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
@@ -57,6 +58,18 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <Library />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/media/:id"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <MediaDetail />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>
