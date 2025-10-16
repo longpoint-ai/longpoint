@@ -1,4 +1,6 @@
 import { AppSidebar } from '@/components/app-sidebar';
+import { UploadDialog } from '@/components/upload-dialog';
+import { UploadProvider } from '@/contexts/upload-context';
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -17,13 +19,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <h1 className="text-xl font-semibold">Longpoint Admin</h1>
         </div>
       </header> */}
-      <SidebarProvider>
-        <AppSidebar />
-        <main>
-          <SidebarTrigger />
-          <div className="px-4 ">{children}</div>
-        </main>
-      </SidebarProvider>
+      <UploadProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <main>
+            <SidebarTrigger />
+            <div className="px-4 ">{children}</div>
+          </main>
+        </SidebarProvider>
+        <UploadDialog />
+      </UploadProvider>
     </div>
   );
 }

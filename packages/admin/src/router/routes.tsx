@@ -3,6 +3,8 @@ import { AuthLayout } from '../layouts/auth-layout';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
 import { DashboardHome } from '../pages/dashboard/home';
+import { Library } from '../pages/dashboard/library';
+import { Settings } from '../pages/dashboard/settings';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,
@@ -43,6 +45,30 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <DashboardHome />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/library"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Library />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Settings />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

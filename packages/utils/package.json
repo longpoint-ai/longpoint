@@ -7,6 +7,7 @@
   "exports": {
     "./string": "./src/lib/string.utils.ts",
     "./media": "./src/lib/media.utils.ts",
+    "./format": "./src/lib/format.utils.ts",
     ".": "./src/index.ts"
   },
   "dependencies": {}
