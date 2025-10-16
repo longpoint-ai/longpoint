@@ -4,7 +4,7 @@ import { ConfigService, PrismaService } from '../common/services';
 import {
   DirectoryTreeItemParams,
   GetLibraryTreeQueryDto,
-  GetLibraryTreeResponseDto,
+  LibraryTreeDto,
   TreeItemParams,
 } from './dtos';
 import { PathNotFound } from './library.errors';
@@ -17,9 +17,7 @@ export class LibraryService {
     private readonly configService: ConfigService
   ) {}
 
-  async getTree(
-    query: GetLibraryTreeQueryDto
-  ): Promise<GetLibraryTreeResponseDto> {
+  async getTree(query: GetLibraryTreeQueryDto): Promise<LibraryTreeDto> {
     // Normalize path: ensure leading slash, no trailing slash
     const normalizedPath =
       query.path === '/' ? '/' : `/${query.path.replace(/^\/+|\/+$/g, '')}`;
@@ -31,7 +29,6 @@ export class LibraryService {
         deletedAt: null,
       },
       select: selectMediaContainerSummary(),
-      ...query.toPrisma('id'),
     });
 
     // Extract directories and media items
@@ -107,12 +104,9 @@ export class LibraryService {
       throw new PathNotFound(normalizedPath);
     }
 
-    // Create response
-    return new GetLibraryTreeResponseDto({
-      query,
+    return new LibraryTreeDto({
+      path: normalizedPath,
       items: allItems,
-      path: '/library/tree',
-      treePath: normalizedPath,
     });
   }
 }

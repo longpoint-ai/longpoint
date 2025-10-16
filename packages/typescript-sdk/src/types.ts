@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/library/tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the contents of a library tree */
+        get: operations["getTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media": {
         parameters: {
             query?: never;
@@ -15,9 +32,9 @@ export interface paths {
         put?: never;
         /**
          * Create a media container
-         * @description Creates an empty media container that is ready to receive an upload.
+         * @description Creates an empty container that is ready to receive an upload.
          */
-        post: operations["createMediaContainer"];
+        post: operations["createMedia"];
         delete?: never;
         options?: never;
         head?: never;
@@ -32,18 +49,18 @@ export interface paths {
             cookie?: never;
         };
         /** Get a media container */
-        get: operations["getMediaContainer"];
+        get: operations["getMedia"];
         put?: never;
         post?: never;
         /**
          * Delete a media container
-         * @description Deletes a media container and all associated assets.
+         * @description All associated assets will be deleted.
          */
-        delete: operations["deleteMediaContainer"];
+        delete: operations["deleteMedia"];
         options?: never;
         head?: never;
         /** Update a media container */
-        patch: operations["updateMediaContainer"];
+        patch: operations["updateMedia"];
         trace?: never;
     };
     "/media/{containerId}/upload": {
@@ -106,12 +123,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-16T00:41:05.777Z
+             * @example 2025-10-16T21:40:17.377Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example zb60oikqp6zhqvwu0libkemh
+             * @example xdygoldlzwhh43bf8qqwf6sp
              */
             id: string;
             /**
@@ -144,6 +161,58 @@ export interface components {
              */
             permanently: Record<string, never>;
         };
+        DirectoryTreeItem: {
+            /**
+             * @description The full path to the directory
+             * @example /skate-tricks/kickflips
+             */
+            path: string;
+            /**
+             * @description The URL to list the contents of the directory
+             * @example https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips
+             */
+            url: string;
+        };
+        LibraryTree: {
+            /**
+             * @description The items in the tree
+             * @example [
+             *       {
+             *         "type": "DIRECTORY",
+             *         "content": {
+             *           "path": "/skate-tricks/kickflips/bloopers",
+             *           "url": "https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips/bloopers"
+             *         }
+             *       },
+             *       {
+             *         "type": "MEDIA",
+             *         "content": {
+             *           "id": "123",
+             *           "name": "Stairs",
+             *           "type": "IMAGE",
+             *           "status": "READY",
+             *           "createdAt": "2025-10-16T00:00:00.000Z"
+             *         }
+             *       },
+             *       {
+             *         "type": "MEDIA",
+             *         "content": {
+             *           "id": "123",
+             *           "name": "Long gap",
+             *           "type": "IMAGE",
+             *           "status": "READY",
+             *           "createdAt": "2025-10-16T00:00:00.000Z"
+             *         }
+             *       }
+             *     ]
+             */
+            items: components["schemas"]["TreeItem"][];
+            /**
+             * @description The library tree path
+             * @example /skate-tricks/kickflips
+             */
+            path: string;
+        };
         MediaAsset: {
             /**
              * @description The aspect ratio of the media asset, if applicable
@@ -157,7 +226,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example vq4vi0an9pa2q43ys0dp1njy
+             * @example vq2vjwtk9bkc86l0wdfhpez0
              */
             id: string;
             /**
@@ -203,7 +272,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "aylcetvls42sjd4svg7gbtab",
+             *         "id": "vblyt88j4ecwodvlr8lkzzam",
              *         "variant": "ORIGINAL",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -219,12 +288,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-15T23:41:05.773Z
+             * @example 2025-10-16T20:40:17.360Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example zb60oikqp6zhqvwu0libkemh
+             * @example xdygoldlzwhh43bf8qqwf6sp
              */
             id: string;
             /**
@@ -250,12 +319,51 @@ export interface components {
              */
             type: "IMAGE";
         };
+        MediaContainerSummary: {
+            /**
+             * Format: date-time
+             * @description When the media container was created
+             * @example 2025-10-16T20:40:17.360Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the media container
+             * @example xdygoldlzwhh43bf8qqwf6sp
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying media
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The directory path of the media container
+             * @example /
+             */
+            path: string;
+            /**
+             * @description The status of the media container
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+        };
         SetupStatus: {
             /**
              * @description Whether the first time setup is complete
              * @example false
              */
             isFirstTimeSetup: boolean;
+        };
+        TreeItem: {
+            /** @description The content of the tree item */
+            content: Record<string, never>;
+            /**
+             * @description The tree item type
+             * @example DIRECTORY
+             * @enum {string}
+             */
+            type: "DIRECTORY" | "MEDIA";
         };
         UpdateMediaContainer: {
             /**
@@ -278,7 +386,30 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    createMediaContainer: {
+    getTree: {
+        parameters: {
+            query?: {
+                /** @description The path to get the tree for */
+                path?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The contents of the library tree */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryTree"];
+                };
+            };
+        };
+    };
+    createMedia: {
         parameters: {
             query?: never;
             header?: never;
@@ -302,7 +433,7 @@ export interface operations {
             };
         };
     };
-    getMediaContainer: {
+    getMedia: {
         parameters: {
             query?: never;
             header?: never;
@@ -330,7 +461,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id lk0xiyezwcataz6rkujlmf68 not found"
+                     *         "Media container with id hnxp1jt0upepgowe967vttpq not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -341,7 +472,7 @@ export interface operations {
             };
         };
     };
-    deleteMediaContainer: {
+    deleteMedia: {
         parameters: {
             query?: never;
             header?: never;
@@ -365,7 +496,7 @@ export interface operations {
             };
         };
     };
-    updateMediaContainer: {
+    updateMedia: {
         parameters: {
             query?: never;
             header?: never;
@@ -397,7 +528,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id lk0xiyezwcataz6rkujlmf68 not found"
+                     *         "Media container with id hnxp1jt0upepgowe967vttpq not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -456,7 +587,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id lk0xiyezwcataz6rkujlmf68 not found"
+                     *         "Media container with id hnxp1jt0upepgowe967vttpq not found"
                      *       ]
                      *     } */
                     "application/json": {

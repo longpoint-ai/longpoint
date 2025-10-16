@@ -1,26 +1,22 @@
 import { MediaType } from '@/database';
-import {
-  PaginationResponseArgs,
-  PaginationResponseDto,
-} from '@/server/common/dtos/pagination';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { TreeItemDto, TreeItemParams } from './tree-item.dto';
 
-export interface GetLibraryTreeResponseArgs
-  extends PaginationResponseArgs<TreeItemParams> {
-  treePath: string;
+export interface LibraryTreeParams {
+  path: string;
+  items: TreeItemParams[];
 }
 
-@ApiSchema({ name: 'GetLibraryTreeResponse' })
-export class GetLibraryTreeResponseDto extends PaginationResponseDto<TreeItemDto> {
+@ApiSchema({ name: 'LibraryTree' })
+export class LibraryTreeDto {
   @ApiProperty({
-    description: 'The path in the library tree',
+    description: 'The library tree path',
     example: '/skate-tricks/kickflips',
   })
   path: string;
 
   @ApiProperty({
-    description: 'The items in the tree path',
+    description: 'The items in the tree',
     type: [TreeItemDto],
     example: [
       {
@@ -52,11 +48,10 @@ export class GetLibraryTreeResponseDto extends PaginationResponseDto<TreeItemDto
       },
     ],
   })
-  override items: TreeItemDto[];
+  items: TreeItemDto[];
 
-  constructor(args: GetLibraryTreeResponseArgs) {
-    super(args);
-    this.path = args.treePath;
-    this.items = args.items.map((item) => new TreeItemDto(item));
+  constructor(data: LibraryTreeParams) {
+    this.path = data.path;
+    this.items = data.items.map((item) => new TreeItemDto(item));
   }
 }

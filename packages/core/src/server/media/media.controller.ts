@@ -36,9 +36,9 @@ export class MediaController {
   @RequirePermission(Permission.MEDIA_CONTAINER_CREATE)
   @ApiOperation({
     summary: 'Create a media container',
-    operationId: 'createMediaContainer',
+    operationId: 'createMedia',
     description:
-      'Creates an empty media container that is ready to receive an upload.',
+      'Creates an empty container that is ready to receive an upload.',
   })
   @ApiCreatedResponse({
     description: 'Use the returned signed url to upload the original asset.',
@@ -52,7 +52,7 @@ export class MediaController {
   @RequirePermission(Permission.MEDIA_CONTAINER_READ)
   @ApiOperation({
     summary: 'Get a media container',
-    operationId: 'getMediaContainer',
+    operationId: 'getMedia',
   })
   @ApiOkResponse({ type: MediaContainerDto })
   @ApiMediaContainerNotFoundResponse()
@@ -64,7 +64,7 @@ export class MediaController {
   @RequirePermission(Permission.MEDIA_CONTAINER_UPDATE)
   @ApiOperation({
     summary: 'Update a media container',
-    operationId: 'updateMediaContainer',
+    operationId: 'updateMedia',
   })
   @ApiOkResponse({ type: MediaContainerDto })
   @ApiMediaContainerNotFoundResponse()
@@ -80,8 +80,8 @@ export class MediaController {
   @RequirePermission(Permission.MEDIA_CONTAINER_DELETE)
   @ApiOperation({
     summary: 'Delete a media container',
-    operationId: 'deleteMediaContainer',
-    description: 'Deletes a media container and all associated assets.',
+    operationId: 'deleteMedia',
+    description: 'All associated assets will be deleted.',
   })
   @ApiOkResponse({ description: 'The media container was deleted' })
   async deleteMediaContainer(

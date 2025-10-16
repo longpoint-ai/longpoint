@@ -9,6 +9,7 @@ export interface ClientConfig {
 
 export class Longpoint {
   private httpClient: AxiosInstance;
+  library: LibraryClient;
   media: MediaClient;
   tools: ToolsClient;
 
@@ -21,8 +22,29 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
+    this.library = new LibraryClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.tools = new ToolsClient(this.httpClient);
+  }
+}
+
+class LibraryClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * List the contents of a library tree
+   */
+    async getTree(options?: { path?: string }): Promise<components['schemas']['LibraryTree']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.path !== undefined) {
+            params.append('path', String(options.path));
+          }
+        }
+        const queryString = params.toString();
+        const url = `library/tree${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
   }
 }
 
@@ -32,9 +54,9 @@ class MediaClient {
     /**
    * Create a media container
    *
-   * Creates an empty media container that is ready to receive an upload.
+   * Creates an empty container that is ready to receive an upload.
    */
-    async createMediaContainer(data: components['schemas']['CreateMediaContainer']): Promise<components['schemas']['CreateMediaContainerResponse']> {
+    async createMedia(data: components['schemas']['CreateMediaContainer']): Promise<components['schemas']['CreateMediaContainerResponse']> {
         const url = `media`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -43,7 +65,7 @@ class MediaClient {
     /**
    * Get a media container
    */
-    async getMediaContainer(containerId: string): Promise<components['schemas']['MediaContainer']> {
+    async getMedia(containerId: string): Promise<components['schemas']['MediaContainer']> {
         const url = `media/${containerId}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -52,7 +74,7 @@ class MediaClient {
     /**
    * Update a media container
    */
-    async updateMediaContainer(containerId: string, data: components['schemas']['UpdateMediaContainer']): Promise<components['schemas']['MediaContainer']> {
+    async updateMedia(containerId: string, data: components['schemas']['UpdateMediaContainer']): Promise<components['schemas']['MediaContainer']> {
         const url = `media/${containerId}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -61,9 +83,9 @@ class MediaClient {
     /**
    * Delete a media container
    *
-   * Deletes a media container and all associated assets.
+   * All associated assets will be deleted.
    */
-    async deleteMediaContainer(containerId: string, data: components['schemas']['DeleteMediaContainer']): Promise<void> {
+    async deleteMedia(containerId: string, data: components['schemas']['DeleteMediaContainer']): Promise<void> {
         const url = `media/${containerId}`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;

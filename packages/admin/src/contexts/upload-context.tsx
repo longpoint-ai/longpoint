@@ -77,7 +77,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
         const uploadPromises = supportedFiles.map(async (file) => {
           try {
             // Create media container
-            const container = await client.media.createMediaContainer({
+            const container = await client.media.createMedia({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
             });

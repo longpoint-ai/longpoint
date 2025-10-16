@@ -2,7 +2,12 @@ import {
   MediaContainerSummaryDto,
   MediaContainerSummaryParams,
 } from '@/server/common/dtos/media';
-import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiProperty,
+  ApiSchema,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { TreeItemType } from '../library.types';
 import {
   DirectoryTreeItemDto,
@@ -20,6 +25,7 @@ export type TreeItemParams =
     };
 
 @ApiSchema({ name: 'TreeItem' })
+@ApiExtraModels(DirectoryTreeItemDto, MediaContainerSummaryDto)
 export class TreeItemDto {
   @ApiProperty({
     description: 'The tree item type',
