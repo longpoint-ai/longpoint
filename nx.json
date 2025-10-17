@@ -134,8 +134,14 @@
     "autoExit": true
   },
   "release": {
+    "projects": [
+      "@longpoint/core",
+      "@longpoint/admin",
+      "@longpoint/sdk",
+      "@longpoint/react"
+    ],
     "version": {
-      "preVersionCommand": "npx nx run-many -t build"
+      "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"
     }
   }
 }
