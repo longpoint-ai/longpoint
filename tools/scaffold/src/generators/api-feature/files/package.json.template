@@ -1,0 +1,7 @@
+{
+  "name": "@longpoint/api-feature-<%= fileName %>",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

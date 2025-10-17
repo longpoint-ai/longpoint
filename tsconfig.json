@@ -4,10 +4,34 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/api-e2e"
+      "path": "./tools/scaffold"
     },
     {
-      "path": "./apps/api"
+      "path": "./packages/types"
+    },
+    {
+      "path": "./packages/admin"
+    },
+    {
+      "path": "./packages/utils"
+    },
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/ui"
+    },
+    {
+      "path": "./packages/validations"
+    },
+    {
+      "path": "./tools/sdk-generator"
+    },
+    {
+      "path": "./packages/typescript-sdk"
+    },
+    {
+      "path": "./packages/react"
     }
   ]
 }

@@ -1,0 +1,19 @@
+{
+  "generators": {
+    "web-feature": {
+      "factory": "./dist/generators/web-feature/web-feature",
+      "schema": "./dist/generators/web-feature/schema.json",
+      "description": "web-feature generator"
+    },
+    "api-feature": {
+      "factory": "./dist/generators/api-feature/api-feature",
+      "schema": "./dist/generators/api-feature/schema.json",
+      "description": "api-feature generator"
+    },
+    "generic": {
+      "factory": "./dist/generators/generic/generic",
+      "schema": "./dist/generators/generic/schema.json",
+      "description": "generic generator"
+    }
+  }
+}

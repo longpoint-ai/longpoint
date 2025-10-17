@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+## Guidelines for building UI for the `@longpoint/admin` app
+* Utilize the `@longpoint/ui` package for UI primitives when possible e.g. buttons, switches, dialogs, labels, inputs, checkboxes, etc.
+* If the `@longpoint/ui` package does not contain a component you think could be a generic reusable one, check the shadcn component registry. If it exists, you can install it by running `npm run shad [some-component-1] [some-component-2]` from the root project workspace.
+* Use kebab-case for react component file names. E.g. "my-component.tsx"
+* Use the cn utility to join classes together (import { cn } from "@longpoint/ui/utils")
