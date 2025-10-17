@@ -4,26 +4,29 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @longpoint-nx/api with Nx",
+      "name": "Launch & Debug API",
       "runtimeExecutable": "npx",
-      "runtimeArgs": [
-        "nx",
-        "serve",
-        "@longpoint-nx/api"
-      ],
+      "runtimeArgs": ["nx", "serve", "@longpoint/core"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/apps/api/dist/**/*.(m|c|)js",
+      "outFiles": ["${workspaceFolder}/packages/core/dist/**/*.js"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/packages/core/dist/**",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "name": "Attach to API",
+      "request": "attach",
+      "cwd": "${workspaceFolder}/packages/core",
+      "type": "node",
+      "port": 9229,
+      "restart": true
     }
   ]
 }

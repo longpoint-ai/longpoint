@@ -1,0 +1,35 @@
+{
+  "files": [],
+  "include": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@longpoint/ui/*": ["../ui/src/*"]
+    }
+  },
+  "references": [
+    {
+      "path": "../react"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../typescript-sdk"
+    },
+    {
+      "path": "../ui"
+    },
+    {
+      "path": "../types"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
+  "extends": "../../tsconfig.base.json"
+}

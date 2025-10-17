@@ -1,0 +1,7 @@
+{
+  "eslint.validate": ["json"],
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.sortImports": "explicit"
+  }
+}
