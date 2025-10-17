@@ -1,6 +1,6 @@
 {
   "name": "@longpoint/sdk",
-  "version": "0.1.0",
+  "version": "0.0.3",
   "type": "module",
   "description": "TypeScript SDK for the Longpoint API",
   "main": "dist/index.js",

@@ -1,10 +1,10 @@
 {
   "name": "@longpoint/admin",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@longpoint/react": "*",
-    "@longpoint/sdk": "*",
+    "@longpoint/react": "0.0.3",
+    "@longpoint/sdk": "0.0.3",
     "@longpoint/types": "*",
     "@longpoint/ui": "*",
     "@longpoint/utils": "*",
