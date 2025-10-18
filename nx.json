@@ -103,6 +103,11 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {
@@ -131,7 +136,8 @@
       "@longpoint/core",
       "@longpoint/admin",
       "@longpoint/sdk",
-      "@longpoint/react"
+      "@longpoint/react",
+      "longpoint"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"
