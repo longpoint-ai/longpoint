@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { OpenAPIParser, OpenAPISpec, ParsedOperation } from '../../parsers';
 import { GeneratedFiles, GeneratorConfig, LanguageGenerator } from '../base';
 import { TypeScriptTypeGenerator } from './type-generator';
@@ -86,13 +88,31 @@ export type * from './types';
   }
 
   generatePackageJson(config: GeneratorConfig): string {
+    let version = config.version || '0.1.0';
+    if (config.outputDir) {
+      const existingPkgPath = path.join(config.outputDir, 'package.json');
+      if (fs.existsSync(existingPkgPath)) {
+        try {
+          const existing = JSON.parse(fs.readFileSync(existingPkgPath, 'utf8'));
+          version = existing.version;
+        } catch (error) {
+          console.warn(
+            'Warning: Could not read existing package.json version, using default'
+          );
+        }
+      }
+    }
+
     return JSON.stringify(
       {
         name: config.packageName || '@longpoint/sdk',
-        version: config.version || '0.1.0',
-        type: 'module',
+        version,
+        author: 'Longpoint',
         description:
           config.description || 'TypeScript SDK for the Longpoint API',
+        keywords: ['longpoint', 'api', 'sdk', 'typescript'],
+        license: 'MIT',
+        type: 'module',
         main: 'dist/index.js',
         types: 'dist/index.d.ts',
         files: ['dist'],
@@ -100,9 +120,7 @@ export type * from './types';
           build: 'tsc',
           dev: 'tsc --watch',
         },
-        keywords: ['longpoint', 'api', 'sdk', 'typescript'],
-        author: 'Longpoint',
-        license: 'MIT',
+
         dependencies: {
           axios: '^1.6.0',
         },
@@ -117,6 +135,16 @@ export type * from './types';
             default: './dist/index.js',
           },
           './package.json': './package.json',
+        },
+        publicConfig: {
+          access: 'public',
+        },
+        nx: {
+          targets: {
+            build: {
+              dependsOn: ['@longpoint/sdk-generator:create:typescript'],
+            },
+          },
         },
       },
       null,

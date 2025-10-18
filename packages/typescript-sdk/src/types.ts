@@ -123,12 +123,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-16T21:40:17.377Z
+             * @example 2025-10-18T22:16:54.233Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example xdygoldlzwhh43bf8qqwf6sp
+             * @example ynalnxxu9wevebni5x6n6htf
              */
             id: string;
             /**
@@ -226,7 +226,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example vq2vjwtk9bkc86l0wdfhpez0
+             * @example xr8omd7xyuionskncaz69egp
              */
             id: string;
             /**
@@ -272,7 +272,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "vblyt88j4ecwodvlr8lkzzam",
+             *         "id": "b38l0xf7o8ukosnddxlcldg0",
              *         "variant": "ORIGINAL",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -288,12 +288,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-16T20:40:17.360Z
+             * @example 2025-10-18T21:16:54.216Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example xdygoldlzwhh43bf8qqwf6sp
+             * @example ynalnxxu9wevebni5x6n6htf
              */
             id: string;
             /**
@@ -323,12 +323,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-16T20:40:17.360Z
+             * @example 2025-10-18T21:16:54.216Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example xdygoldlzwhh43bf8qqwf6sp
+             * @example ynalnxxu9wevebni5x6n6htf
              */
             id: string;
             /**
@@ -461,7 +461,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id hnxp1jt0upepgowe967vttpq not found"
+                     *         "Media container with id ljvkvme4s3as7xw4otazn9dm not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -528,7 +528,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id hnxp1jt0upepgowe967vttpq not found"
+                     *         "Media container with id ljvkvme4s3as7xw4otazn9dm not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -587,7 +587,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id hnxp1jt0upepgowe967vttpq not found"
+                     *         "Media container with id ljvkvme4s3as7xw4otazn9dm not found"
                      *       ]
                      *     } */
                     "application/json": {

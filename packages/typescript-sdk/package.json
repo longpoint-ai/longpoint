@@ -1,8 +1,16 @@
 {
   "name": "@longpoint/sdk",
   "version": "0.0.3",
-  "type": "module",
+  "author": "Longpoint",
   "description": "TypeScript SDK for the Longpoint API",
+  "keywords": [
+    "longpoint",
+    "api",
+    "sdk",
+    "typescript"
+  ],
+  "license": "MIT",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -12,19 +20,8 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
-  "keywords": [
-    "longpoint",
-    "api",
-    "sdk",
-    "typescript"
-  ],
-  "author": "Longpoint",
-  "license": "MIT",
   "dependencies": {
     "axios": "^1.6.0"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -37,5 +34,17 @@
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
+  },
+  "publicConfig": {
+    "access": "public"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "@longpoint/sdk-generator:create:typescript"
+        ]
+      }
+    }
   }
 }
