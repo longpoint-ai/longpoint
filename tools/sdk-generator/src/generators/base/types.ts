@@ -7,4 +7,5 @@ export interface GeneratorConfig {
   packageName?: string;
   version?: string;
   description?: string;
+  outputDir?: string;
 }

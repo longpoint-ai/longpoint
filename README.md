@@ -1,22 +1,26 @@
 # Longpoint
 
-**AI-Native Media Asset Management**
+**Open source media asset management that understands your content**
 
-Open source, self-hosted, intelligent media library that understands your content.
+Self-hosted media library that's API-first with semantic search and intelligent organization. Build media-rich applications, or just have a home-base for your content.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Status: Alpha](https://img.shields.io/badge/Status-Alpha-yellow.svg)]()
+[![Status: Alpha](https://img.shields.io/badge/Status-Early%20Alpha-yellow.svg)]()
 
+## Key Features
 
-## What is Longpoint?
+**Robust Media Pipeline**
+- **Upload & Storage** - Seamless file handling with support for multiple storage backends
+- **Automatic Optimization** - Web and mobile-ready transcoding and thumbnail generation
+- **Secure Delivery** - URL signing, CDN integration, and access control
+- **Extensible API** - Clean REST API with TypeScript SDK
 
-Longpoint is a media asset management (MAM) system built AI-first, not AI-added. Unlike traditional media libraries that treat AI as an afterthought, Longpoint uses AI to fundamentally transform how you organize, search, and understand your media.
-
-### Key Features
-
-- **Intelligent Classification** - Automatic tagging, scene detection, and content analysis
+**Intelligent Organization**
 - **Semantic Search** - Find content using natural language, not just filenames
-- **Multi-Modal Understanding** - Analyze images, videos, audio, and documents
-- **Bring Your Own Everything** - Your storage, your AI models, your infrastructure
-- **Privacy First** - Self-hosted with local model support
-- **Open Source** - MIT licensed, fully extensible
+- **Automatic Classification** - Scene detection, tagging, and content analysis out of the box
+- **Multimodal Understanding** - Analyze images, videos, audio, and documents together
+
+**Your Infrastructure, Your Rules**
+- **Self-Hosted** - Run on your own infrastructure with full control
+- **Bring Your Own Models** - Use Claude, GPT, open source models, or your own
+- **Open Source** - MIT licensed, fully extensible through plugins
