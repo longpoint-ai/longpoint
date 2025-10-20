@@ -1,12 +1,12 @@
 {
   "name": "@longpoint/admin",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Longpoint Admin UI",
   "main": "dist/index.html",
   "devDependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@longpoint/react": "0.0.3",
-    "@longpoint/sdk": "0.0.3",
+    "@longpoint/react": "0.0.4",
+    "@longpoint/sdk": "0.0.4",
     "@longpoint/types": "*",
     "@longpoint/ui": "*",
     "@longpoint/utils": "*",
