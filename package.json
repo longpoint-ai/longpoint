@@ -123,6 +123,9 @@
     "packages/*",
     "tools/*"
   ],
+  "overrides": {
+    "fs-extra": "^11.3.2"
+  },
   "nx": {
     "includedScripts": [],
     "targets": {
