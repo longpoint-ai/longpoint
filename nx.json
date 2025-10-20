@@ -140,7 +140,7 @@
       "@longpoint/admin",
       "@longpoint/sdk",
       "@longpoint/react",
-      "longpoint",
+      "cli",
       "create-longpoint"
     ],
     "version": {
