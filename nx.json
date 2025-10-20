@@ -140,7 +140,8 @@
       "@longpoint/admin",
       "@longpoint/sdk",
       "@longpoint/react",
-      "longpoint"
+      "longpoint",
+      "create-longpoint"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"
