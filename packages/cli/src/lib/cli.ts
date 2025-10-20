@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { initCommand } from './commands/init.command.js';
+import { startCommand } from './commands/start.command.js';
 
 const packageJson = fileURLToPath(import.meta.resolve('../package.json'));
 const packageJsonContent = fs.readFileSync(packageJson, 'utf8');
@@ -18,6 +19,7 @@ program
   .version(version);
 
 initCommand(program);
+startCommand(program);
 
 export function cli(): void {
   program.parse();
