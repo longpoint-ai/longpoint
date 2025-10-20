@@ -26,7 +26,6 @@ module.exports = {
       tsConfig: './tsconfig.app.json',
       optimization: false,
       outputHashing: 'none',
-      generatePackageJson: true,
       sourceMaps: true,
       // transformers: [
       //   {

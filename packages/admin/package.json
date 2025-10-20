@@ -1,7 +1,9 @@
 {
   "name": "@longpoint/admin",
   "version": "0.0.3",
-  "dependencies": {
+  "description": "Longpoint Admin UI",
+  "main": "dist/index.html",
+  "devDependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@longpoint/react": "0.0.3",
     "@longpoint/sdk": "0.0.3",
@@ -20,6 +22,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "nx": {
     "name": "@longpoint/admin"
   }

@@ -1,6 +1,7 @@
 {
   "name": "@longpoint/core",
   "version": "0.0.3",
+  "main": "dist/index.js",
   "scripts": {},
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -27,6 +28,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist"
+  ],
   "nx": {
     "targets": {
       "build": {
