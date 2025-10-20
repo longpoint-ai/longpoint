@@ -97,11 +97,6 @@ program
         console.log(chalk.green(`✓ Created ${path.basename(targetPath)}`));
       }
 
-      // Create data directory
-      const dataDir = path.join(projectPath, 'data', 'storage');
-      await fs.ensureDir(dataDir);
-      console.log(chalk.green('✓ Created data/storage directory'));
-
       console.log(
         chalk.yellow(`\n📦 Installing dependencies with ${packageManager}...`)
       );
@@ -132,14 +127,7 @@ program
       console.log(chalk.blue.bold('\n🎉 Project created successfully!\n'));
       console.log(chalk.white('Next steps:'));
       console.log(chalk.white(`1. cd ${projectName}`));
-      console.log(chalk.white('2. cp .env.example .env'));
-      console.log(
-        chalk.white('3. Update .env with your database connection details')
-      );
-      console.log(chalk.white('4. npm start (to run the core server)'));
-      console.log(
-        chalk.white('5. npm run admin (to run the admin interface)\n')
-      );
+      console.log(chalk.white('2. npm start (to run the core server)'));
     } catch (error) {
       console.error(chalk.red('Error creating project:'), error);
       process.exit(1);

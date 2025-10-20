@@ -4,15 +4,10 @@
   "description": "A Longpoint media management project",
   "main": "index.js",
   "scripts": {
-    "start": "longpoint-core",
-    "dev": "longpoint-core --watch",
-    "admin": "longpoint-admin",
-    "build": "longpoint-core build"
+    "start": "longpoint start",
+    "build": "longpoint build"
   },
-  "dependencies": {
-    "@longpoint/core": "^0.0.3",
-    "@longpoint/admin": "^0.0.3"
-  },
+  "dependencies": {},
   "keywords": ["longpoint", "media", "management"],
   "author": "",
   "license": "MIT"
