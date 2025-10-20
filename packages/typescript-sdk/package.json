@@ -1,6 +1,6 @@
 {
   "name": "@longpoint/sdk",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Longpoint",
   "description": "TypeScript SDK for the Longpoint API",
   "keywords": [

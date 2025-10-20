@@ -1,3 +1,13 @@
+## 0.0.6 (2025-10-20)
+
+### 🩹 Fixes
+
+- create script not starting ([7cca78d](https://github.com/longpoint-ai/longpoint/commit/7cca78d))
+
+### ❤️ Thank You
+
+- Bryan Powell
+
 ## 0.0.5 (2025-10-20)
 
 ### 🚀 Features

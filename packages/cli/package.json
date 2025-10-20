@@ -1,6 +1,6 @@
 {
   "name": "longpoint",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -55,7 +55,7 @@
     "commander": "14.0.1",
     "dotenv": "^17.2.3",
     "fs-extra": "^11.3.2",
-    "create-longpoint": "0.0.5"
+    "create-longpoint": "0.0.6"
   },
   "publishConfig": {
     "access": "public"
