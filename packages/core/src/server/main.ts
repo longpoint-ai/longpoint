@@ -62,8 +62,6 @@ async function bootstrap() {
   // ------------------------------------------------------------
   // Logger
   // ------------------------------------------------------------
-  // const pinoLogger = app.get(PinoLogger);
-  // const filteredLogger = new FilteredLoggerService(pinoLogger, configService);
   app.useLogger(app.get(LongpointLogger));
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 
@@ -144,7 +142,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  Logger.log(`⛵️ Longpoint is running on: http://localhost:${port}`);
+  Logger.log(`Longpoint is running on: http://localhost:${port}`);
 }
 
 bootstrap();
