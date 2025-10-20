@@ -1,3 +1,17 @@
+## 0.0.5 (2025-10-20)
+
+### 🚀 Features
+
+- **cli:** cli and create packages setup ([#2](https://github.com/longpoint-ai/longpoint/pull/2))
+
+### 🩹 Fixes
+
+- **typescript-sdk:** package json being clobbered, and improved build target ([#1](https://github.com/longpoint-ai/longpoint/pull/1))
+
+### ❤️ Thank You
+
+- Bryan Powell @brpowell
+
 ## 0.0.4 (2025-10-20)
 
 ### 🩹 Fixes
