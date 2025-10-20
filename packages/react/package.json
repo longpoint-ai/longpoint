@@ -1,6 +1,7 @@
 {
   "name": "@longpoint/react",
-  "version": "0.0.3",
+  "description": "Longpoint React utilities",
+  "version": "0.0.4",
   "type": "module",
   "exports": {
     ".": {

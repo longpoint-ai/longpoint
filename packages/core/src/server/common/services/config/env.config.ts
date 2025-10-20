@@ -17,7 +17,7 @@ const envSchema = z.object({
     .string()
     .transform((val) => val.toLowerCase())
     .pipe(z.enum(['debug', 'info', 'warn', 'error']))
-    .default('debug'),
+    .default('info'),
 
   // Auth
   AUTH_SECRET: z.string(),

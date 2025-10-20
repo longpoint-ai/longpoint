@@ -1,6 +1,6 @@
-import { config as dotenvConfig } from "dotenv";
-import { existsSync } from "fs";
-import { resolve } from "path";
+import { config as dotenvConfig } from 'dotenv';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 
 /**
  * Loads environment files in the following order:
@@ -10,12 +10,12 @@ import { resolve } from "path";
  * 4. .env (base defaults)
  */
 export function loadEnvFiles() {
-  const nodeEnv = process.env["NODE_ENV"] || "development";
+  const nodeEnv = process.env['NODE_ENV'] || 'development';
   const envFiles = [
     `.env.${nodeEnv}.local`,
     `.env.${nodeEnv}`,
-    ".env.local",
-    ".env",
+    '.env.local',
+    '.env',
   ];
 
   const envPaths = envFiles.map((file) => resolve(process.cwd(), file));
@@ -25,6 +25,6 @@ export function loadEnvFiles() {
     .filter((path) => existsSync(path))
     .reverse()
     .forEach((path) => {
-      dotenvConfig({ path });
+      dotenvConfig({ path, quiet: true });
     });
 }

@@ -1,0 +1,22 @@
+{
+  "targets": {
+    "compile": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/create/dist",
+        "main": "packages/create/src/index.ts",
+        "tsConfig": "packages/create/tsconfig.lib.json",
+        "format": ["esm"],
+        "declarationRootDir": "packages/create/src"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cp -r packages/create/src/templates packages/create/dist/templates"
+      },
+      "dependsOn": ["compile"]
+    }
+  }
+}

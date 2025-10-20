@@ -1,0 +1,9 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "0.0.1",
+  "keywords": ["longpoint", "media", "management"],
+  "scripts": {
+    "start": "longpoint start"
+  },
+  "dependencies": {}
+}
