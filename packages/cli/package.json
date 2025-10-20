@@ -24,7 +24,7 @@
   "nx": {
     "name": "cli",
     "targets": {
-      "build": {
+      "compile": {
         "executor": "@nx/esbuild:esbuild",
         "outputs": [
           "{options.outputPath}"
@@ -38,11 +38,23 @@
           ],
           "declarationRootDir": "packages/cli/src"
         }
+      },
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "cp -r packages/cli/templates packages/cli/dist/templates"
+        },
+        "dependsOn": [
+          "compile"
+        ]
       }
     }
   },
   "dependencies": {
-    "commander": "^14.0.1"
+    "commander": "^14.0.1",
+    "inquirer": "^12.10.0",
+    "fs-extra": "^11.2.0",
+    "chalk": "^4.1.2"
   },
   "publishConfig": {
     "access": "public"

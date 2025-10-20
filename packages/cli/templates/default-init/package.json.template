@@ -1,0 +1,19 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "0.1.0",
+  "description": "A Longpoint media management project",
+  "main": "index.js",
+  "scripts": {
+    "start": "longpoint-core",
+    "dev": "longpoint-core --watch",
+    "admin": "longpoint-admin",
+    "build": "longpoint-core build"
+  },
+  "dependencies": {
+    "@longpoint/core": "^0.0.3",
+    "@longpoint/admin": "^0.0.3"
+  },
+  "keywords": ["longpoint", "media", "management"],
+  "author": "",
+  "license": "MIT"
+}
