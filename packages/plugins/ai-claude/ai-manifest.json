@@ -1,0 +1,32 @@
+{
+  "provider": {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "config": {
+      "apiKey": {
+        "label": "API Key",
+        "type": "string",
+        "required": true,
+        "description": "Your Anthropic API key. You can find it in the Anthropic console."
+      },
+      "test": {
+        "label": "Test",
+        "type": "number",
+        "required": false,
+        "description": "Test"
+      }
+    },
+    "models": [
+      {
+        "id": "claude-haiku-4-5-20251001",
+        "name": "Claude Haiku 4.5",
+        "description": "Claude Haiku 4.5 is a powerful language model that can be used to generate text, code, and other content."
+      },
+      {
+        "id": "claude-sonnet-4-5-20250929",
+        "name": "Claude Sonnet 4.5",
+        "description": "Claude Sonnet 4.5 is a powerful language model that can be used to generate text, code, and other content."
+      }
+    ]
+  }
+}

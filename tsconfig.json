@@ -38,6 +38,12 @@
     },
     {
       "path": "./packages/create"
+    },
+    {
+      "path": "./packages/devkit"
+    },
+    {
+      "path": "./packages/plugins/ai-claude"
     }
   ]
 }

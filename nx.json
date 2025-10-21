@@ -141,7 +141,9 @@
       "@longpoint/sdk",
       "@longpoint/react",
       "cli",
-      "create-longpoint"
+      "create-longpoint",
+      "@longpoint/devkit",
+      "longpoint-ai-claude"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"
