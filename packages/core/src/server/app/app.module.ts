@@ -7,6 +7,7 @@ import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { LibraryModule } from '../library/library.module';
 import { LoggerModule } from '../logger/logger.module';
 import { MediaModule } from '../media/media.module';
+import { ModelModule } from '../model/model.module';
 import { SetupModule } from '../setup/setup.module';
 import { getStaticModule } from './get-static-module';
 
@@ -19,6 +20,7 @@ import { getStaticModule } from './get-static-module';
     AuthModule,
     LibraryModule,
     MediaModule,
+    ModelModule,
     SetupModule,
   ],
   providers: [

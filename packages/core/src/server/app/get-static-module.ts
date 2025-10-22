@@ -1,7 +1,8 @@
+import { findPackagePath } from '@longpoint/utils/path';
 import { DynamicModule } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { existsSync } from 'fs';
-import { dirname, join } from 'path';
+import { join } from 'path';
 
 export function getStaticModule(): DynamicModule {
   const serveStaticConfigs = [];
@@ -9,24 +10,18 @@ export function getStaticModule(): DynamicModule {
   // ------------------------------------------------------------
   // Admin UI setup
   // ------------------------------------------------------------
-  const nodeModulesPath = findNodeModulesPath(__dirname);
-  let adminDistPath: string;
-  if (!nodeModulesPath) {
-    // Fallback to process.cwd() if we can't find node_modules
-    adminDistPath = join(
-      process.cwd(),
-      'node_modules',
-      '@longpoint',
-      'admin',
-      'dist'
-    );
+  let adminPackagePath = findPackagePath('@longpoint/admin', __dirname);
+  let adminDistPath: string | null = null;
+  if (!adminPackagePath) {
+    adminPackagePath = findPackagePath('@longpoint/admin', process.cwd());
+    if (adminPackagePath) {
+      adminDistPath = join(adminPackagePath, 'dist');
+    }
   } else {
-    adminDistPath = join(nodeModulesPath, '@longpoint', 'admin', 'dist');
+    adminDistPath = join(adminPackagePath, 'dist');
   }
 
-  const adminAvailable = existsSync(adminDistPath);
-
-  if (adminAvailable) {
+  if (adminDistPath) {
     serveStaticConfigs.push({
       rootPath: adminDistPath,
       serveRoot: '/',
@@ -52,18 +47,4 @@ export function getStaticModule(): DynamicModule {
   }
 
   return ServeStaticModule.forRoot(...serveStaticConfigs);
-}
-
-function findNodeModulesPath(startPath: string): string | null {
-  let currentPath = startPath;
-
-  while (currentPath !== dirname(currentPath)) {
-    const nodeModulesPath = join(currentPath, 'node_modules');
-    if (existsSync(nodeModulesPath)) {
-      return nodeModulesPath;
-    }
-    currentPath = dirname(currentPath);
-  }
-
-  return null;
 }
