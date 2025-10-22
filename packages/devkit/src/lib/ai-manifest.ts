@@ -8,6 +8,7 @@ export interface AiProviderManifest {
   id: string;
   name?: string;
   config?: ConfigSchema;
+  image?: string;
   models: AiModelManifest[];
 }
 

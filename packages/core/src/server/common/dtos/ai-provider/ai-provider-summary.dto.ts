@@ -3,6 +3,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 export interface AiProviderSummaryParams {
   id: string;
   name?: string;
+  image?: string;
   needsConfig?: boolean;
 }
 
@@ -21,6 +22,13 @@ export class AiProviderSummaryDto {
   name: string;
 
   @ApiProperty({
+    description: 'An icon image of the AI provider',
+    example:
+      'https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png',
+  })
+  image: string | null;
+
+  @ApiProperty({
     description: 'Whether the provider needs additional configuration',
     example: false,
   })
@@ -29,6 +37,7 @@ export class AiProviderSummaryDto {
   constructor(data: AiProviderSummaryParams) {
     this.id = data.id;
     this.name = data.name ?? this.id;
+    this.image = data.image ?? null;
     this.needsConfig = data.needsConfig ?? false;
   }
 }

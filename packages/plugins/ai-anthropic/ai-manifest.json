@@ -2,18 +2,13 @@
   "provider": {
     "id": "anthropic",
     "name": "Anthropic",
+    "image": "https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png",
     "config": {
       "apiKey": {
         "label": "API Key",
         "type": "string",
         "required": true,
-        "description": "Your Anthropic API key. You can find it in the Anthropic console."
-      },
-      "test": {
-        "label": "Test",
-        "type": "number",
-        "required": false,
-        "description": "Test"
+        "description": "Your Claude API key. You can find it in the Claude Console."
       }
     },
     "models": [

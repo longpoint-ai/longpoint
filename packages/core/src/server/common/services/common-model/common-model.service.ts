@@ -125,12 +125,13 @@ export class CommonModelService implements OnModuleInit {
     );
 
     for (const packageName of packageNames) {
-      const providerId = packageName.replace('longpoint-ai-', '');
       const packagePath = join(modulesPath, packageName);
       const manifestFile = await readFile(
         join(packagePath, 'ai-manifest.json')
       );
       const manifest = JSON.parse(manifestFile.toString());
+      const providerId =
+        manifest.provider?.id ?? packageName.replace('longpoint-ai-', '');
 
       // Dynamically import the provider
       const require = createRequire(__filename);

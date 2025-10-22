@@ -38,8 +38,7 @@ export class ModelService {
           new ModelSummaryDto({
             ...model,
             provider: {
-              id: provider.id,
-              name: provider.name,
+              ...provider,
               needsConfig,
             },
           })
