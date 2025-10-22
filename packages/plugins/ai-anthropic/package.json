@@ -1,5 +1,5 @@
 {
-  "name": "longpoint-ai-claude",
+  "name": "longpoint-ai-anthropic",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,5 +22,8 @@
     "@anthropic-ai/sdk": "^0.67.0",
     "@longpoint/devkit": "*",
     "tslib": "^2.3.0"
+  },
+  "nx": {
+    "name": "ai-anthropic"
   }
 }

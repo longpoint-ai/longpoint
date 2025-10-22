@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ApiSdkTag } from '../common/decorators';
 import { SdkTag } from '../common/types/swagger.types';
@@ -9,6 +9,15 @@ import { ModelService } from './model.service';
 @ApiBearerAuth()
 export class ModelsController {
   constructor(private readonly modelService: ModelService) {}
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get a model',
+    operationId: 'getModel',
+  })
+  async getModel(@Param('id') id: string) {
+    return this.modelService.getModel(id);
+  }
 
   @Get()
   @ApiOperation({

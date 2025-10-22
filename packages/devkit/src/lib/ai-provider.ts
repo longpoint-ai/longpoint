@@ -2,7 +2,7 @@ import { AiManifest, AiModelManifest } from './ai-manifest.js';
 import { AiModel } from './ai-model.js';
 import { ConfigValues } from './types.js';
 
-export interface AiProviderArgs<M extends AiManifest> {
+export interface AiProviderArgs<M extends AiManifest = AiManifest> {
   manifest: M['provider'];
   configValues: ConfigValues<M['provider']['config']>;
   modelConfigValues: {
@@ -10,7 +10,7 @@ export interface AiProviderArgs<M extends AiManifest> {
   };
 }
 
-export abstract class AiProvider<M extends AiManifest> {
+export abstract class AiProvider<M extends AiManifest = AiManifest> {
   readonly id: string;
   readonly name: string;
   readonly models: M['provider']['models'];

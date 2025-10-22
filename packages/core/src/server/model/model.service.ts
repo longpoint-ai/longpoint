@@ -1,39 +1,19 @@
-import { AiManifest } from '@longpoint/devkit';
-import { findNodeModulesPath } from '@longpoint/utils/path';
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { readdir, readFile } from 'fs/promises';
-import { join } from 'path';
+import { Injectable } from '@nestjs/common';
+import { CommonModelService } from '../common/services';
 import { ModelSummaryDto } from './dtos/model-summary.dto';
 
 @Injectable()
-export class ModelService implements OnModuleInit {
-  private readonly aiManifests = new Map<string, AiManifest>();
+export class ModelService {
+  constructor(private readonly commonModelService: CommonModelService) {}
 
-  async onModuleInit() {
-    const modulesPath = findNodeModulesPath(process.cwd());
-
-    if (!modulesPath) {
-      return;
-    }
-
-    const modules = await readdir(modulesPath);
-    const providerNames = modules.filter((module) =>
-      module.startsWith('longpoint-ai-')
-    );
-
-    for (const provider of providerNames) {
-      const manifestFile = await readFile(
-        join(modulesPath, provider, 'ai-manifest.json')
-      );
-      const manifest = JSON.parse(manifestFile.toString());
-      this.aiManifests.set(provider, manifest);
-    }
+  async getModel(id: string) {
+    return {};
   }
 
   async listModels() {
     const models: ModelSummaryDto[] = [];
 
-    for (const manifest of this.aiManifests.values()) {
+    for (const manifest of this.commonModelService.listManifests()) {
       const provider = manifest.provider;
       for (const model of provider.models) {
         models.push(

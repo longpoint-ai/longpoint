@@ -43,7 +43,7 @@
       "path": "./packages/devkit"
     },
     {
-      "path": "./packages/plugins/ai-claude"
+      "path": "./packages/plugins/ai-anthropic"
     }
   ]
 }

@@ -10,7 +10,7 @@ const swcJestConfig = JSON.parse(
 swcJestConfig.swcrc = false;
 
 export default {
-  displayName: 'longpoint-ai-claude',
+  displayName: 'ai-anthropic',
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
