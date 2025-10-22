@@ -4,6 +4,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { join } from 'path';
+import { PrismaService } from '../prisma/prisma.service';
 
 interface ProviderRegistry {
   [packageName: string]: {
@@ -19,6 +20,8 @@ interface ProviderRegistry {
 export class CommonModelService implements OnModuleInit {
   private readonly providerRegistry: ProviderRegistry = {};
   private readonly providerInstances = new Map<string, AiProvider>();
+
+  constructor(private readonly prismaService: PrismaService) {}
 
   async onModuleInit() {
     await this.buildProviderRegistry();
@@ -39,7 +42,7 @@ export class CommonModelService implements OnModuleInit {
    * const model = await this.commonModelService.getModel('anthropic/claude-haiku-4-5-20251001');
    * ```
    */
-  getModel(id: string) {
+  async getModel(id: string) {
     const [providerId, modelId] = id.split('/');
     if (!providerId) {
       throw new Error(`No provider found for model: ${id}`);
@@ -50,18 +53,66 @@ export class CommonModelService implements OnModuleInit {
       throw new Error(`Provider registry not found for: ${providerId}`);
     }
 
+    const aiProviderConfig =
+      await this.prismaService.aiProviderConfig.findUnique({
+        where: {
+          providerId,
+        },
+      });
+    const config =
+      (aiProviderConfig?.config as Record<string, any> | undefined) ?? {};
+    const needsConfig = this.providerNeedsConfig(providerId, config);
+    if (needsConfig) {
+      throw new Error(
+        `${id} needs additional provider configuration before use.`
+      );
+    }
+
     let provider = this.providerInstances.get(providerId);
     if (!provider) {
       provider = new registry.ProviderClass({
         manifest: registry.manifest.provider,
+        configValues: config,
         // TODO load config values
-        configValues: { apiKey: '123' },
         modelConfigValues: {},
       });
       this.providerInstances.set(providerId, provider);
     }
 
     return provider.getModel(modelId);
+  }
+
+  /**
+   * Check if the given provider needs additional configuration, based on the current configuration.
+   * @param providerId - The ID of the provider to check.
+   * @param currentConfig - The current configuration of the provider.
+   * @returns True if the provider needs additional configuration, false otherwise.
+   */
+  providerNeedsConfig(providerId: string, currentConfig?: Record<string, any>) {
+    const provider = this.providerRegistry[providerId];
+    if (!provider) {
+      return false;
+    }
+
+    const providerConfigSchema = provider.manifest.provider.config;
+    const requiredFields = providerConfigSchema
+      ? Object.entries(providerConfigSchema)
+          .filter(([name, field]) => field.required)
+          .map(([name]) => name)
+      : [];
+
+    if (requiredFields.length > 0) {
+      if (!currentConfig) {
+        return true;
+      }
+      for (const field of requiredFields) {
+        if (!currentConfig[field]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   private async buildProviderRegistry() {
