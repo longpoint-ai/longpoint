@@ -3,8 +3,9 @@ import {
   ModelSummaryParams,
 } from '@/server/common/dtos/model';
 import { SelectedClassifier } from '@/server/common/selectors/classifier.selectors';
+import { ConfigValues } from '@longpoint/devkit';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
   model: ModelSummaryParams;
@@ -34,6 +35,13 @@ export class ClassifierDto {
   @IsOptional()
   description: string | null;
 
+  @IsObject()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Configuration values to use for the model',
+  })
+  modelConfig?: ConfigValues | null;
+
   @ApiProperty({
     description: 'The model used by the classifier',
     type: ModelSummaryDto,
@@ -58,6 +66,7 @@ export class ClassifierDto {
     this.description = data.description;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
+    this.modelConfig = data.modelConfig as ConfigValues | null;
     this.model = new ModelSummaryDto(data.model);
   }
 }

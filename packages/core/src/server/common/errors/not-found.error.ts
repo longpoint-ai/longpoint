@@ -31,3 +31,18 @@ export const ApiMediaContainerNotFoundResponse = () => {
     })
   );
 };
+
+export class ModelNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Model', id);
+  }
+}
+export const modelNotFoundDoc = apiErrorDoc(new ModelNotFound(createId()));
+export const ApiModelNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Model not found',
+      ...modelNotFoundDoc,
+    })
+  );
+};

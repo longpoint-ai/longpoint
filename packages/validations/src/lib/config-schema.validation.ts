@@ -59,6 +59,18 @@ export function validateConfigSchema(
       continue; // Skip nested validation if type is wrong
     }
 
+    // Validate length constraints
+    const lengthError = validateFieldLength(
+      fieldPath,
+      fieldValue,
+      fieldSchema.type,
+      fieldSchema.minLength,
+      fieldSchema.maxLength
+    );
+    if (lengthError) {
+      errors.push(lengthError);
+    }
+
     // Validate nested objects
     if (fieldSchema.type === 'object' && fieldSchema.properties) {
       const nestedResult = validateConfigSchema(
@@ -152,9 +164,95 @@ function validateFieldType(
       break;
 
     default:
-      // Unknown type - don't validate
       break;
   }
 
   return null;
+}
+
+/**
+ * Validates field length constraints
+ * @param path - The field path for error messages
+ * @param value - The value to validate
+ * @param fieldType - The field type
+ * @param minLength - Minimum length constraint
+ * @param maxLength - Maximum length constraint
+ * @returns Error message if invalid, null if valid
+ */
+function validateFieldLength(
+  path: string,
+  value: unknown,
+  fieldType: string,
+  minLength?: number,
+  maxLength?: number
+): string | null {
+  if (minLength === undefined && maxLength === undefined) {
+    return null;
+  }
+
+  let length: number;
+
+  switch (fieldType) {
+    case 'string':
+    case 'secret':
+      if (typeof value !== 'string') {
+        return null; // Type validation will catch this
+      }
+      length = value.length;
+      break;
+
+    case 'array':
+      if (!Array.isArray(value)) {
+        return null; // Type validation will catch this
+      }
+      length = value.length;
+      break;
+
+    case 'object':
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return null; // Type validation will catch this
+      }
+      length = Object.keys(value).length;
+      break;
+
+    default:
+      // Length validation not applicable for other types
+      return null;
+  }
+
+  if (minLength !== undefined && length < minLength) {
+    return `${path} must have at least ${minLength} ${getLengthUnit(
+      fieldType,
+      minLength
+    )}`;
+  }
+
+  if (maxLength !== undefined && length > maxLength) {
+    return `${path} must have at most ${maxLength} ${getLengthUnit(
+      fieldType,
+      maxLength
+    )}`;
+  }
+
+  return null;
+}
+
+/**
+ * Gets the appropriate unit for length validation error messages
+ * @param fieldType - The field type
+ * @returns The unit string (characters, items, properties)
+ */
+function getLengthUnit(fieldType: string, count: number): string {
+  const moreThanOne = count > 1;
+  switch (fieldType) {
+    case 'string':
+    case 'secret':
+      return 'character' + (moreThanOne ? 's' : '');
+    case 'array':
+      return 'item' + (moreThanOne ? 's' : '');
+    case 'object':
+      return 'propert' + (moreThanOne ? 'ies' : 'y');
+    default:
+      return 'element' + (moreThanOne ? 's' : '');
+  }
 }

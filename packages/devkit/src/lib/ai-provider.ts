@@ -5,9 +5,6 @@ import { ConfigValues } from './types.js';
 export interface AiProviderArgs<M extends AiManifest = AiManifest> {
   manifest: M['provider'];
   configValues: ConfigValues<M['provider']['config']>;
-  modelConfigValues: {
-    [modelId: string]: ConfigValues;
-  };
 }
 
 export abstract class AiProvider<M extends AiManifest = AiManifest> {
@@ -28,11 +25,11 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
    * @param id - The ID of the model to get the instance of.
    * @returns The instance of the model.
    */
-  getModel(id: string): AiModel {
+  getModel(id: string): AiModel | null {
     const model = this.models.find((model) => model.id === id);
 
     if (!model) {
-      throw new Error(`Model ${id} not found`);
+      return null;
     }
 
     return this.getModelInstance(model);

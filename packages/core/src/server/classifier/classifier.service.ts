@@ -1,3 +1,4 @@
+import { Prisma } from '@/database';
 import { ConfigValues } from '@longpoint/devkit';
 import { validateConfigSchema } from '@longpoint/validations';
 import { Injectable } from '@nestjs/common';
@@ -6,7 +7,8 @@ import {
   selectClassifier,
   SelectedClassifier,
 } from '../common/selectors/classifier.selectors';
-import { CommonModelService, PrismaService } from '../common/services';
+import { AiPluginService, PrismaService } from '../common/services';
+import { ClassifierNotFound } from './classifier.errors';
 import { ClassifierDto, ClassifierParams } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';
@@ -15,25 +17,20 @@ import { UpdateClassifierDto } from './dtos/update-classifier.dto';
 export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly commonModelService: CommonModelService
+    private readonly aiPluginService: AiPluginService
   ) {}
 
   async createClassifier(data: CreateClassifierDto) {
-    const isValidModelConfig = await this.isValidModelConfig(
-      data.modelId,
-      data.modelConfig
-    );
+    const modelConfig = data.modelConfig ?? undefined;
 
-    if (!isValidModelConfig) {
-      throw new InvalidInput('Invalid model configuration');
-    }
+    await this.assertModelConfig(data.modelId, modelConfig);
 
     const classifier = await this.prismaService.classifier.create({
       data: {
         name: data.name,
         description: data.description,
         modelId: data.modelId,
-        modelConfig: data.modelConfig,
+        modelConfig: modelConfig,
       },
       select: selectClassifier(),
     });
@@ -43,66 +40,87 @@ export class ClassifierService {
     return new ClassifierDto(hydrated);
   }
 
-  async updateClassifier(id: string, data: UpdateClassifierDto) {}
+  async updateClassifier(id: string, data: UpdateClassifierDto) {
+    const classifier = await this.prismaService.classifier.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        modelId: true,
+        modelConfig: true,
+      },
+    });
 
-  private async isValidModelConfig(
-    modelId: string,
-    modelConfig: ConfigValues
-  ): Promise<boolean> {
-    try {
-      // Parse modelId to extract providerId and modelId
-      const [providerId, actualModelId] = modelId.split('/');
-      if (!providerId || !actualModelId) {
-        return false;
+    if (!classifier) {
+      throw new ClassifierNotFound(id);
+    }
+
+    const oldModelId = classifier.modelId;
+    const oldModelConfig = classifier.modelConfig as ConfigValues | undefined;
+    const newModelId = data.modelId;
+    const newModelConfig = data.modelConfig ?? undefined;
+
+    if (newModelId && !newModelConfig) {
+      await this.assertModelConfig(newModelId, oldModelConfig);
+    } else if (newModelConfig && !newModelId) {
+      await this.assertModelConfig(oldModelId, newModelConfig);
+    } else if (newModelConfig && newModelId) {
+      await this.assertModelConfig(newModelId, newModelConfig);
+    }
+
+    const updatedClassifier = await this.prismaService.classifier.update({
+      where: {
+        id,
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        modelId: data.modelId,
+        modelConfig:
+          data.modelConfig === null ? Prisma.JsonNull : data.modelConfig,
+      },
+      select: selectClassifier(),
+    });
+
+    const hydrated = await this.hydrateClassifier(updatedClassifier);
+
+    return new ClassifierDto(hydrated);
+  }
+
+  private async assertModelConfig(
+    fullModelId: string,
+    modelConfig?: ConfigValues
+  ) {
+    const model = await this.aiPluginService.getModelOrThrow(fullModelId);
+
+    const classifierInputSchema = model.manifest.classifier?.input;
+
+    if (!classifierInputSchema) {
+      if (!modelConfig) {
+        return;
       }
+      throw new InvalidInput('Model does not support classifier input');
+    }
 
-      // Get the provider registry to access the manifest
-      const manifests = this.commonModelService.listManifests();
-      const providerManifest = manifests.find(
-        (m) => m.provider.id === providerId
-      );
+    const validationResult = validateConfigSchema(
+      classifierInputSchema,
+      modelConfig ?? {}
+    );
 
-      if (!providerManifest) {
-        return false;
-      }
-
-      // Find the specific model in the provider's models
-      const modelManifest = providerManifest.provider.models.find(
-        (m) => m.id === actualModelId
-      );
-
-      if (!modelManifest || !modelManifest.classifier?.input) {
-        return false;
-      }
-
-      // Validate the modelConfig against the classifier input schema
-      const validationResult = validateConfigSchema(
-        modelManifest.classifier.input,
-        modelConfig
-      );
-
-      if (!validationResult.valid) {
-        // Log detailed validation errors for debugging
-        console.error(
-          'Model config validation failed:',
-          validationResult.errors
-        );
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error validating model config:', error);
-      return false;
+    if (!validationResult.valid) {
+      throw new InvalidInput(validationResult.errors);
     }
   }
 
   private async hydrateClassifier(
     classifier: SelectedClassifier
   ): Promise<ClassifierParams> {
+    const model = await this.aiPluginService.getModelOrThrow(
+      classifier.modelId
+    );
     return {
       ...classifier,
-      model: await this.commonModelService.getModelJson(classifier.modelId),
+      model: model.toJson(),
     };
   }
 }

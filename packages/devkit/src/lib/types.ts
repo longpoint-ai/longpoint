@@ -4,9 +4,13 @@ export interface ConfigSchema {
     type: string;
     required?: boolean;
     description?: string;
+    minLength?: number;
+    maxLength?: number;
     items?: {
       type: string;
       properties?: ConfigSchema;
+      minLength?: number;
+      maxLength?: number;
     };
     properties?: ConfigSchema;
   };

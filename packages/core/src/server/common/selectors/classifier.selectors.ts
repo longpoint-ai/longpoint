@@ -8,6 +8,7 @@ export const selectClassifier = () => {
     createdAt: true,
     updatedAt: true,
     modelId: true,
+    modelConfig: true,
   } satisfies Prisma.ClassifierSelect;
 };
 

@@ -1,51 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { ModelSummaryDto } from '../common/dtos/model';
-import { CommonModelService, PrismaService } from '../common/services';
+import { AiPluginService } from '../common/services';
 
 @Injectable()
 export class ModelService {
-  constructor(
-    private readonly prismaService: PrismaService,
-    private readonly commonModelService: CommonModelService
-  ) {}
+  constructor(private readonly aiPluginService: AiPluginService) {}
 
   async getModel(id: string) {
-    const model = await this.commonModelService.getModel(id);
-    return {};
+    const model = await this.aiPluginService.getModelOrThrow(id);
+    return new ModelSummaryDto(model.toJson());
   }
 
   async listModels() {
-    const models: ModelSummaryDto[] = [];
-    const manifests = this.commonModelService.listManifests();
-    const providerConfigs = await this.prismaService.aiProviderConfig.findMany({
-      where: {
-        providerId: {
-          in: manifests.map((m) => m.provider.id),
-        },
-      },
-    });
-
-    for (const { provider } of manifests) {
-      const providerConfig = providerConfigs.find(
-        (c) => c.providerId === provider.id
-      )?.config as Record<string, any> | undefined;
-      const needsConfig = this.commonModelService.providerNeedsConfig(
-        provider.id,
-        providerConfig
-      );
-      for (const model of provider.models) {
-        models.push(
-          new ModelSummaryDto({
-            ...model,
-            provider: {
-              ...provider,
-              needsConfig,
-            },
-          })
-        );
-      }
-    }
-
-    return models;
+    const models = await this.aiPluginService.listInstalledModels();
+    return models.map((model) => new ModelSummaryDto(model.toJson()));
   }
 }
