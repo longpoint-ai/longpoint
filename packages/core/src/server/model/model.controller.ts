@@ -1,8 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiSdkTag } from '../common/decorators';
+import { ModelSummaryDto } from '../common/dtos/model';
 import { SdkTag } from '../common/types/swagger.types';
-import { ModelSummaryDto } from './dtos/model-summary.dto';
 import { ModelService } from './model.service';
 
 @Controller('ai/models')

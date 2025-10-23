@@ -4,6 +4,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { join } from 'path';
+import { ModelSummaryParams } from '../../dtos/model';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface ProviderRegistry {
@@ -53,15 +54,8 @@ export class CommonModelService implements OnModuleInit {
       throw new Error(`Provider registry not found for: ${providerId}`);
     }
 
-    const aiProviderConfig =
-      await this.prismaService.aiProviderConfig.findUnique({
-        where: {
-          providerId,
-        },
-      });
-    const config =
-      (aiProviderConfig?.config as Record<string, any> | undefined) ?? {};
-    const needsConfig = this.providerNeedsConfig(providerId, config);
+    const providerConfig = await this.getProviderConfig(providerId);
+    const needsConfig = this.providerNeedsConfig(providerId, providerConfig);
     if (needsConfig) {
       throw new Error(
         `${id} needs additional provider configuration before use.`
@@ -72,7 +66,7 @@ export class CommonModelService implements OnModuleInit {
     if (!provider) {
       provider = new registry.ProviderClass({
         manifest: registry.manifest.provider,
-        configValues: config,
+        configValues: providerConfig ?? {},
         // TODO load config values
         modelConfigValues: {},
       });
@@ -80,6 +74,41 @@ export class CommonModelService implements OnModuleInit {
     }
 
     return provider.getModel(modelId);
+  }
+
+  /**
+   * Return a JSON object representing a model.
+   * @param id - The ID of the model to get.
+   * @returns The model JSON object.
+   */
+  async getModelJson(id: string): Promise<ModelSummaryParams> {
+    const [providerId, modelId] = id.split('/');
+
+    const regEntry = this.providerRegistry[providerId];
+    if (!regEntry) {
+      throw new Error(`Provider registry not found for: ${providerId}`);
+    }
+
+    const manifest = regEntry.manifest.provider.models.find(
+      (m) => m.id === modelId
+    );
+    if (!manifest) {
+      throw new Error(`Model manifest not found for: ${id}`);
+    }
+
+    const config = await this.getProviderConfig(providerId);
+
+    return {
+      id,
+      name: manifest.name,
+      description: manifest.description,
+      provider: {
+        id: providerId,
+        name: regEntry.manifest.provider.name,
+        image: regEntry.manifest.provider.image,
+        needsConfig: this.providerNeedsConfig(providerId, config),
+      },
+    };
   }
 
   /**
@@ -113,6 +142,16 @@ export class CommonModelService implements OnModuleInit {
     }
 
     return false;
+  }
+
+  private async getProviderConfig(providerId: string) {
+    const aiProviderConfig =
+      await this.prismaService.aiProviderConfig.findUnique({
+        where: {
+          providerId,
+        },
+      });
+    return aiProviderConfig?.config as Record<string, any> | undefined;
   }
 
   private async buildProviderRegistry() {

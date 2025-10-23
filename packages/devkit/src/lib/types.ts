@@ -4,6 +4,11 @@ export interface ConfigSchema {
     type: string;
     required?: boolean;
     description?: string;
+    items?: {
+      type: string;
+      properties?: ConfigSchema;
+    };
+    properties?: ConfigSchema;
   };
 }
 

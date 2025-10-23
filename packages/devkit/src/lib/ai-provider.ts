@@ -15,16 +15,12 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
   readonly name: string;
   readonly models: M['provider']['models'];
   readonly configValues: ConfigValues<M['provider']['config']>;
-  private readonly modelConfigValues: {
-    [modelId: string]: ConfigValues;
-  };
 
   constructor(args: AiProviderArgs<M>) {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
     this.models = args.manifest.models;
     this.configValues = args.configValues;
-    this.modelConfigValues = args.modelConfigValues;
   }
 
   /**
@@ -39,9 +35,7 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
       throw new Error(`Model ${id} not found`);
     }
 
-    const configValues = this.modelConfigValues[model.id] ?? {};
-
-    return this.getModelInstance(model, configValues);
+    return this.getModelInstance(model);
   }
 
   /**
@@ -54,8 +48,5 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
    * @protected
    * @returns An instance of the model.
    */
-  protected abstract getModelInstance(
-    manifest: AiModelManifest,
-    configValues: ConfigValues
-  ): AiModel;
+  protected abstract getModelInstance(manifest: AiModelManifest): AiModel;
 }

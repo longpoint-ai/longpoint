@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { ModelSummaryDto } from '../common/dtos/model';
 import { CommonModelService, PrismaService } from '../common/services';
-import { ModelSummaryDto } from './dtos/model-summary.dto';
 
 @Injectable()
 export class ModelService {

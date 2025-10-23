@@ -6,3 +6,15 @@ model AiProviderConfig {
 
   @@unique([providerId])
 }
+
+model Classifier {
+  id          String   @id @default(cuid(2))
+  name        String   @unique
+  description String?
+  modelId     String
+  modelConfig Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([modelId])
+}

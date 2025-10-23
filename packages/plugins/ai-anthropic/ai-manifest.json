@@ -15,12 +15,37 @@
       {
         "id": "claude-haiku-4-5-20251001",
         "name": "Claude Haiku 4.5",
-        "description": "Claude Haiku 4.5 is a powerful language model that can be used to generate text, code, and other content."
+        "description": "Claude Haiku 4.5 is a powerful language model that can be used to generate text, code, and other content.",
+        "classifier": {
+          "input": {
+            "fieldCapture": {
+              "label": "Fields to capture",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "label": "Name",
+                    "type": "string",
+                    "description": "The name of the field to capture",
+                    "required": true
+                  },
+                  "instructions": {
+                    "label": "Instructions",
+                    "type": "string",
+                    "description": "Instructions for filling the field"
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       {
         "id": "claude-sonnet-4-5-20250929",
         "name": "Claude Sonnet 4.5",
-        "description": "Claude Sonnet 4.5 is a powerful language model that can be used to generate text, code, and other content."
+        "description": "Claude Sonnet 4.5 is a powerful language model that can be used to generate text, code, and other content.",
+        "llm": true
       }
     ]
   }

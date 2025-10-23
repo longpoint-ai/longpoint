@@ -16,4 +16,7 @@ export interface AiModelManifest {
   id: string;
   name?: string;
   description?: string;
+  classifier?: {
+    input?: ConfigSchema;
+  };
 }

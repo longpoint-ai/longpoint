@@ -12,6 +12,10 @@ export abstract class AiModel {
     this.description = manifest.description;
   }
 
+  async classify(url: string): Promise<object> {
+    throw new Error(`Classify is not implemented for ${this.id}`);
+  }
+
   get capabilities() {
     const capabilities: AiModelCapability[] = [];
 

@@ -1,3 +1,4 @@
+export * from './lib/config-schema.validation.js';
 export * from './lib/media-container-name.validation.js';
 export {
   isValidMediaContainerPath,

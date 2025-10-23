@@ -2,17 +2,12 @@ import { Anthropic } from '@anthropic-ai/sdk';
 import {
   AiModel,
   AiModelManifest,
-  AiProvider,
-  Classify,
-  ConfigValues,
+  AiProvider
 } from '@longpoint/devkit';
 import AnthropicManifest from '../ai-manifest.json' with { type: 'json' };
 
 export class AnthropicProvider extends AiProvider<typeof AnthropicManifest> {
-  protected override getModelInstance(
-    manifest: AiModelManifest,
-    modelConfigValues: ConfigValues
-  ) {
+  protected override getModelInstance(manifest: AiModelManifest) {
     const apiKey = this.configValues.apiKey;
 
     if (!apiKey) {
@@ -21,7 +16,6 @@ export class AnthropicProvider extends AiProvider<typeof AnthropicManifest> {
 
     return new ClaudeModel({
       manifest,
-      modelConfigValues,
       client: new Anthropic({ apiKey }),
     });
   }
@@ -29,11 +23,10 @@ export class AnthropicProvider extends AiProvider<typeof AnthropicManifest> {
 
 export interface ClaudeModelArgs {
   manifest: AiModelManifest;
-  modelConfigValues: ConfigValues;
   client: Anthropic;
 }
 
-export class ClaudeModel extends AiModel implements Classify {
+export class ClaudeModel extends AiModel {
   protected readonly client: Anthropic;
 
   constructor(args: ClaudeModelArgs) {
@@ -41,7 +34,7 @@ export class ClaudeModel extends AiModel implements Classify {
     this.client = args.client;
   }
 
-  async classify(url: string) {
+  override async classify(url: string) {
     return {}
     // await this.client.messages.create({
     //   model: this.id,
