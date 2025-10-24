@@ -4,6 +4,74 @@
  */
 
 export interface paths {
+    "/ai/classifiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a classifier */
+        post: operations["createClassifier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/classifiers/{classifierId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a classifier */
+        patch: operations["updateClassifier"];
+        trace?: never;
+    };
+    "/ai/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List installed models */
+        get: operations["listModels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/models/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a model */
+        get: operations["getModel"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/library/tree": {
         parameters: {
             query?: never;
@@ -101,7 +169,88 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AiProviderSummary: {
+            /**
+             * @description The ID of the AI provider
+             * @example anthropic
+             */
+            id: string;
+            /**
+             * @description An icon image of the AI provider
+             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
+             */
+            image: Record<string, never>;
+            /**
+             * @description The name of the AI provider
+             * @example Anthropic
+             */
+            name: string;
+            /**
+             * @description Whether the provider needs additional configuration
+             * @example false
+             */
+            needsConfig: boolean;
+        };
+        Classifier: {
+            /**
+             * Format: date-time
+             * @description When the classifier was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description A brief description of the classifier
+             * @example Tag general subjects like people, places, and things
+             */
+            description: Record<string, never> | null;
+            /**
+             * @description The ID of the classifier
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /** @description The model used by the classifier */
+            model: components["schemas"]["ModelSummary"];
+            /** @description Configuration values to use for the model */
+            modelConfig: Record<string, never>;
+            /**
+             * @description The name of the classifier
+             * @example general-tagging
+             */
+            name: string;
+            /**
+             * Format: date-time
+             * @description When the classifier was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        CreateClassifier: {
+            /**
+             * @description A brief description of the classifier
+             * @example Tag general subjects like people, places, and things
+             */
+            description: Record<string, never> | null;
+            /** @description Configuration values to use for the model */
+            modelConfig?: Record<string, never>;
+            /**
+             * @description The ID of the model to use for the classifier
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            modelId: string;
+            /**
+             * @description The name of the classifier
+             * @example general-tagging
+             */
+            name: string;
+        };
         CreateMediaContainer: {
+            /**
+             * @description Names of classifiers to run on the uploaded asset after processing
+             * @example [
+             *       "general-tagging"
+             *     ]
+             */
+            classifiersOnUpload?: string[];
             /**
              * @description The MIME type of the primary asset
              * @example image/jpeg
@@ -123,12 +272,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-21T00:31:55.325Z
+             * @example 2025-10-24T19:42:30.322Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example q6rmt03hoxr52rwihsghyxj5
+             * @example b9lwbptr04d8slzxbibrjemg
              */
             id: string;
             /**
@@ -226,7 +375,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example mowfliw50h80kg7x5mdb9fqk
+             * @example nbzp9zg3vn69ahvhsjw2t2ws
              */
             id: string;
             /**
@@ -253,10 +402,9 @@ export interface components {
             url: Record<string, never> | null;
             /**
              * @description The variant of the media asset
-             * @example ORIGINAL
              * @enum {string}
              */
-            variant: "ORIGINAL";
+            variant: "PRIMARY";
             /**
              * @description The width of the media asset in pixels, if applicable
              * @example 100
@@ -272,8 +420,8 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "eofwqpdg8uta38xzcmy6llc0",
-             *         "variant": "ORIGINAL",
+             *         "id": "m7iccr89wmh0z2ut9879hp5e",
+             *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
              *         "width": 1920,
@@ -288,12 +436,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-20T23:31:55.308Z
+             * @example 2025-10-24T18:42:30.301Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example q6rmt03hoxr52rwihsghyxj5
+             * @example b9lwbptr04d8slzxbibrjemg
              */
             id: string;
             /**
@@ -323,12 +471,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-20T23:31:55.308Z
+             * @example 2025-10-24T18:42:30.301Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example q6rmt03hoxr52rwihsghyxj5
+             * @example b9lwbptr04d8slzxbibrjemg
              */
             id: string;
             /**
@@ -348,6 +496,27 @@ export interface components {
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
         };
+        ModelSummary: {
+            /** @description A brief description of the model */
+            description: Record<string, never> | null;
+            /**
+             * @description The fully qualified ID of the model
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the model
+             * @example claude-haiku-4-5-20251001
+             */
+            id: string;
+            /**
+             * @description The display name of the model
+             * @example Claude Haiku 4.5
+             */
+            name: string;
+            /** @description The provider of the model */
+            provider: components["schemas"]["AiProviderSummary"];
+        };
         SetupStatus: {
             /**
              * @description Whether the first time setup is complete
@@ -364,6 +533,25 @@ export interface components {
              * @enum {string}
              */
             type: "DIRECTORY" | "MEDIA";
+        };
+        UpdateClassifier: {
+            /**
+             * @description A brief description of the classifier
+             * @example Tag general subjects like people, places, and things
+             */
+            description?: Record<string, never> | null;
+            /** @description Configuration values to use for the model */
+            modelConfig?: Record<string, never>;
+            /**
+             * @description The ID of the model to use for the classifier
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            modelId?: string;
+            /**
+             * @description The name of the classifier
+             * @example general-tagging
+             */
+            name?: string;
         };
         UpdateMediaContainer: {
             /**
@@ -386,6 +574,110 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    createClassifier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClassifier"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Classifier"];
+                };
+            };
+        };
+    };
+    updateClassifier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                classifierId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClassifier"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Classifier"];
+                };
+            };
+            /** @description The classifier was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Classifier with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listModels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSummary"][];
+                };
+            };
+        };
+    };
+    getModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     getTree: {
         parameters: {
             query?: {
@@ -461,7 +753,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id qed3ott6dzm00ala1jzqab9x not found"
+                     *         "Media container with id tqgnczke57ls7abiufftptzb not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -528,7 +820,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id qed3ott6dzm00ala1jzqab9x not found"
+                     *         "Media container with id tqgnczke57ls7abiufftptzb not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -587,7 +879,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id qed3ott6dzm00ala1jzqab9x not found"
+                     *         "Media container with id tqgnczke57ls7abiufftptzb not found"
                      *       ]
                      *     } */
                     "application/json": {

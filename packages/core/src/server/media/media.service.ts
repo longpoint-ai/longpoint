@@ -43,9 +43,10 @@ export class MediaService {
         status: 'WAITING_FOR_UPLOAD',
         assets: {
           create: {
-            variant: 'ORIGINAL',
+            variant: 'PRIMARY',
             status: 'WAITING_FOR_UPLOAD',
             mimeType: data.mimeType,
+            classifiersOnUpload: data.classifiersOnUpload,
             uploadToken: {
               create: {
                 token,

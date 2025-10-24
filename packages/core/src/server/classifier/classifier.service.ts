@@ -2,13 +2,12 @@ import { Prisma } from '@/database';
 import { ConfigValues } from '@longpoint/devkit';
 import { validateConfigSchema } from '@longpoint/validations';
 import { Injectable } from '@nestjs/common';
-import { InvalidInput } from '../common/errors';
+import { ClassifierNotFound, InvalidInput } from '../common/errors';
 import {
   selectClassifier,
   SelectedClassifier,
 } from '../common/selectors/classifier.selectors';
 import { AiPluginService, PrismaService } from '../common/services';
-import { ClassifierNotFound } from './classifier.errors';
 import { ClassifierDto, ClassifierParams } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';

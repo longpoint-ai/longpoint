@@ -1,21 +1,21 @@
 import { validate } from 'class-validator';
 import {
-  constants,
   IsValidMediaContainerPath,
   isValidMediaContainerPath,
+  pathValidationConstants,
 } from './media-container-path.validation.js';
 
 describe('MediaContainerPathValidation', () => {
   describe('constants', () => {
     it('should have correct min and max length values', () => {
-      expect(constants.MIN_PATH_LENGTH).toBe(1);
-      expect(constants.MAX_PATH_LENGTH).toBe(500);
+      expect(pathValidationConstants.MIN_PATH_LENGTH).toBe(1);
+      expect(pathValidationConstants.MAX_PATH_LENGTH).toBe(500);
     });
 
     it('should have proper regex patterns', () => {
-      expect(constants.ALLOWED_CHARS).toBeInstanceOf(RegExp);
-      expect(constants.DISALLOWED_PATTERNS).toBeInstanceOf(Array);
-      expect(constants.DISALLOWED_PATTERNS).toHaveLength(3);
+      expect(pathValidationConstants.ALLOWED_CHARS).toBeInstanceOf(RegExp);
+      expect(pathValidationConstants.DISALLOWED_PATTERNS).toBeInstanceOf(Array);
+      expect(pathValidationConstants.DISALLOWED_PATTERNS).toHaveLength(3);
     });
   });
 

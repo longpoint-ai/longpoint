@@ -1,14 +1,15 @@
-import { AiManifest, AiModel, ConfigValues } from '@longpoint/devkit';
+import { AiManifest, AiModel, Classify, ConfigValues } from '@longpoint/devkit';
 import { validateConfigSchema } from '@longpoint/validations';
 import { ModelSummaryParams } from '../dtos/model';
 
-export class AiModelEntity extends AiModel {
+export class AiModelEntity implements Classify {
   readonly id: string;
   readonly name: string;
   readonly description: string | null;
   readonly fullyQualifiedId: string;
   private readonly providerConfig?: ConfigValues;
   private readonly rootManifest: AiManifest;
+  private readonly baseModel: AiModel;
 
   constructor(
     modelId: string,
@@ -24,14 +25,22 @@ export class AiModelEntity extends AiModel {
       throw new Error(`Model manifest not found for: ${modelId}`);
     }
 
-    super(modelManifest);
     this.id = modelId;
     this.name = modelManifest.name ?? this.id;
     this.description = modelManifest.description ?? null;
     this.fullyQualifiedId = `${rootManifest.provider.id}/${this.id}`;
     this.providerConfig = providerConfig;
     this.rootManifest = rootManifest;
-    Object.assign(this, baseModel);
+    this.baseModel = baseModel;
+  }
+
+  /**
+   * Runs the classifier implementation of the underlying model plugin.
+   * @param url
+   * @returns
+   */
+  async classify(url: string): Promise<object> {
+    return this.baseModel.classify(url);
   }
 
   providerNeedsConfig(): boolean {

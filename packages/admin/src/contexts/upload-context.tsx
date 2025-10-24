@@ -80,6 +80,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
             const container = await client.media.createMedia({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
+              classifiersOnUpload: ['general-tagging'],
             });
 
             // Upload file to the returned URL

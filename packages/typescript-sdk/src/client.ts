@@ -9,6 +9,7 @@ export interface ClientConfig {
 
 export class Longpoint {
   private httpClient: AxiosInstance;
+  ai: AiClient;
   library: LibraryClient;
   media: MediaClient;
   tools: ToolsClient;
@@ -22,9 +23,50 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
+    this.ai = new AiClient(this.httpClient);
     this.library = new LibraryClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.tools = new ToolsClient(this.httpClient);
+  }
+}
+
+class AiClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Create a classifier
+   */
+    async createClassifier(data: components['schemas']['CreateClassifier']): Promise<components['schemas']['Classifier']> {
+        const url = `ai/classifiers`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * Update a classifier
+   */
+    async updateClassifier(classifierId: string, data: components['schemas']['UpdateClassifier']): Promise<components['schemas']['Classifier']> {
+        const url = `ai/classifiers/${classifierId}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Get a model
+   */
+    async getModel(id: string): Promise<void> {
+        const url = `ai/models/${id}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * List installed models
+   */
+    async listModels(): Promise<components['schemas']['ModelSummary'][]> {
+        const url = `ai/models`;
+        const response = await this.httpClient.get(url);
+        return response.data;
   }
 }
 

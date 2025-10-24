@@ -15,7 +15,7 @@ export class StorageService {
   async getDefaultProvider(): Promise<StorageProvider> {
     return new LocalStorageProvider({
       basePath: this.configService.get('storage.localBasePath'),
-      baseUrl: this.configService.get('server.baseUrl'),
+      baseUrl: this.configService.get('server.origin'),
     });
   }
 

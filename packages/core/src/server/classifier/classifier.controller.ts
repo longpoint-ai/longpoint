@@ -6,8 +6,8 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { ApiSdkTag } from '../common/decorators';
+import { ApiClassifierNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
-import { ApiClassifierNotFoundResponse } from './classifier.errors';
 import { ClassifierService } from './classifier.service';
 import { ClassifierDto } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';

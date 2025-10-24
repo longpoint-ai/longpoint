@@ -32,6 +32,23 @@ export const ApiMediaContainerNotFoundResponse = () => {
   );
 };
 
+export class MediaAssetNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Media asset', id, 'id');
+  }
+}
+export const mediaAssetNotFoundDoc = apiErrorDoc(
+  new MediaAssetNotFound(createId())
+);
+export const ApiMediaAssetNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Media asset not found',
+      ...mediaAssetNotFoundDoc,
+    })
+  );
+};
+
 export class ModelNotFound extends ResourceNotFound {
   constructor(id: string) {
     super('Model', id);
@@ -46,3 +63,19 @@ export const ApiModelNotFoundResponse = () => {
     })
   );
 };
+
+export class ClassifierNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Classifier', id);
+  }
+}
+export const classifierNotFoundDoc = apiErrorDoc(
+  new ClassifierNotFound('ukt4084q1kaqmsq74f2fxg43')
+);
+export const ApiClassifierNotFoundResponse = () =>
+  applyDecorators(
+    ApiNotFoundResponse({
+      description: 'The classifier was not found',
+      ...classifierNotFoundDoc,
+    })
+  );

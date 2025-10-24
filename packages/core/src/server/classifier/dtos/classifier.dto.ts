@@ -4,6 +4,7 @@ import {
 } from '@/server/common/dtos/model';
 import { SelectedClassifier } from '@/server/common/selectors/classifier.selectors';
 import { ConfigValues } from '@longpoint/devkit';
+import { IsClassifierName } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
@@ -19,10 +20,10 @@ export class ClassifierDto {
   })
   id: string;
 
-  @IsString()
+  @IsClassifierName()
   @ApiProperty({
     description: 'The name of the classifier',
-    example: 'General Tagging',
+    example: 'general-tagging',
   })
   name: string;
 

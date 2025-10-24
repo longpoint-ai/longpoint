@@ -29,9 +29,11 @@ model UploadToken {
 }
 
 model MediaAsset {
-  id      String            @id @default(cuid(2))
-  variant MediaAssetVariant @default(ORIGINAL)
-  status  MediaAssetStatus
+  id                  String            @id @default(cuid(2))
+  variant             MediaAssetVariant @default(PRIMARY)
+  status              MediaAssetStatus
+  /// Names of the classifiers to run on the uploaded asset after processing
+  classifiersOnUpload String[]
 
   // asset metadata
   mimeType    String
@@ -51,7 +53,7 @@ model MediaAsset {
 }
 
 enum MediaAssetVariant {
-  ORIGINAL
+  PRIMARY
 }
 
 enum MediaContainerStatus {

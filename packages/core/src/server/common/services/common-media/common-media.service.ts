@@ -1,4 +1,3 @@
-import { MediaAssetVariant } from '@/database';
 import { SupportedMimeType } from '@longpoint/types';
 import {
   getMediaContainerPath,
@@ -8,8 +7,13 @@ import { Injectable } from '@nestjs/common';
 import { MediaAssetParams } from '../../dtos/media';
 import { SelectedMediaContainer } from '../../selectors/media.selectors';
 import { StorageService } from '../storage/storage.service';
+import { StorageProvider } from '../storage/storage.types';
 
 type HydratableMediaContainer = Pick<SelectedMediaContainer, 'id' | 'assets'>;
+type HydratableMediaAsset = Pick<MediaAssetParams, 'mimeType'>;
+type HydratedMediaAsset<T extends HydratableMediaAsset> = T & {
+  url: string;
+};
 type HydratedMediaContainer<T extends HydratableMediaContainer> = T & {
   assets: MediaAssetParams[];
 };
@@ -30,7 +34,9 @@ export class CommonMediaService {
       ? containers
       : [containers];
 
-    return Promise.all(
+    const mainThis: CommonMediaService = this;
+
+    const results = await Promise.all(
       containerArray.map(async (container) => {
         const provider = await this.storageService.getProviderByContainerId(
           container.id
@@ -38,29 +44,7 @@ export class CommonMediaService {
 
         const hydratedAssets = await Promise.all(
           container.assets.map(async (asset) => {
-            let assetPath: string | undefined;
-
-            if (asset.variant === MediaAssetVariant.ORIGINAL) {
-              assetPath = getMediaContainerPath(container.id, {
-                suffix: `original.${mimeTypeToExtension(
-                  asset.mimeType as SupportedMimeType
-                )}`,
-              });
-            }
-
-            if (!assetPath) {
-              return asset;
-            }
-
-            const { url } = await provider.createSignedUrl({
-              path: assetPath,
-              action: 'read',
-            });
-
-            return {
-              ...asset,
-              url,
-            };
+            return mainThis.hydrateAssetInternal(container.id, provider, asset);
           })
         );
 
@@ -70,5 +54,45 @@ export class CommonMediaService {
         };
       })
     );
+    return results;
+  }
+
+  /**
+   * Hydrates a media asset with a dynamic information, such as the URL.
+   * @param mediaContainerId The ID of the media container the asset belongs to.
+   * @param asset The asset to hydrate.
+   * @returns The hydrated asset.
+   */
+  async hydrateAsset<T extends HydratableMediaAsset>(
+    mediaContainerId: string,
+    asset: T
+  ): Promise<HydratedMediaAsset<T>> {
+    const provider = await this.storageService.getProviderByContainerId(
+      mediaContainerId
+    );
+    return this.hydrateAssetInternal(mediaContainerId, provider, asset);
+  }
+
+  private async hydrateAssetInternal<T extends HydratableMediaAsset>(
+    mediaContainerId: string,
+    provider: StorageProvider,
+    asset: T
+  ) {
+    // Assumes primary as the only variant for now
+    const assetPath = getMediaContainerPath(mediaContainerId, {
+      suffix: `primary.${mimeTypeToExtension(
+        asset.mimeType as SupportedMimeType
+      )}`,
+    });
+
+    const { url } = await provider.createSignedUrl({
+      path: assetPath,
+      action: 'read',
+    });
+
+    return {
+      ...asset,
+      url,
+    };
   }
 }

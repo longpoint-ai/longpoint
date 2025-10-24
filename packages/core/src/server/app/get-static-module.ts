@@ -43,6 +43,7 @@ export function getStaticModule(): DynamicModule {
     serveStaticConfigs.push({
       rootPath: storageBasePath,
       serveRoot: '/storage',
+      exclude: ['/api*'],
     });
   }
 

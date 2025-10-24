@@ -62,7 +62,7 @@ export class MediaContainerDto {
     example: {
       original: {
         id: createId(),
-        variant: MediaAssetVariant.ORIGINAL,
+        variant: MediaAssetVariant.PRIMARY,
         status: MediaAssetStatus.READY,
         mimeType: SupportedMimeType.JPEG,
         width: 1920,
