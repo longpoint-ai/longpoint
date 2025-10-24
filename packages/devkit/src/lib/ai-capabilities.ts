@@ -7,9 +7,9 @@ export const AiModelCapability = {
 export type AiModelCapability =
   (typeof AiModelCapability)[keyof typeof AiModelCapability];
 
-export interface ClassifyArgs {
+export interface ClassifyArgs<T extends ConfigValues = ConfigValues> {
   url: string;
-  modelConfig?: ConfigValues;
+  modelConfig: T;
 }
 
 export interface Classify {
