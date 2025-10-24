@@ -1,3 +1,5 @@
+import { ConfigValues, JsonObject } from './types.js';
+
 export const AiModelCapability = {
   CLASSIFY: 'CLASSIFY',
 } as const;
@@ -5,6 +7,11 @@ export const AiModelCapability = {
 export type AiModelCapability =
   (typeof AiModelCapability)[keyof typeof AiModelCapability];
 
+export interface ClassifyArgs {
+  url: string;
+  modelConfig?: ConfigValues;
+}
+
 export interface Classify {
-  classify(url: string): Promise<object>;
+  classify(args: ClassifyArgs): Promise<JsonObject>;
 }

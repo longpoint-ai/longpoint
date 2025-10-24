@@ -2,7 +2,8 @@ import { Anthropic } from '@anthropic-ai/sdk';
 import {
   AiModel,
   AiModelManifest,
-  AiProvider
+  AiProvider,
+  ClassifyArgs
 } from '@longpoint/devkit';
 import AnthropicManifest from '../ai-manifest.json' with { type: 'json' };
 
@@ -34,8 +35,10 @@ export class ClaudeModel extends AiModel {
     this.client = args.client;
   }
 
-  override async classify(url: string) {
-    return {}
+  override async classify(args: ClassifyArgs) {
+    return {
+      "theseweretheconfigvalues": args.modelConfig ?? null,
+    }
     // await this.client.messages.create({
     //   model: this.id,
     //   max_tokens: this.maxOutputTokens,

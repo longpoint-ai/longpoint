@@ -1,4 +1,11 @@
-import { AiManifest, AiModel, Classify, ConfigValues } from '@longpoint/devkit';
+import {
+  AiManifest,
+  AiModel,
+  Classify,
+  ClassifyArgs,
+  ConfigValues,
+  JsonObject,
+} from '@longpoint/devkit';
 import { validateConfigSchema } from '@longpoint/validations';
 import { ModelSummaryParams } from '../dtos/model';
 
@@ -36,11 +43,11 @@ export class AiModelEntity implements Classify {
 
   /**
    * Runs the classifier implementation of the underlying model plugin.
-   * @param url
+   * @param args
    * @returns
    */
-  async classify(url: string): Promise<object> {
-    return this.baseModel.classify(url);
+  async classify(args: ClassifyArgs): Promise<JsonObject> {
+    return this.baseModel.classify(args);
   }
 
   providerNeedsConfig(): boolean {

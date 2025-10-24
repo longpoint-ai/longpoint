@@ -1,3 +1,4 @@
+import { ConfigValues } from '@longpoint/devkit';
 import { Injectable } from '@nestjs/common';
 import { ClassifierNotFound, MediaAssetNotFound } from '../../errors';
 import { AiPluginService } from '../ai-plugin/ai-plugin.service';
@@ -19,7 +20,10 @@ export class CommonClassifierService {
     );
     const mediaAsset = await this.getMediaAsset(mediaAssetId);
 
-    const result = await model.classify(mediaAsset.url);
+    const result = await model.classify({
+      url: mediaAsset.url,
+      modelConfig: classifier.modelConfig as ConfigValues,
+    });
 
     return result;
   }
