@@ -21,6 +21,7 @@ import { isAfter } from 'date-fns';
 import { Request } from 'express';
 import { ProbeService } from '../../services/probe.service';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
+import { TokenExpired } from './upload.errors';
 
 @Injectable()
 export class UploadService {
@@ -50,14 +51,8 @@ export class UploadService {
       },
     });
 
-    if (!uploadToken) {
-      // throw invalid token error
-      throw new Error();
-    }
-
-    if (isAfter(new Date(), uploadToken.expiresAt)) {
-      // throw expired token error
-      throw new Error();
+    if (!uploadToken || isAfter(new Date(), uploadToken.expiresAt)) {
+      throw new TokenExpired();
     }
 
     await this.updateAsset(uploadToken.mediaAsset.id, {
