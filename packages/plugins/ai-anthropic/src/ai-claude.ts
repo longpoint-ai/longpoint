@@ -48,8 +48,9 @@ export class ClaudeModel extends AiModel {
       You will be given an image and a list of fields to capture.
       You will need to capture the fields from the image, based on each field's instructions.
       Some fields will have no particular instructions, in which case use your best judgment to capture the field.
-      You will need to return the fields as a raw JSON string with no formatting, including no code block syntax, no markdown, no html, no anything else.
-      e.g. For the field "type", with instructions "Choose the type of fruit", the response should be: {"type": "apple"}
+      You will need to return the fields as a raw JSON string with no formatting.
+      DO NOT wrap the JSON in a code block like \`\`\`json {} \`\`\`.
+      e.g. For the field "type", with instructions "Choose the type of fruit", the response might be: {"type": "apple"}
       The fields to capture, along with their instructions, are:
       ${args.modelConfig.fieldCapture.map(field => `- ${field.name}${field.instructions ? `: ${field.instructions}` : ''}`).join('\n')}
     `;
@@ -77,15 +78,14 @@ export class ClaudeModel extends AiModel {
       }
       return acc;
     }, '')
-    console.log(fullOutput);
 
     return JSON.parse(fullOutput);
   }
 
   private async getSource(urlString: string): Promise<Anthropic.ImageBlockParam['source']> {
     const url = new URL(urlString);
+
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
-      console.log(urlString);
       const imageData = await fetch(urlString);
       const imageBuffer = await imageData.arrayBuffer();
       const base64 = Buffer.from(imageBuffer).toString('base64');
@@ -96,9 +96,7 @@ export class ClaudeModel extends AiModel {
         media_type,
       }
     }
-    return {
-      type: 'url',
-      url: urlString,
-    }
+
+    return { type: 'url', url: urlString }
   }
 }

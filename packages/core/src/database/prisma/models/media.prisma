@@ -45,9 +45,10 @@ model MediaAsset {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  containerId String
-  container   MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  uploadToken UploadToken?
+  containerId    String
+  container      MediaContainer  @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  uploadToken    UploadToken?
+  classifierRuns ClassifierRun[]
 
   @@index([containerId, status])
 }

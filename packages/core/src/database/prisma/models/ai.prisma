@@ -8,13 +8,39 @@ model AiProviderConfig {
 }
 
 model Classifier {
-  id          String   @id @default(cuid(2))
-  name        String   @unique
+  id          String          @id @default(cuid(2))
+  name        String          @unique
   description String?
   modelId     String
   modelConfig Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  runs        ClassifierRun[]
 
   @@index([modelId])
+}
+
+model ClassifierRun {
+  id           String              @id @default(cuid(2))
+  status       ClassifierRunStatus
+  result       Json?
+  errorMessage String?
+  createdAt    DateTime            @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  classifierId String
+  classifier   Classifier @relation(fields: [classifierId], references: [id], onDelete: Cascade)
+  mediaAssetId String
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@index([classifierId])
+  @@index([mediaAssetId])
+  @@index([createdAt])
+}
+
+enum ClassifierRunStatus {
+  PROCESSING
+  SUCCESS
+  FAILED
 }

@@ -1,5 +1,6 @@
+import { ClassifierRunStatus } from '@/database/generated/prisma';
 import { ConfigValues } from '@longpoint/devkit';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ClassifierNotFound, MediaAssetNotFound } from '../../errors';
 import { AiPluginService } from '../ai-plugin/ai-plugin.service';
 import { CommonMediaService } from '../common-media/common-media.service';
@@ -7,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CommonClassifierService {
+  private readonly logger = new Logger(CommonClassifierService.name);
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly commonMediaService: CommonMediaService,
@@ -19,13 +22,47 @@ export class CommonClassifierService {
       classifier.modelId
     );
     const mediaAsset = await this.getMediaAsset(mediaAssetId);
-
-    const result = await model.classify({
-      url: mediaAsset.url,
-      modelConfig: classifier.modelConfig as ConfigValues,
+    const classifierRun = await this.prismaService.classifierRun.create({
+      data: {
+        status: ClassifierRunStatus.PROCESSING,
+        classifierId: classifier.id,
+        mediaAssetId,
+        startedAt: new Date(),
+      },
     });
 
-    return result;
+    try {
+      const result = await model.classify({
+        url: mediaAsset.url,
+        modelConfig: classifier.modelConfig as ConfigValues,
+      });
+
+      await this.prismaService.classifierRun.update({
+        where: {
+          id: classifierRun.id,
+        },
+        data: {
+          status: ClassifierRunStatus.SUCCESS,
+          result,
+          completedAt: new Date(),
+        },
+      });
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+
+      await this.prismaService.classifierRun.update({
+        where: {
+          id: classifierRun.id,
+        },
+        data: {
+          status: ClassifierRunStatus.FAILED,
+          errorMessage,
+          completedAt: new Date(),
+        },
+      });
+
+      this.logger.error(`Classifier ${classifierName} failed: ${errorMessage}`);
+    }
   }
 
   private async getClassifier(name: string) {
@@ -34,6 +71,7 @@ export class CommonClassifierService {
         name,
       },
       select: {
+        id: true,
         modelId: true,
         modelConfig: true,
       },
