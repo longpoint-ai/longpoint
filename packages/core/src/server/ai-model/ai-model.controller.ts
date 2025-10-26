@@ -3,13 +3,13 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiSdkTag } from '../common/decorators';
 import { ModelSummaryDto } from '../common/dtos/model';
 import { SdkTag } from '../common/types/swagger.types';
-import { ModelService } from './model.service';
+import { AiModelService } from './ai-model.service';
 
 @Controller('ai/models')
 @ApiSdkTag(SdkTag.AI)
 @ApiBearerAuth()
-export class ModelsController {
-  constructor(private readonly modelService: ModelService) {}
+export class AiModelController {
+  constructor(private readonly modelService: AiModelService) {}
 
   @Get(':id')
   @ApiOperation({

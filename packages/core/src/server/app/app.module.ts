@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { AiModelModule } from '../ai-model/ai-model.module';
 import { AiProviderModule } from '../ai-provider/ai-provider.module';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthModule } from '../auth/auth.module';
@@ -9,7 +10,6 @@ import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { LibraryModule } from '../library/library.module';
 import { LoggerModule } from '../logger/logger.module';
 import { MediaModule } from '../media/media.module';
-import { ModelModule } from '../model/model.module';
 import { SetupModule } from '../setup/setup.module';
 import { getStaticModule } from './get-static-module';
 
@@ -24,7 +24,7 @@ import { getStaticModule } from './get-static-module';
     ClassifierModule,
     LibraryModule,
     MediaModule,
-    ModelModule,
+    AiModelModule,
     SetupModule,
   ],
   providers: [

@@ -3,7 +3,7 @@ import { ModelSummaryDto } from '../common/dtos/model';
 import { AiPluginService } from '../common/services';
 
 @Injectable()
-export class ModelService {
+export class AiModelService {
   constructor(private readonly aiPluginService: AiPluginService) {}
 
   async getModel(id: string) {
