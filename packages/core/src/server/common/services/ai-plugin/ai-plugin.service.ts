@@ -1,8 +1,8 @@
 import {
   AiManifest,
   AiModelManifest,
-  AiProvider,
-  AiProviderArgs,
+  AiProviderPlugin,
+  AiProviderPluginArgs,
   ConfigSchema,
   ConfigValues,
 } from '@longpoint/devkit';
@@ -19,8 +19,10 @@ import { EncryptionService } from '../encryption/encryption.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface ProviderPluginRegistryEntry {
-  instance: AiProvider;
-  ProviderClass: new (args: AiProviderArgs<AiManifest>) => AiProvider;
+  instance: AiProviderPlugin;
+  ProviderClass: new (
+    args: AiProviderPluginArgs<AiManifest>
+  ) => AiProviderPlugin;
 }
 
 @Injectable()
@@ -231,7 +233,7 @@ export class AiPluginService implements OnModuleInit {
     }
   }
 
-  private getPluginInstance(providerId: string): AiProvider | null {
+  private getPluginInstance(providerId: string): AiProviderPlugin | null {
     const regEntry = this.providerPluginRegistry.get(providerId);
     return regEntry?.instance ?? null;
   }

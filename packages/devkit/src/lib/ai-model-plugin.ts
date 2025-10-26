@@ -1,8 +1,8 @@
 import { Classify, ClassifyArgs } from './ai-capabilities.js';
 import { AiModelManifest } from './ai-manifest.js';
-import { JsonObject } from './types.js';
+import { JsonObject } from './config-schema.js';
 
-export abstract class AiModel implements Classify {
+export abstract class AiModelPlugin implements Classify {
   constructor(readonly manifest: AiModelManifest) {}
 
   async classify(args: ClassifyArgs): Promise<JsonObject> {

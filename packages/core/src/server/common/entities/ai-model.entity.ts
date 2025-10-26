@@ -1,6 +1,6 @@
 import {
-  AiModel,
-  AiProvider,
+  AiModelPlugin,
+  AiProviderPlugin,
   Classify,
   ClassifyArgs,
   JsonObject,
@@ -12,7 +12,7 @@ export interface AiModelEntityArgs {
   id: string;
   name?: string;
   description?: string | null;
-  providerPluginInstance: AiProvider;
+  providerPluginInstance: AiProviderPlugin;
   providerEntity: AiProviderEntity;
 }
 
@@ -21,7 +21,7 @@ export class AiModelEntity implements Classify {
   readonly name: string;
   readonly description: string | null;
   readonly provider: AiProviderEntity;
-  private readonly providerPluginInstance: AiProvider;
+  private readonly providerPluginInstance: AiProviderPlugin;
 
   constructor(args: AiModelEntityArgs) {
     this.id = args.id;
@@ -54,7 +54,7 @@ export class AiModelEntity implements Classify {
     return `${this.provider.id}/${this.id}`;
   }
 
-  private getModelPluginInstance(): AiModel {
+  private getModelPluginInstance(): AiModelPlugin {
     const model = this.providerPluginInstance.getModel(this.id);
     if (!model) {
       throw new Error(`Something went wrong getting the model instance`);

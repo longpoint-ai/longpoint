@@ -1,13 +1,13 @@
 import { Anthropic } from '@anthropic-ai/sdk';
 import {
-  AiModel,
   AiModelManifest,
-  AiProvider,
+  AiModelPlugin,
+  AiProviderPlugin,
   ClassifyArgs
 } from '@longpoint/devkit';
 import AnthropicManifest from '../ai-manifest.json' with { type: 'json' };
 
-export class AnthropicProvider extends AiProvider<typeof AnthropicManifest> {
+export class AnthropicProvider extends AiProviderPlugin<typeof AnthropicManifest> {
   protected override getModelInstance(manifest: AiModelManifest) {
     const apiKey = this.configValues.apiKey;
 
@@ -34,7 +34,7 @@ export interface ClaudeModelConfig {
   }>
 }
 
-export class ClaudeModel extends AiModel {
+export class ClaudeModel extends AiModelPlugin {
   protected readonly client: Anthropic;
 
   constructor(args: ClaudeModelArgs) {

@@ -1,1 +1,1 @@
-export * from './model.entity';
+export * from './ai-model.entity';

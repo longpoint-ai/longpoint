@@ -1,19 +1,19 @@
 import { AiManifest, AiModelManifest } from './ai-manifest.js';
-import { AiModel } from './ai-model.js';
-import { ConfigValues } from './types.js';
+import { AiModelPlugin } from './ai-model-plugin.js';
+import { ConfigValues } from './config-schema.js';
 
-export interface AiProviderArgs<M extends AiManifest = AiManifest> {
+export interface AiProviderPluginArgs<M extends AiManifest = AiManifest> {
   manifest: M['provider'];
   configValues: ConfigValues<M['provider']['config']>;
 }
 
-export abstract class AiProvider<M extends AiManifest = AiManifest> {
+export abstract class AiProviderPlugin<M extends AiManifest = AiManifest> {
   readonly id: string;
   readonly name: string;
   readonly manifest: M['provider'];
   readonly configValues: ConfigValues<M['provider']['config']>;
 
-  constructor(args: AiProviderArgs<M>) {
+  constructor(args: AiProviderPluginArgs<M>) {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
     this.manifest = args.manifest;
@@ -25,7 +25,7 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
    * @param id - The ID of the model to get the instance of.
    * @returns The instance of the model.
    */
-  getModel(id: string): AiModel | null {
+  getModel(id: string): AiModelPlugin | null {
     const model = this.manifest.models.find((model) => model.id === id);
 
     if (!model) {
@@ -45,5 +45,5 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
    * @protected
    * @returns An instance of the model.
    */
-  protected abstract getModelInstance(manifest: AiModelManifest): AiModel;
+  protected abstract getModelInstance(manifest: AiModelManifest): AiModelPlugin;
 }

@@ -1,11 +1,4 @@
-import { ConfigValues, JsonObject } from './types.js';
-
-export const AiModelCapability = {
-  CLASSIFY: 'CLASSIFY',
-} as const;
-
-export type AiModelCapability =
-  (typeof AiModelCapability)[keyof typeof AiModelCapability];
+import { ConfigValues, JsonObject } from './config-schema.js';
 
 export interface ClassifyArgs<T extends ConfigValues = ConfigValues> {
   url: string;

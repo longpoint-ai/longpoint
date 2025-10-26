@@ -1,16 +1,16 @@
-import { AiProvider } from '@longpoint/devkit';
+import { AiProviderPlugin } from '@longpoint/devkit';
 import { validateConfigSchema } from '@longpoint/validations';
 import { AiProviderParams } from '../dtos/ai-provider';
 
 export interface AiProviderEntityArgs {
-  pluginInstance: AiProvider;
+  pluginInstance: AiProviderPlugin;
 }
 
 export class AiProviderEntity {
   readonly id: string;
   readonly name: string;
   readonly image?: string;
-  private readonly pluginInstance: AiProvider;
+  private readonly pluginInstance: AiProviderPlugin;
 
   constructor(args: AiProviderEntityArgs) {
     this.id = args.pluginInstance.id;

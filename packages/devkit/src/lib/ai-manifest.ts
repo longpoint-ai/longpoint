@@ -1,4 +1,4 @@
-import { ConfigSchema } from './types.js';
+import { ConfigSchema } from './config-schema.js';
 
 export interface AiManifest {
   provider: AiProviderManifest;
