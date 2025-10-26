@@ -79,3 +79,20 @@ export const ApiClassifierNotFoundResponse = () =>
       ...classifierNotFoundDoc,
     })
   );
+
+export class AiProviderNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('AI provider', id);
+  }
+}
+export const aiProviderNotFoundDoc = apiErrorDoc(
+  new AiProviderNotFound(createId())
+);
+export const ApiAiProviderNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'AI provider not found',
+      ...aiProviderNotFoundDoc,
+    })
+  );
+};

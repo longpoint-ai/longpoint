@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { AiProviderModule } from '../ai-provider/ai-provider.module';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthModule } from '../auth/auth.module';
 import { ClassifierModule } from '../classifier/classifier.module';
@@ -18,6 +19,7 @@ import { getStaticModule } from './get-static-module';
     CommonModule,
     LoggerModule,
     // Feature modules
+    AiProviderModule,
     AuthModule,
     ClassifierModule,
     LibraryModule,

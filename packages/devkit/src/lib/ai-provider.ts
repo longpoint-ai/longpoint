@@ -10,13 +10,13 @@ export interface AiProviderArgs<M extends AiManifest = AiManifest> {
 export abstract class AiProvider<M extends AiManifest = AiManifest> {
   readonly id: string;
   readonly name: string;
-  readonly models: M['provider']['models'];
+  readonly manifest: M['provider'];
   readonly configValues: ConfigValues<M['provider']['config']>;
 
   constructor(args: AiProviderArgs<M>) {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
-    this.models = args.manifest.models;
+    this.manifest = args.manifest;
     this.configValues = args.configValues;
   }
 
@@ -26,7 +26,7 @@ export abstract class AiProvider<M extends AiManifest = AiManifest> {
    * @returns The instance of the model.
    */
   getModel(id: string): AiModel | null {
-    const model = this.models.find((model) => model.id === id);
+    const model = this.manifest.models.find((model) => model.id === id);
 
     if (!model) {
       return null;

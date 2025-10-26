@@ -12,7 +12,8 @@ export class ModelService {
   }
 
   async listModels() {
-    const models = await this.aiPluginService.listInstalledModels();
+    const models = await this.aiPluginService.listModels();
+
     return models.map((model) => new ModelSummaryDto(model.toJson()));
   }
 }

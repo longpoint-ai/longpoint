@@ -18,9 +18,7 @@ export class CommonClassifierService {
 
   async runClassifier(mediaAssetId: string, classifierName: string) {
     const classifier = await this.getClassifier(classifierName);
-    const model = await this.aiPluginService.getModelOrThrow(
-      classifier.modelId
-    );
+    const model = this.aiPluginService.getModelOrThrow(classifier.modelId);
     const mediaAsset = await this.getMediaAsset(mediaAssetId);
     const classifierRun = await this.prismaService.classifierRun.create({
       data: {

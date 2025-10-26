@@ -1,44 +1,34 @@
 import {
-  AiManifest,
   AiModel,
+  AiProvider,
   Classify,
   ClassifyArgs,
-  ConfigValues,
   JsonObject,
 } from '@longpoint/devkit';
-import { validateConfigSchema } from '@longpoint/validations';
 import { ModelSummaryParams } from '../dtos/model';
+import { AiProviderEntity } from './ai-provider.entity';
+
+export interface AiModelEntityArgs {
+  id: string;
+  name?: string;
+  description?: string | null;
+  providerPluginInstance: AiProvider;
+  providerEntity: AiProviderEntity;
+}
 
 export class AiModelEntity implements Classify {
   readonly id: string;
   readonly name: string;
   readonly description: string | null;
-  readonly fullyQualifiedId: string;
-  private readonly providerConfig?: ConfigValues;
-  private readonly rootManifest: AiManifest;
-  private readonly baseModel: AiModel;
+  readonly provider: AiProviderEntity;
+  private readonly providerPluginInstance: AiProvider;
 
-  constructor(
-    modelId: string,
-    rootManifest: AiManifest,
-    baseModel: AiModel,
-    providerConfig?: ConfigValues
-  ) {
-    const modelManifest = rootManifest.provider.models.find(
-      (m) => m.id === modelId
-    );
-
-    if (!modelManifest) {
-      throw new Error(`Model manifest not found for: ${modelId}`);
-    }
-
-    this.id = modelId;
-    this.name = modelManifest.name ?? this.id;
-    this.description = modelManifest.description ?? null;
-    this.fullyQualifiedId = `${rootManifest.provider.id}/${this.id}`;
-    this.providerConfig = providerConfig;
-    this.rootManifest = rootManifest;
-    this.baseModel = baseModel;
+  constructor(args: AiModelEntityArgs) {
+    this.id = args.id;
+    this.name = args.name ?? this.id;
+    this.description = args.description ?? null;
+    this.provider = args.providerEntity;
+    this.providerPluginInstance = args.providerPluginInstance;
   }
 
   /**
@@ -47,22 +37,7 @@ export class AiModelEntity implements Classify {
    * @returns
    */
   async classify(args: ClassifyArgs): Promise<JsonObject> {
-    return this.baseModel.classify(args);
-  }
-
-  providerNeedsConfig(): boolean {
-    const configSchema = this.rootManifest.provider.config;
-
-    if (!configSchema) {
-      return false;
-    }
-
-    const result = validateConfigSchema(
-      configSchema,
-      this.providerConfig ?? {}
-    );
-
-    return !result.valid;
+    return this.getModelPluginInstance().classify(args);
   }
 
   toJson(): ModelSummaryParams {
@@ -71,12 +46,19 @@ export class AiModelEntity implements Classify {
       fullyQualifiedId: this.fullyQualifiedId,
       name: this.name,
       description: this.description,
-      provider: {
-        id: this.rootManifest.provider.id,
-        name: this.rootManifest.provider.name,
-        image: this.rootManifest.provider.image,
-        needsConfig: this.providerNeedsConfig(),
-      },
+      provider: this.provider.toJson(),
     };
+  }
+
+  get fullyQualifiedId(): string {
+    return `${this.provider.id}/${this.id}`;
+  }
+
+  private getModelPluginInstance(): AiModel {
+    const model = this.providerPluginInstance.getModel(this.id);
+    if (!model) {
+      throw new Error(`Something went wrong getting the model instance`);
+    }
+    return model;
   }
 }

@@ -6,7 +6,7 @@
     "config": {
       "apiKey": {
         "label": "API Key",
-        "type": "string",
+        "type": "secret",
         "required": true,
         "description": "Your Claude API key. You can find it in the Claude Console."
       }
@@ -17,6 +17,15 @@
         "name": "Claude Haiku 4.5",
         "description": "Claude Haiku 4.5 is a powerful language model that can be used to generate text, code, and other content.",
         "classifier": {
+          "_comment": "TODO: support maxFileSize and supportedMimeTypes",
+          "maxFileSize": "5MB",
+          "supportedMimeTypes": [
+            "image/jpg",
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp"
+          ],
           "input": {
             "fieldCapture": {
               "label": "Fields to capture",

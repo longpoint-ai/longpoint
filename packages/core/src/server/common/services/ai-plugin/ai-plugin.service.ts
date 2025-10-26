@@ -1,27 +1,41 @@
-import { AiManifest, AiProvider, ConfigValues } from '@longpoint/devkit';
+import {
+  AiManifest,
+  AiModelManifest,
+  AiProvider,
+  AiProviderArgs,
+  ConfigSchema,
+  ConfigValues,
+} from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
+import { validateConfigSchema } from '@longpoint/validations';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { join } from 'path';
 import { AiModelEntity } from '../../entities';
-import { ModelNotFound } from '../../errors';
+import { AiProviderEntity } from '../../entities/ai-provider.entity';
+import { AiProviderNotFound, InvalidInput, ModelNotFound } from '../../errors';
+import { EncryptionService } from '../encryption/encryption.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-interface ProviderRegistry {
-  [providerId: string]: {
-    provider: AiProvider;
-    manifest: AiManifest;
-    packagePath: string;
-  };
+interface ProviderPluginRegistryEntry {
+  instance: AiProvider;
+  ProviderClass: new (args: AiProviderArgs<AiManifest>) => AiProvider;
 }
 
 @Injectable()
 export class AiPluginService implements OnModuleInit {
-  private readonly providerRegistry: ProviderRegistry = {};
   private readonly logger = new Logger(AiPluginService.name);
+  private readonly providerPluginRegistry = new Map<
+    string,
+    ProviderPluginRegistryEntry
+  >();
+  private readonly modelManifestRegistry = new Map<string, AiModelManifest>();
 
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly encryptionService: EncryptionService
+  ) {}
 
   async onModuleInit() {
     await this.buildProviderRegistry();
@@ -31,25 +45,32 @@ export class AiPluginService implements OnModuleInit {
    * List all installed models.
    * @returns A list of ai model entities.
    */
-  async listInstalledModels() {
-    return Object.values(this.providerRegistry).flatMap((registry) => {
-      const models: AiModelEntity[] = [];
+  listModels() {
+    return Array.from(this.providerPluginRegistry.values()).flatMap(
+      (regEntry) => {
+        const models: AiModelEntity[] = [];
 
-      for (const modelManifest of registry.manifest.provider.models) {
-        const baseModel = registry.provider.getModel(modelManifest.id);
-        if (baseModel) {
-          models.push(
-            new AiModelEntity(
-              modelManifest.id,
-              registry.manifest,
-              baseModel,
-              registry.provider.configValues
-            )
+        for (const modelManifest of regEntry.instance.manifest.models) {
+          const model = this.getModel(
+            `${regEntry.instance.id}/${modelManifest.id}`
           );
+          if (model) {
+            models.push(model);
+          }
         }
-      }
 
-      return models;
+        return models;
+      }
+    );
+  }
+
+  /**
+   * List all installed providers.
+   * @returns A list of ai provider entities.
+   */
+  listProviders() {
+    return Array.from(this.providerPluginRegistry.values()).map((regEntry) => {
+      return new AiProviderEntity({ pluginInstance: regEntry.instance });
     });
   }
 
@@ -58,27 +79,33 @@ export class AiPluginService implements OnModuleInit {
    * @param fullyQualifiedId - The fully qualified ID of the model to get.
    * @returns The ai model entity
    */
-  async getModel(fullyQualifiedId: string): Promise<AiModelEntity | null> {
+  getModel(fullyQualifiedId: string): AiModelEntity | null {
     const [providerId, modelId] = fullyQualifiedId.split('/');
 
-    const registry = this.providerRegistry[providerId];
-
-    if (!registry) {
+    const providerPluginInstance = this.getPluginInstance(providerId);
+    if (!providerPluginInstance) {
       return null;
     }
 
-    const baseModel = registry.provider.getModel(modelId);
-
-    if (!baseModel) {
+    const providerEntity = this.getProvider(providerId);
+    if (!providerEntity) {
       return null;
     }
 
-    return new AiModelEntity(
-      modelId,
-      registry.manifest,
-      baseModel,
-      registry.provider.configValues
+    const modelManifest = this.modelManifestRegistry.get(
+      `${providerId}/${modelId}`
     );
+    if (!modelManifest) {
+      return null;
+    }
+
+    return new AiModelEntity({
+      id: modelId,
+      name: modelManifest.name,
+      description: modelManifest.description,
+      providerPluginInstance,
+      providerEntity,
+    });
   }
 
   /**
@@ -87,12 +114,76 @@ export class AiPluginService implements OnModuleInit {
    * @returns The ai model entity.
    * @throws {ModelNotFound} If the model is not found.
    */
-  async getModelOrThrow(fullyQualifiedId: string): Promise<AiModelEntity> {
-    const model = await this.getModel(fullyQualifiedId);
+  getModelOrThrow(fullyQualifiedId: string): AiModelEntity {
+    const model = this.getModel(fullyQualifiedId);
     if (!model) {
       throw new ModelNotFound(fullyQualifiedId);
     }
     return model;
+  }
+
+  /**
+   * Get a provider by its ID.
+   * @param providerId - The ID of the provider to get.
+   * @returns The ai provider entity, or `null` if the provider is not found.
+   */
+  getProvider(providerId: string): AiProviderEntity | null {
+    const pluginInstance = this.getPluginInstance(providerId);
+    if (!pluginInstance) {
+      return null;
+    }
+    return new AiProviderEntity({ pluginInstance });
+  }
+
+  /**
+   * Get a provider by its ID and throw an error if it is not found.
+   * @param providerId - The ID of the provider to get.
+   * @returns The ai provider entity.
+   * @throws {AiProviderNotFound} If the provider is not found.
+   */
+  getProviderOrThrow(providerId: string): AiProviderEntity {
+    const provider = this.getProvider(providerId);
+    if (!provider) {
+      throw new AiProviderNotFound(providerId);
+    }
+    return provider;
+  }
+
+  /**
+   * Update the configuration values for a provider.
+   * @param providerId - The ID of the provider to update.
+   * @param configValues
+   * @returns
+   */
+  async updateProviderConfig(providerId: string, configValues: ConfigValues) {
+    const pluginInstance = this.getPluginInstance(providerId);
+    if (!pluginInstance) {
+      throw new AiProviderNotFound(providerId);
+    }
+
+    const configSchema = pluginInstance.manifest.config;
+    if (!configSchema) {
+      throw new InvalidInput('Provider does not support configuration');
+    }
+
+    const validationResult = validateConfigSchema(configSchema, configValues);
+    if (!validationResult.valid) {
+      throw new InvalidInput(validationResult.errors);
+    }
+
+    const encryptedConfig = this.encryptionService.encryptConfigValues(
+      configValues,
+      configSchema
+    );
+    await this.prismaService.aiProviderConfig.upsert({
+      where: { providerId },
+      update: { config: encryptedConfig },
+      create: { providerId, config: encryptedConfig },
+    });
+
+    return new AiProviderEntity({
+      pluginInstance: this.updatePluginInstance(providerId, configValues),
+    });
   }
 
   private async buildProviderRegistry() {
@@ -113,33 +204,81 @@ export class AiPluginService implements OnModuleInit {
       const providerId =
         manifest.provider?.id ?? packageName.replace('longpoint-ai-', '');
 
-      // Dynamically import the provider
       const require = createRequire(__filename);
       const providerModule = require(join(packagePath, 'dist', 'index.js'));
       const ProviderClass = providerModule.default;
 
-      if (ProviderClass) {
-        const config = await this.getProviderConfig(providerId);
+      for (const modelManifest of manifest.provider?.models ?? []) {
+        this.modelManifestRegistry.set(
+          `${providerId}/${modelManifest.id}`,
+          modelManifest
+        );
+      }
 
-        this.providerRegistry[providerId] = {
-          provider: new ProviderClass({
+      if (ProviderClass) {
+        const config = await this.getProviderConfigFromDb(
+          providerId,
+          manifest.provider?.config
+        );
+        this.providerPluginRegistry.set(providerId, {
+          instance: new ProviderClass({
             manifest: manifest.provider,
             configValues: config ?? {},
           }),
-          manifest,
-          packagePath,
-        };
+          ProviderClass,
+        });
       }
     }
   }
 
-  private async getProviderConfig(providerId: string) {
+  private getPluginInstance(providerId: string): AiProvider | null {
+    const regEntry = this.providerPluginRegistry.get(providerId);
+    return regEntry?.instance ?? null;
+  }
+
+  private updatePluginInstance(
+    providerId: string,
+    configValues: ConfigValues = {}
+  ) {
+    const regEntry = this.providerPluginRegistry.get(providerId);
+    if (!regEntry) {
+      throw new AiProviderNotFound(providerId);
+    }
+    regEntry.instance = new regEntry.ProviderClass({
+      manifest: regEntry.instance.manifest,
+      configValues,
+    });
+    return regEntry.instance;
+  }
+
+  private async getProviderConfigFromDb(
+    providerId: string,
+    configSchema: ConfigSchema
+  ) {
     const aiProviderConfig =
       await this.prismaService.aiProviderConfig.findUnique({
         where: {
           providerId,
         },
       });
-    return aiProviderConfig?.config as ConfigValues | undefined;
+
+    if (!aiProviderConfig) {
+      return {};
+    }
+
+    try {
+      return this.encryptionService.decryptConfigValues(
+        aiProviderConfig?.config as ConfigValues,
+        configSchema
+      );
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Failed to decrypt data')) {
+        this.logger.warn(
+          `Failed to decrypt config for AI provider "${providerId}", returning as is!`
+        );
+        return aiProviderConfig?.config as ConfigValues;
+      }
+      throw e;
+    }
   }
 }

@@ -8,6 +8,7 @@ import {
   SelectedClassifier,
 } from '../common/selectors/classifier.selectors';
 import { AiPluginService, PrismaService } from '../common/services';
+import { EncryptionService } from '../common/services/encryption/encryption.service';
 import { ClassifierDto, ClassifierParams } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';
@@ -16,20 +17,24 @@ import { UpdateClassifierDto } from './dtos/update-classifier.dto';
 export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly aiPluginService: AiPluginService
+    private readonly aiPluginService: AiPluginService,
+    private readonly encryptionService: EncryptionService
   ) {}
 
   async createClassifier(data: CreateClassifierDto) {
     const modelConfig = data.modelConfig ?? undefined;
 
-    await this.assertModelConfig(data.modelId, modelConfig);
+    const encryptedModelConfig = await this.assertModelConfig(
+      data.modelId,
+      modelConfig
+    );
 
     const classifier = await this.prismaService.classifier.create({
       data: {
         name: data.name,
         description: data.description,
         modelId: data.modelId,
-        modelConfig: modelConfig,
+        modelConfig: encryptedModelConfig,
       },
       select: selectClassifier(),
     });
@@ -59,12 +64,23 @@ export class ClassifierService {
     const newModelId = data.modelId;
     const newModelConfig = data.modelConfig ?? undefined;
 
+    let modelConfigToUpdate: ConfigValues | undefined;
+
     if (newModelId && !newModelConfig) {
-      await this.assertModelConfig(newModelId, oldModelConfig);
+      modelConfigToUpdate = await this.assertModelConfig(
+        newModelId,
+        oldModelConfig
+      );
     } else if (newModelConfig && !newModelId) {
-      await this.assertModelConfig(oldModelId, newModelConfig);
+      modelConfigToUpdate = await this.assertModelConfig(
+        oldModelId,
+        newModelConfig
+      );
     } else if (newModelConfig && newModelId) {
-      await this.assertModelConfig(newModelId, newModelConfig);
+      modelConfigToUpdate = await this.assertModelConfig(
+        newModelId,
+        newModelConfig
+      );
     }
 
     const updatedClassifier = await this.prismaService.classifier.update({
@@ -76,7 +92,7 @@ export class ClassifierService {
         description: data.description,
         modelId: data.modelId,
         modelConfig:
-          data.modelConfig === null ? Prisma.JsonNull : data.modelConfig,
+          data.modelConfig === null ? Prisma.JsonNull : modelConfigToUpdate,
       },
       select: selectClassifier(),
     });
@@ -90,7 +106,7 @@ export class ClassifierService {
     fullModelId: string,
     modelConfig?: ConfigValues
   ) {
-    const model = await this.aiPluginService.getModelOrThrow(fullModelId);
+    const model = this.aiPluginService.getModelOrThrow(fullModelId);
 
     const classifierInputSchema = model.manifest.classifier?.input;
 
@@ -109,6 +125,13 @@ export class ClassifierService {
     if (!validationResult.valid) {
       throw new InvalidInput(validationResult.errors);
     }
+
+    const encryptedModelConfig = this.encryptionService.encryptConfigValues(
+      modelConfig ?? {},
+      classifierInputSchema
+    );
+
+    return encryptedModelConfig;
   }
 
   private async hydrateClassifier(
