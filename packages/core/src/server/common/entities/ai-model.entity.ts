@@ -28,7 +28,7 @@ export class AiModelEntity {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
     this.description = args.manifest.description ?? null;
-    this.supportedMimeTypes = args.manifest.supportedMimeTypes;
+    this.supportedMimeTypes = args.manifest.supportedMimeTypes ?? [];
     this.provider = args.providerEntity;
     this.providerPluginInstance = args.providerPluginInstance;
     this.maxFileSize = parseBytes(args.manifest.maxFileSize ?? '0B');

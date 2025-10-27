@@ -15,7 +15,7 @@ export class AiProviderEntity {
   constructor(args: AiProviderEntityArgs) {
     this.id = args.pluginInstance.id;
     this.name = args.pluginInstance.name ?? this.id;
-    this.image = args.pluginInstance.manifest.image;
+    this.image = args.pluginInstance.manifest.provider.image;
     this.pluginInstance = args.pluginInstance;
   }
 
@@ -30,7 +30,7 @@ export class AiProviderEntity {
   }
 
   get needsConfig(): boolean {
-    const configSchema = this.pluginInstance.manifest.config;
+    const configSchema = this.pluginInstance.manifest.provider.config;
 
     if (!configSchema) {
       return false;

@@ -1,21 +1,25 @@
-import { AiManifest, AiModelManifest } from './ai-manifest.js';
+import { AiModelManifest, AiPluginManifest } from './ai-manifest.js';
 import { AiModelPlugin } from './ai-model-plugin.js';
 import { ConfigValues } from './config-schema.js';
 
-export interface AiProviderPluginArgs<M extends AiManifest = AiManifest> {
-  manifest: M['provider'];
+export interface AiProviderPluginArgs<
+  M extends AiPluginManifest = AiPluginManifest
+> {
+  manifest: M;
   configValues: ConfigValues<M['provider']['config']>;
 }
 
-export abstract class AiProviderPlugin<M extends AiManifest = AiManifest> {
+export abstract class AiProviderPlugin<
+  M extends AiPluginManifest = AiPluginManifest
+> {
   readonly id: string;
   readonly name: string;
-  readonly manifest: M['provider'];
+  readonly manifest: M;
   readonly configValues: ConfigValues<M['provider']['config']>;
 
   constructor(args: AiProviderPluginArgs<M>) {
-    this.id = args.manifest.id;
-    this.name = args.manifest.name ?? this.id;
+    this.id = args.manifest.provider.id;
+    this.name = args.manifest.provider.name ?? this.id;
     this.manifest = args.manifest;
     this.configValues = args.configValues;
   }
@@ -26,7 +30,7 @@ export abstract class AiProviderPlugin<M extends AiManifest = AiManifest> {
    * @returns The instance of the model.
    */
   getModel(id: string): AiModelPlugin | null {
-    const model = this.manifest.models.find((model) => model.id === id);
+    const model = this.manifest.models[id];
 
     if (!model) {
       return null;

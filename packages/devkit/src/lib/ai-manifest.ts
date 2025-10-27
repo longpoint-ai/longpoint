@@ -1,7 +1,8 @@
 import { ConfigSchema } from './config-schema.js';
 
-export interface AiManifest {
+export interface AiPluginManifest {
   provider: AiProviderManifest;
+  models: Record<string, AiModelManifest>;
 }
 
 export interface AiProviderManifest {
@@ -9,14 +10,13 @@ export interface AiProviderManifest {
   name?: string;
   config?: ConfigSchema;
   image?: string;
-  models: AiModelManifest[];
 }
 
 export interface AiModelManifest {
   id: string;
   name?: string;
   description?: string;
-  supportedMimeTypes: string[];
+  supportedMimeTypes?: string[];
   maxFileSize?: string;
   classifier?: {
     input?: ConfigSchema;

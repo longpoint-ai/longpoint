@@ -1,6 +1,6 @@
 import {
-  AiManifest,
   AiModelManifest,
+  AiPluginManifest,
   AiProviderPlugin,
   AiProviderPluginArgs,
   ConfigSchema,
@@ -21,7 +21,7 @@ import { PrismaService } from '../prisma/prisma.service';
 interface ProviderPluginRegistryEntry {
   instance: AiProviderPlugin;
   ProviderClass: new (
-    args: AiProviderPluginArgs<AiManifest>
+    args: AiProviderPluginArgs<AiPluginManifest>
   ) => AiProviderPlugin;
 }
 
@@ -52,7 +52,9 @@ export class AiPluginService implements OnModuleInit {
       (regEntry) => {
         const models: AiModelEntity[] = [];
 
-        for (const modelManifest of regEntry.instance.manifest.models) {
+        for (const modelManifest of Object.values(
+          regEntry.instance.manifest.models
+        )) {
           const model = this.getModel(
             `${regEntry.instance.id}/${modelManifest.id}`
           );
@@ -161,7 +163,7 @@ export class AiPluginService implements OnModuleInit {
       throw new AiProviderNotFound(providerId);
     }
 
-    const configSchema = pluginInstance.manifest.config;
+    const configSchema = pluginInstance.manifest.provider.config;
     if (!configSchema) {
       throw new InvalidInput('Provider does not support configuration');
     }
@@ -208,7 +210,9 @@ export class AiPluginService implements OnModuleInit {
       const providerModule = require(join(packagePath, 'dist', 'index.js'));
       const ProviderClass = providerModule.default;
 
-      for (const modelManifest of manifest.provider?.models ?? []) {
+      for (const modelManifest of Object.values(
+        manifest.models ?? {}
+      ) as AiModelManifest[]) {
         this.modelManifestRegistry.set(
           `${providerId}/${modelManifest.id}`,
           modelManifest
@@ -222,7 +226,7 @@ export class AiPluginService implements OnModuleInit {
         );
         this.providerPluginRegistry.set(providerId, {
           instance: new ProviderClass({
-            manifest: manifest.provider,
+            manifest: manifest,
             configValues: config ?? {},
           }),
           ProviderClass,

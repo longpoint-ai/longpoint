@@ -34,6 +34,24 @@ class AiClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
+   * Get an AI provider
+   */
+    async getAiProvider(providerId: string): Promise<components['schemas']['AiProvider']> {
+        const url = `ai/providers/${providerId}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update the config for an AI provider
+   */
+    async updateAiProviderConfig(providerId: string, data: components['schemas']['UpdateAiProviderConfig']): Promise<components['schemas']['AiProvider']> {
+        const url = `ai/providers/${providerId}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
    * Create a classifier
    */
     async createClassifier(data: components['schemas']['CreateClassifier']): Promise<components['schemas']['Classifier']> {

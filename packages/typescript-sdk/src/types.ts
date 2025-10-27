@@ -72,6 +72,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/providers/{providerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an AI provider */
+        get: operations["getAiProvider"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the config for an AI provider */
+        patch: operations["updateAiProviderConfig"];
+        trace?: never;
+    };
     "/library/tree": {
         parameters: {
             query?: never;
@@ -169,6 +187,35 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AiProvider: {
+            /**
+             * @description The config values for the provider
+             * @example {
+             *       "apiKey": "sk-1234567890"
+             *     }
+             */
+            config: Record<string, never> | null;
+            /**
+             * @description The ID of the AI provider
+             * @example anthropic
+             */
+            id: string;
+            /**
+             * @description An icon image of the AI provider
+             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
+             */
+            image: Record<string, never>;
+            /**
+             * @description The name of the AI provider
+             * @example Anthropic
+             */
+            name: string;
+            /**
+             * @description Whether the provider needs additional configuration
+             * @example false
+             */
+            needsConfig: boolean;
+        };
         AiProviderSummary: {
             /**
              * @description The ID of the AI provider
@@ -272,12 +319,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-24T19:42:30.322Z
+             * @example 2025-10-27T20:25:08.901Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example b9lwbptr04d8slzxbibrjemg
+             * @example a73w16fs0z7wvxuiywhds807
              */
             id: string;
             /**
@@ -375,7 +422,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example nbzp9zg3vn69ahvhsjw2t2ws
+             * @example amruacbppjfij7jbny5wo2ea
              */
             id: string;
             /**
@@ -412,15 +459,15 @@ export interface components {
             width: Record<string, never> | null;
         };
         MediaAssetVariants: {
-            /** @description The original media asset */
-            original: components["schemas"]["MediaAsset"];
+            /** @description The primary media asset */
+            primary: components["schemas"]["MediaAsset"];
         };
         MediaContainer: {
             /**
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "m7iccr89wmh0z2ut9879hp5e",
+             *         "id": "njs3be5prndwb33pcl0wzu03",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -436,12 +483,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-24T18:42:30.301Z
+             * @example 2025-10-27T19:25:08.880Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example b9lwbptr04d8slzxbibrjemg
+             * @example a73w16fs0z7wvxuiywhds807
              */
             id: string;
             /**
@@ -471,12 +518,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-24T18:42:30.301Z
+             * @example 2025-10-27T19:25:08.880Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example b9lwbptr04d8slzxbibrjemg
+             * @example a73w16fs0z7wvxuiywhds807
              */
             id: string;
             /**
@@ -533,6 +580,15 @@ export interface components {
              * @enum {string}
              */
             type: "DIRECTORY" | "MEDIA";
+        };
+        UpdateAiProviderConfig: {
+            /**
+             * @description The configuration values for the AI provider
+             * @example {
+             *       "apiKey": "1234567890"
+             *     }
+             */
+            config: Record<string, never>;
         };
         UpdateClassifier: {
             /**
@@ -678,6 +734,70 @@ export interface operations {
             };
         };
     };
+    getAiProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProvider"];
+                };
+            };
+            /** @description AI provider not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "AI provider with id j64sj5l3mn1g2y6se6rfteye not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateAiProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAiProviderConfig"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProvider"];
+                };
+            };
+        };
+    };
     getTree: {
         parameters: {
             query?: {
@@ -753,7 +873,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id tqgnczke57ls7abiufftptzb not found"
+                     *         "Media container with id kms50vsl0l7t0l8tfd3ylog6 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -820,7 +940,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id tqgnczke57ls7abiufftptzb not found"
+                     *         "Media container with id kms50vsl0l7t0l8tfd3ylog6 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -879,7 +999,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id tqgnczke57ls7abiufftptzb not found"
+                     *         "Media container with id kms50vsl0l7t0l8tfd3ylog6 not found"
                      *       ]
                      *     } */
                     "application/json": {

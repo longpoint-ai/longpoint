@@ -28,7 +28,7 @@ export class CommonClassifierService {
       return;
     }
 
-    if (mediaAsset.size ?? 0 > model.maxFileSize) {
+    if ((mediaAsset.size ?? 0) > model.maxFileSize) {
       this.logger.warn(
         `Media asset "${mediaAssetId}" is too large for model "${model.id}" - skipping classifier run`
       );
