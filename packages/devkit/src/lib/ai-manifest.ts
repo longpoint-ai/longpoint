@@ -16,6 +16,8 @@ export interface AiModelManifest {
   id: string;
   name?: string;
   description?: string;
+  supportedMimeTypes: string[];
+  maxFileSize?: string;
   classifier?: {
     input?: ConfigSchema;
   };

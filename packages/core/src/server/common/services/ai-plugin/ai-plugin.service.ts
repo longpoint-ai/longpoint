@@ -102,9 +102,7 @@ export class AiPluginService implements OnModuleInit {
     }
 
     return new AiModelEntity({
-      id: modelId,
-      name: modelManifest.name,
-      description: modelManifest.description,
+      manifest: modelManifest,
       providerPluginInstance,
       providerEntity,
     });

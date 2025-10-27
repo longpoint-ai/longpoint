@@ -20,6 +20,21 @@ export class CommonClassifierService {
     const classifier = await this.getClassifier(classifierName);
     const model = this.aiPluginService.getModelOrThrow(classifier.modelId);
     const mediaAsset = await this.getMediaAsset(mediaAssetId);
+
+    if (!model.isMimeTypeSupported(mediaAsset.mimeType)) {
+      this.logger.warn(
+        `Model "${model.id}" does not support mime type "${mediaAsset.mimeType}" - skipping classifier run`
+      );
+      return;
+    }
+
+    if (mediaAsset.size ?? 0 > model.maxFileSize) {
+      this.logger.warn(
+        `Media asset "${mediaAssetId}" is too large for model "${model.id}" - skipping classifier run`
+      );
+      return;
+    }
+
     const classifierRun = await this.prismaService.classifierRun.create({
       data: {
         status: ClassifierRunStatus.PROCESSING,
@@ -90,6 +105,7 @@ export class CommonClassifierService {
       select: {
         mimeType: true,
         containerId: true,
+        size: true,
       },
     });
 
