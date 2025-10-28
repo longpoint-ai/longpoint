@@ -27,6 +27,7 @@ import {
   HomeIcon,
   ImagePlayIcon,
   LogOutIcon,
+  ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
 } from 'lucide-react';
@@ -42,6 +43,11 @@ const sidebarItems = [
     label: 'Library',
     url: '/library',
     icon: ImagePlayIcon,
+  },
+  {
+    label: 'Classifiers',
+    url: '/classifiers',
+    icon: ScanSearchIcon,
   },
   {
     label: 'Settings',

@@ -1,1 +1,1 @@
-export * from './model-summary.dto';
+export * from './ai-model.dto';

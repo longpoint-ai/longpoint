@@ -1,6 +1,8 @@
 import { ConfigSchema } from '@longpoint/devkit';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 import { ConfigSchemaItemsDto } from './config-schema-item.dto';
+import { type ConfigSchemaForDto } from './config-schema.types';
+import { toConfigSchemaForDto } from './config-schema.utils';
 
 type ConfigSchemaValueParams = ConfigSchema[keyof ConfigSchema];
 
@@ -63,7 +65,7 @@ export class ConfigSchemaValueDto {
       $ref: getSchemaPath('ConfigSchemaValue'),
     },
   })
-  properties: Record<string, ConfigSchemaValueDto>;
+  properties: ConfigSchemaForDto;
 
   constructor(data: ConfigSchemaValueParams) {
     this.label = data.label;
@@ -73,12 +75,8 @@ export class ConfigSchemaValueDto {
     this.minLength = data.minLength ?? null;
     this.maxLength = data.maxLength ?? null;
     this.items = data.items ? new ConfigSchemaItemsDto(data.items) : null;
-    this.properties = Object.entries(data.properties ?? {}).reduce(
-      (acc, [k, v]) => {
-        acc[k] = new ConfigSchemaValueDto(v);
-        return acc;
-      },
-      {} as Record<string, ConfigSchemaValueDto>
-    );
+    this.properties = data.properties
+      ? toConfigSchemaForDto(data.properties)
+      : {};
   }
 }

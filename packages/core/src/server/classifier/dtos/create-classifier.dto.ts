@@ -11,7 +11,7 @@ import { ClassifierDto } from './classifier.dto';
 @ApiSchema({ name: 'CreateClassifier' })
 export class CreateClassifierDto extends IntersectionType(
   PickType(ClassifierDto, ['name', 'description'] as const),
-  PartialType(PickType(ClassifierDto, ['modelConfig'] as const))
+  PartialType(PickType(ClassifierDto, ['modelInput'] as const))
 ) {
   @IsString()
   @ApiProperty({

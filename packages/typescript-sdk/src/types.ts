@@ -190,6 +190,34 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AiModel: {
+            /** @description The schema for classifier input, if the model supports classification */
+            classifierInputSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description A brief description of the model
+             * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
+             */
+            description: Record<string, never> | null;
+            /**
+             * @description The fully qualified ID of the model
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the model
+             * @example claude-haiku-4-5-20251001
+             */
+            id: string;
+            /**
+             * @description The display name of the model
+             * @example Claude Haiku 4.5
+             */
+            name: string;
+            /** @description The provider of the model */
+            provider: components["schemas"]["AiProviderSummary"];
+        };
         AiProvider: {
             /**
              * @description The config values for the provider
@@ -259,9 +287,27 @@ export interface components {
              */
             id: string;
             /** @description The model used by the classifier */
-            model: components["schemas"]["ModelSummary"];
-            /** @description Configuration values to use for the model */
-            modelConfig: Record<string, never>;
+            model: components["schemas"]["AiModel"];
+            /**
+             * @description The input values to use for the model
+             * @example {
+             *       "name": "John Doe"
+             *     }
+             */
+            modelInput: Record<string, never>;
+            /**
+             * @description The schema for the classifier input
+             * @example {
+             *       "name": {
+             *         "label": "Name",
+             *         "type": "string",
+             *         "required": true
+             *       }
+             *     }
+             */
+            modelInputSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
             /**
              * @description The name of the classifier
              * @example general-tagging
@@ -292,7 +338,7 @@ export interface components {
              */
             id: string;
             /** @description The model used by the classifier */
-            model: components["schemas"]["ModelSummary"];
+            model: components["schemas"]["AiModel"];
             /**
              * @description The name of the classifier
              * @example general-tagging
@@ -305,19 +351,87 @@ export interface components {
              */
             updatedAt: string;
         };
+        ConfigSchemaItems: {
+            /**
+             * @description The maximum allowable length of the array
+             * @default null
+             * @example 10
+             */
+            maxLength: Record<string, never> | null;
+            /**
+             * @description The minimum allowable length of the array
+             * @default null
+             * @example 1
+             */
+            minLength: Record<string, never> | null;
+            /** @description The properties of the items, if the items are objects */
+            properties: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description The field type of the items
+             * @example string
+             */
+            type: string;
+        };
+        ConfigSchemaValue: {
+            /**
+             * @description A description of the field
+             * @example The name of the user
+             */
+            description: Record<string, never> | null;
+            /** @description The item schema, if the field type is an array */
+            items: components["schemas"]["ConfigSchemaItems"] | null;
+            /**
+             * @description The label of the field
+             * @example Name
+             */
+            label: string;
+            /**
+             * @description The maximum allowable length of the field, if the field type supports length constraints
+             * @default null
+             * @example 10
+             */
+            maxLength: Record<string, never> | null;
+            /**
+             * @description The minimum allowable length of the field, if the field type supports length constraints
+             * @default null
+             * @example 1
+             */
+            minLength: Record<string, never> | null;
+            /** @description The properties of the field, if the field type is an object */
+            properties: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description Whether the field is required
+             * @example true
+             */
+            required: boolean;
+            /**
+             * @description The field type
+             * @example string
+             */
+            type: string;
+        };
         CreateClassifier: {
             /**
              * @description A brief description of the classifier
              * @example Tag general subjects like people, places, and things
              */
             description: Record<string, never> | null;
-            /** @description Configuration values to use for the model */
-            modelConfig?: Record<string, never>;
             /**
              * @description The ID of the model to use for the classifier
              * @example anthropic/claude-haiku-4-5-20251001
              */
             modelId: string;
+            /**
+             * @description The input values to use for the model
+             * @example {
+             *       "name": "John Doe"
+             *     }
+             */
+            modelInput?: Record<string, never>;
             /**
              * @description The name of the classifier
              * @example general-tagging
@@ -353,12 +467,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-28T17:03:48.179Z
+             * @example 2025-10-28T20:47:02.408Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example zopqq5248xxcjhyhocq22nhp
+             * @example g3lm57bsjyr2g8dxbm48g83w
              */
             id: string;
             /**
@@ -462,7 +576,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example e96so8olxk0mgutpa2qxfbma
+             * @example du6xle78cuama7qj89llc3to
              */
             id: string;
             /**
@@ -507,7 +621,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "iy6kjqv69a2pfg6flqh8zmz1",
+             *         "id": "ldkaf5smwkfshd5776l8wtpw",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -523,12 +637,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-28T16:03:48.167Z
+             * @example 2025-10-28T19:47:02.389Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example zopqq5248xxcjhyhocq22nhp
+             * @example g3lm57bsjyr2g8dxbm48g83w
              */
             id: string;
             /**
@@ -558,12 +672,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-28T16:03:48.167Z
+             * @example 2025-10-28T19:47:02.389Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example zopqq5248xxcjhyhocq22nhp
+             * @example g3lm57bsjyr2g8dxbm48g83w
              */
             id: string;
             /**
@@ -582,27 +696,6 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-        };
-        ModelSummary: {
-            /** @description A brief description of the model */
-            description: Record<string, never> | null;
-            /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
-             */
-            id: string;
-            /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
-             */
-            name: string;
-            /** @description The provider of the model */
-            provider: components["schemas"]["AiProviderSummary"];
         };
         PaginationMetadata: {
             /**
@@ -653,13 +746,18 @@ export interface components {
              * @example Tag general subjects like people, places, and things
              */
             description?: Record<string, never> | null;
-            /** @description Configuration values to use for the model */
-            modelConfig?: Record<string, never>;
             /**
              * @description The ID of the model to use for the classifier
              * @example anthropic/claude-haiku-4-5-20251001
              */
             modelId?: string;
+            /**
+             * @description The input values to use for the model
+             * @example {
+             *       "name": "John Doe"
+             *     }
+             */
+            modelInput?: Record<string, never>;
             /**
              * @description The name of the classifier
              * @example general-tagging
@@ -865,7 +963,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ModelSummary"][];
+                    "application/json": components["schemas"]["AiModel"][];
                 };
             };
         };
@@ -885,7 +983,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AiModel"];
+                };
             };
         };
     };
@@ -917,7 +1017,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "AI provider with id yx8b605goiz69g5ayjs1aasz not found"
+                     *         "AI provider with id s8rcf3cvsjchtg7a6zmv6squ not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1028,7 +1128,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id j0h99zt0x9zrk2u7crlkh53v not found"
+                     *         "Media container with id o71jmhi87hh9qpgpmelrrzv6 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1095,7 +1195,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id j0h99zt0x9zrk2u7crlkh53v not found"
+                     *         "Media container with id o71jmhi87hh9qpgpmelrrzv6 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1154,7 +1254,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id j0h99zt0x9zrk2u7crlkh53v not found"
+                     *         "Media container with id o71jmhi87hh9qpgpmelrrzv6 not found"
                      *       ]
                      *     } */
                     "application/json": {

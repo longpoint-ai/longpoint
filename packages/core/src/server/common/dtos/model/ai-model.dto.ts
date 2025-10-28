@@ -2,18 +2,24 @@ import {
   AiProviderSummaryDto,
   AiProviderSummaryParams,
 } from '@/server/common/dtos/ai-provider';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { ConfigSchema } from '@longpoint/devkit';
+import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
+import {
+  type ConfigSchemaForDto,
+  toConfigSchemaForDto,
+} from '../config-schema';
 
-export interface ModelSummaryParams {
+export interface AiModelParams {
   id: string;
   fullyQualifiedId: string;
   name?: string;
   description?: string | null;
   provider: AiProviderSummaryParams;
+  classifierInputSchema: ConfigSchema;
 }
 
-@ApiSchema({ name: 'ModelSummary' })
-export class ModelSummaryDto {
+@ApiSchema({ name: 'AiModel' })
+export class AiModelDto {
   @ApiProperty({
     description: 'The ID of the model',
     example: 'claude-haiku-4-5-20251001',
@@ -41,16 +47,29 @@ export class ModelSummaryDto {
   description: string | null;
 
   @ApiProperty({
+    description:
+      'The schema for classifier input, if the model supports classification',
+    type: 'object',
+    additionalProperties: {
+      $ref: getSchemaPath('ConfigSchemaValue'),
+    },
+  })
+  classifierInputSchema: ConfigSchemaForDto;
+
+  @ApiProperty({
     description: 'The provider of the model',
     type: AiProviderSummaryDto,
   })
   provider: AiProviderSummaryDto;
 
-  constructor(data: ModelSummaryParams) {
+  constructor(data: AiModelParams) {
     this.id = data.id;
     this.fullyQualifiedId = data.fullyQualifiedId;
     this.name = data.name ?? this.id;
     this.description = data.description ?? null;
+    this.classifierInputSchema = toConfigSchemaForDto(
+      data.classifierInputSchema
+    );
     this.provider = new AiProviderSummaryDto(data.provider);
   }
 }

@@ -299,7 +299,10 @@ export type * from './types';
 
     let path = operation.path;
     pathParams.forEach((param) => {
-      path = path.replace(`{${param.name}}`, `\${${param.name}}`);
+      path = path.replace(
+        `{${param.name}}`,
+        `\${encodeURIComponent(String(${param.name}))}`
+      );
     });
 
     const lines = [];

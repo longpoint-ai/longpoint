@@ -3,10 +3,7 @@ import {
   ConfigSchemaValueDto,
   type ConfigSchemaForDto,
 } from '@/server/common/dtos/config-schema';
-import {
-  ModelSummaryDto,
-  ModelSummaryParams,
-} from '@/server/common/dtos/model';
+import { AiModelDto, AiModelParams } from '@/server/common/dtos/model';
 import { SelectedClassifier } from '@/server/common/selectors/classifier.selectors';
 import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
 import { IsClassifierName } from '@longpoint/validations';
@@ -19,7 +16,7 @@ import {
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
-  model: ModelSummaryParams;
+  model: AiModelParams;
   modelInputSchema: ConfigSchema;
 }
 
@@ -76,9 +73,9 @@ export class ClassifierDto {
 
   @ApiProperty({
     description: 'The model used by the classifier',
-    type: ModelSummaryDto,
+    type: AiModelDto,
   })
-  model: ModelSummaryDto;
+  model: AiModelDto;
 
   @ApiProperty({
     description: 'When the classifier was created',
@@ -99,7 +96,7 @@ export class ClassifierDto {
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.modelInput = data.modelInput as ConfigValues | null;
-    this.model = new ModelSummaryDto(data.model);
+    this.model = new AiModelDto(data.model);
     this.modelInputSchema = Object.entries(data.modelInputSchema).reduce(
       (acc, [key, value]) => {
         acc[key] = new ConfigSchemaValueDto(value);

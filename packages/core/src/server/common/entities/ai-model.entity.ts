@@ -9,7 +9,7 @@ import {
 } from '@longpoint/devkit';
 import { parseBytes } from '@longpoint/utils/format';
 import { validateConfigSchema, ValidationResult } from '@longpoint/validations';
-import { ModelSummaryParams } from '../dtos/model';
+import { AiModelParams } from '../dtos/model';
 import { ModelOperationNotSupported } from '../errors';
 import { AiProviderEntity } from './ai-provider.entity';
 
@@ -67,13 +67,14 @@ export class AiModelEntity {
     return this.manifest.supportedMimeTypes?.includes(mimeType) ?? false;
   }
 
-  toJson(): ModelSummaryParams {
+  toJson(): AiModelParams {
     return {
       id: this.id,
       fullyQualifiedId: this.fullyQualifiedId,
       name: this.name,
       description: this.description,
       provider: this.provider.toJson(),
+      classifierInputSchema: this.classifierInputSchema,
     };
   }
 

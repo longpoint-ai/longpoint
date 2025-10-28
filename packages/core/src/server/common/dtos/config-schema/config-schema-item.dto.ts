@@ -1,6 +1,7 @@
 import { ConfigSchema } from '@longpoint/devkit';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
-import { ConfigSchemaValueDto } from './config-schema-value.dto';
+import { type ConfigSchemaForDto } from './config-schema.types';
+import { toConfigSchemaForDto } from './config-schema.utils';
 
 type ConfigSchemaItemParams = Required<
   ConfigSchema[keyof ConfigSchema]
@@ -21,7 +22,7 @@ export class ConfigSchemaItemsDto {
       $ref: getSchemaPath('ConfigSchemaValue'),
     },
   })
-  properties: Record<string, ConfigSchemaValueDto>;
+  properties: ConfigSchemaForDto;
 
   @ApiProperty({
     description: 'The minimum allowable length of the array',
@@ -43,12 +44,8 @@ export class ConfigSchemaItemsDto {
     this.type = data.type;
     this.minLength = data.minLength ?? null;
     this.maxLength = data.maxLength ?? null;
-    this.properties = Object.entries(data.properties ?? {}).reduce(
-      (acc, [k, v]) => {
-        acc[k] = new ConfigSchemaValueDto(v);
-        return acc;
-      },
-      {} as Record<string, ConfigSchemaValueDto>
-    );
+    this.properties = data.properties
+      ? toConfigSchemaForDto(data.properties)
+      : {};
   }
 }
