@@ -26,7 +26,7 @@ import {
 } from '@longpoint/ui/components/select';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
   Controller,
@@ -117,10 +117,20 @@ export function CreateClassifier() {
 
     return (
       <Field>
-        <FieldLabel>
-          {label}
-          {required && <span className="ml-1 text-destructive">*</span>}
-        </FieldLabel>
+        <div className="flex items-center justify-between mb-2">
+          <FieldLabel>
+            {label}
+            {required && <span className="ml-1 text-destructive">*</span>}
+          </FieldLabel>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => append(getDefaultValueForType(itemSchema))}
+          >
+            <Plus className="h-4 w-4 mr-1" /> Add
+          </Button>
+        </div>
         {description && (
           <FieldDescription>{String(description)}</FieldDescription>
         )}
@@ -138,7 +148,24 @@ export function CreateClassifier() {
             if (itemType === 'object') {
               const properties = itemSchema?.properties || {};
               return (
-                <div key={field.id} className="rounded-lg border p-4 space-y-3">
+                <div
+                  key={field.id}
+                  className="rounded-lg border bg-muted/20 p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {label} item #{index + 1}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label="Remove item"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                   {Object.entries(properties).map(
                     ([propKey, propSchema]: [string, any]) => {
                       const propType = propSchema?.type;
@@ -267,16 +294,6 @@ export function CreateClassifier() {
                       );
                     }
                   )}
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => remove(index)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
                 </div>
               );
             }
@@ -346,30 +363,15 @@ export function CreateClassifier() {
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="icon"
+                  aria-label="Remove item"
                   onClick={() => remove(index)}
                 >
-                  Remove
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             );
           })}
-          <div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                append(
-                  itemType === 'object'
-                    ? getDefaultValueForType(itemSchema)
-                    : getDefaultValueForType(itemSchema)
-                )
-              }
-            >
-              Add item
-            </Button>
-          </div>
         </div>
       </Field>
     );
