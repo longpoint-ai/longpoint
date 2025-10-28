@@ -67,7 +67,7 @@ export function Classifiers() {
     );
   }
 
-  const classifiers = data?.items || [];
+  const classifiers = data || [];
   const isEmpty = classifiers.length === 0;
 
   return (

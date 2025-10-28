@@ -467,12 +467,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-28T20:47:02.408Z
+             * @example 2025-10-28T21:50:49.525Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example g3lm57bsjyr2g8dxbm48g83w
+             * @example ub01158nt9yahlqtc2sey6hb
              */
             id: string;
             /**
@@ -557,12 +557,6 @@ export interface components {
              */
             path: string;
         };
-        ListClassifiersResponse: {
-            /** @description The classifiers in the response */
-            items: components["schemas"]["ClassifierSummary"][];
-            /** @description The metadata for pagination */
-            metadata: components["schemas"]["PaginationMetadata"];
-        };
         MediaAsset: {
             /**
              * @description The aspect ratio of the media asset, if applicable
@@ -576,7 +570,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example du6xle78cuama7qj89llc3to
+             * @example v8bx5cn8ebjc8j2aq9dzxkxc
              */
             id: string;
             /**
@@ -621,7 +615,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "ldkaf5smwkfshd5776l8wtpw",
+             *         "id": "fiwj66xdkmu8n080zmwpejw9",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -637,12 +631,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-28T19:47:02.389Z
+             * @example 2025-10-28T20:50:49.503Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example g3lm57bsjyr2g8dxbm48g83w
+             * @example ub01158nt9yahlqtc2sey6hb
              */
             id: string;
             /**
@@ -672,12 +666,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-28T19:47:02.389Z
+             * @example 2025-10-28T20:50:49.503Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example g3lm57bsjyr2g8dxbm48g83w
+             * @example ub01158nt9yahlqtc2sey6hb
              */
             id: string;
             /**
@@ -696,23 +690,6 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-        };
-        PaginationMetadata: {
-            /**
-             * @description The cursor to the next page
-             * @example jN1a2VuZHMA
-             */
-            nextCursor: Record<string, never>;
-            /**
-             * @description The link to the next page
-             * @example https://example.com/api/items?cursor=jN1a2VuZHMA
-             */
-            nextLink: Record<string, never>;
-            /**
-             * @description The number of items per page
-             * @example 100
-             */
-            pageSize: number;
         };
         SetupStatus: {
             /**
@@ -787,9 +764,7 @@ export type $defs = Record<string, never>;
 export interface operations {
     listClassifiers: {
         parameters: {
-            query?: {
-                pageSize?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -801,7 +776,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListClassifiersResponse"];
+                    "application/json": components["schemas"]["ClassifierSummary"][];
                 };
             };
         };
@@ -1017,7 +992,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "AI provider with id s8rcf3cvsjchtg7a6zmv6squ not found"
+                     *         "AI provider with id dsuzwt35ikhhguzqrured7rw not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1128,7 +1103,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id o71jmhi87hh9qpgpmelrrzv6 not found"
+                     *         "Media container with id y8knpxa9aox2fftmzsag2v5o not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1195,7 +1170,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id o71jmhi87hh9qpgpmelrrzv6 not found"
+                     *         "Media container with id y8knpxa9aox2fftmzsag2v5o not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1254,7 +1229,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id o71jmhi87hh9qpgpmelrrzv6 not found"
+                     *         "Media container with id y8knpxa9aox2fftmzsag2v5o not found"
                      *       ]
                      *     } */
                     "application/json": {

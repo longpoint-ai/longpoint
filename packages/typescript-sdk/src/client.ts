@@ -63,15 +63,8 @@ class AiClient {
     /**
    * List classifiers
    */
-    async listClassifiers(options?: { pageSize?: number }): Promise<components['schemas']['ListClassifiersResponse']> {
-        const params = new URLSearchParams();
-        if (options) {
-          if (options.pageSize !== undefined) {
-            params.append('pageSize', String(options.pageSize));
-          }
-        }
-        const queryString = params.toString();
-        const url = `ai/classifiers${queryString ? `?${queryString}` : ''}`;
+    async listClassifiers(): Promise<components['schemas']['ClassifierSummary'][]> {
+        const url = `ai/classifiers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }

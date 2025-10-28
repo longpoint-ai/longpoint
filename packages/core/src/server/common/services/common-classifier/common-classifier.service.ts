@@ -47,7 +47,7 @@ export class CommonClassifierService {
     try {
       const result = await model.classify({
         url: mediaAsset.url,
-        modelConfig: classifier.modelConfig as ConfigValues,
+        modelConfig: classifier.modelInput as ConfigValues,
       });
 
       await this.prismaService.classifierRun.update({
@@ -86,7 +86,7 @@ export class CommonClassifierService {
       select: {
         id: true,
         modelId: true,
-        modelConfig: true,
+        modelInput: true,
       },
     });
 

@@ -1,7 +1,6 @@
 import { Prisma } from '@/database';
 import { ConfigValues } from '@longpoint/devkit';
 import { Injectable } from '@nestjs/common';
-import { PaginationQueryDto } from '../common/dtos/pagination';
 import { ClassifierNotFound, InvalidInput } from '../common/errors';
 import {
   selectClassifier,
@@ -9,9 +8,9 @@ import {
 } from '../common/selectors/classifier.selectors';
 import { AiPluginService, PrismaService } from '../common/services';
 import { EncryptionService } from '../common/services/encryption/encryption.service';
+import { ClassifierSummaryDto } from './dtos/classifier-summary.dto';
 import { ClassifierDto, ClassifierParams } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
-import { ListClassifiersResponseDto } from './dtos/list-classifiers-response.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';
 
 @Injectable()
@@ -62,21 +61,19 @@ export class ClassifierService {
     return new ClassifierDto(hydrated);
   }
 
-  async listClassifiers(query: PaginationQueryDto) {
+  async listClassifiers() {
     const classifiers = await this.prismaService.classifier.findMany({
-      ...query.toPrisma(),
       select: selectClassifier(),
     });
 
     const hydrated = await Promise.all(
-      classifiers.map((classifier) => this.hydrateClassifier(classifier))
+      classifiers.map(async (classifier) => {
+        const hydrated = await this.hydrateClassifier(classifier);
+        return new ClassifierSummaryDto(hydrated);
+      })
     );
 
-    return new ListClassifiersResponseDto({
-      query,
-      items: hydrated,
-      path: '/ai/classifiers',
-    });
+    return hydrated;
   }
 
   async updateClassifier(id: string, data: UpdateClassifierDto) {

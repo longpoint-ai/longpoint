@@ -14,8 +14,8 @@ interface UploadContextType {
   files: UploadFile[];
   openDialog: (files?: File[]) => void;
   closeDialog: () => void;
-  addFiles: (files: File[]) => void;
-  uploadFiles: (files: File[]) => Promise<void>;
+  addFiles: (files: File[], classifiers?: string[]) => void;
+  uploadFiles: (files: File[], classifiers?: string[]) => Promise<void>;
   cancelUpload: (fileId: string) => void;
   reset: () => void;
   isUploading: boolean;
@@ -48,9 +48,8 @@ export function UploadProvider({ children }: UploadProviderProps) {
   }, [uploadHook]);
 
   const uploadFiles = useCallback(
-    async (files: File[]): Promise<void> => {
+    async (files: File[], classifiers: string[] = []): Promise<void> => {
       try {
-        // Filter out unsupported mime types
         const supportedFiles = files.filter((file) => {
           const mimeType = file.type as SupportedMimeType;
           return Object.values(SupportedMimeType).includes(mimeType);
@@ -60,7 +59,6 @@ export function UploadProvider({ children }: UploadProviderProps) {
           throw new Error('No supported files selected');
         }
 
-        // Remove files from pending state as we start uploading them
         setPendingFiles((prev) =>
           prev.filter(
             (pendingFile) =>
@@ -73,21 +71,18 @@ export function UploadProvider({ children }: UploadProviderProps) {
           )
         );
 
-        // Create media containers and upload files
         const uploadPromises = supportedFiles.map(async (file) => {
           try {
-            // Create media container
+            console.log(classifiers);
             const container = await client.media.createMedia({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
-              classifiersOnUpload: ['general-tagging'],
+              classifiersOnUpload: classifiers,
             });
 
-            // Upload file to the returned URL
             await uploadHook.uploadFile(file, container.url);
           } catch (error) {
             console.error(`Failed to upload ${file.name}:`, error);
-            // Add error file to upload hook for display
             const errorMessage =
               error instanceof Error ? error.message : 'Upload failed';
             uploadHook.addErrorFile(file, errorMessage);
@@ -105,11 +100,10 @@ export function UploadProvider({ children }: UploadProviderProps) {
   );
 
   const addFiles = useCallback(
-    async (files: File[]) => {
+    async (files: File[], classifiers: string[] = []) => {
       setPendingFiles((prev) => [...prev, ...files]);
-      // Auto-upload files immediately
       try {
-        await uploadFiles(files);
+        await uploadFiles(files, classifiers);
       } catch (error) {
         console.error('Auto-upload failed:', error);
       }
@@ -129,7 +123,6 @@ export function UploadProvider({ children }: UploadProviderProps) {
     setPendingFiles([]);
   }, [uploadHook]);
 
-  // Combine pending files with upload files for display
   const allFiles = [
     ...pendingFiles.map((file) => ({
       id: `pending-${file.name}-${file.size}`,

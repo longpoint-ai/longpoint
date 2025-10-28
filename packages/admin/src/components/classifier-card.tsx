@@ -10,10 +10,10 @@ import {
 import { Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type Classifier = components['schemas']['Classifier'];
+type ClassifierSummary = components['schemas']['ClassifierSummary'];
 
 interface ClassifierCardProps {
-  classifier: Classifier;
+  classifier: ClassifierSummary;
 }
 
 export function ClassifierCard({ classifier }: ClassifierCardProps) {
@@ -28,11 +28,11 @@ export function ClassifierCard({ classifier }: ClassifierCardProps) {
         onClick={() => navigate(`/classifiers/${classifier.id}`)}
         className="space-y-3"
       >
-        {classifier.description && (
+        {/* {classifier.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">
             {classifier.description}
           </p>
-        )}
+        )} */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
           <span>{new Date(classifier.createdAt).toLocaleDateString()}</span>

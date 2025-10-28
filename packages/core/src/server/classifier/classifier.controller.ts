@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -16,13 +15,12 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { ApiSdkTag, RequirePermission } from '../common/decorators';
-import { PaginationQueryDto } from '../common/dtos/pagination';
 import { ApiClassifierNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
 import { ClassifierService } from './classifier.service';
+import { ClassifierSummaryDto } from './dtos/classifier-summary.dto';
 import { ClassifierDto } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
-import { ListClassifiersResponseDto } from './dtos/list-classifiers-response.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';
 
 @Controller('ai/classifiers')
@@ -60,9 +58,9 @@ export class ClassifierController {
     summary: 'List classifiers',
     operationId: 'listClassifiers',
   })
-  @ApiOkResponse({ type: ListClassifiersResponseDto })
-  async listClassifiers(@Query() query: PaginationQueryDto) {
-    return this.classifierService.listClassifiers(query);
+  @ApiOkResponse({ type: [ClassifierSummaryDto] })
+  async listClassifiers() {
+    return this.classifierService.listClassifiers();
   }
 
   @Patch(':classifierId')
