@@ -1,18 +1,30 @@
 import {
+  ConfigSchemaItemsDto,
+  ConfigSchemaValueDto,
+  type ConfigSchemaForDto,
+} from '@/server/common/dtos/config-schema';
+import {
   ModelSummaryDto,
   ModelSummaryParams,
 } from '@/server/common/dtos/model';
 import { SelectedClassifier } from '@/server/common/selectors/classifier.selectors';
-import { ConfigValues } from '@longpoint/devkit';
+import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
 import { IsClassifierName } from '@longpoint/validations';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiProperty,
+  ApiSchema,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
   model: ModelSummaryParams;
+  modelConfigSchema: ConfigSchema;
 }
 
 @ApiSchema({ name: 'Classifier' })
+@ApiExtraModels(ConfigSchemaValueDto, ConfigSchemaItemsDto)
 export class ClassifierDto {
   @ApiProperty({
     description: 'The ID of the classifier',
@@ -40,8 +52,27 @@ export class ClassifierDto {
   @IsOptional()
   @ApiProperty({
     description: 'Configuration values to use for the model',
+    example: {
+      name: 'John Doe',
+    },
   })
   modelConfig?: ConfigValues | null;
+
+  @ApiProperty({
+    description: 'The schema for the classifier configuration',
+    type: 'object',
+    additionalProperties: {
+      $ref: getSchemaPath(ConfigSchemaValueDto),
+    },
+    example: {
+      name: {
+        label: 'Name',
+        type: 'string',
+        required: true,
+      },
+    },
+  })
+  modelConfigSchema: ConfigSchemaForDto;
 
   @ApiProperty({
     description: 'The model used by the classifier',
@@ -69,5 +100,12 @@ export class ClassifierDto {
     this.updatedAt = data.updatedAt;
     this.modelConfig = data.modelConfig as ConfigValues | null;
     this.model = new ModelSummaryDto(data.model);
+    this.modelConfigSchema = Object.entries(data.modelConfigSchema).reduce(
+      (acc, [key, value]) => {
+        acc[key] = new ConfigSchemaValueDto(value);
+        return acc;
+      },
+      {} as ConfigSchemaForDto
+    );
   }
 }

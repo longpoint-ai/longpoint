@@ -34,6 +34,8 @@ export class ModelSummaryDto {
 
   @ApiProperty({
     description: 'A brief description of the model',
+    example:
+      'Claude Haiku 4.5 is a small, fast, and powerful model for text generation',
     nullable: true,
   })
   description: string | null;

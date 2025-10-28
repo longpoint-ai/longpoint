@@ -186,6 +186,7 @@ export class ClassifierService {
     return {
       ...classifier,
       model: model.toJson(),
+      modelConfigSchema: model.classifierInputSchema,
     };
   }
 }
