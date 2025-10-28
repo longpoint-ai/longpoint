@@ -12,7 +12,7 @@ model Classifier {
   name        String          @unique
   description String?
   modelId     String
-  modelConfig Json?
+  modelInput  Json?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   runs        ClassifierRun[]

@@ -23,11 +23,11 @@ export class ClassifierService {
   ) {}
 
   async createClassifier(data: CreateClassifierDto) {
-    const modelConfig = data.modelConfig ?? undefined;
+    const modelInput = data.modelInput ?? undefined;
 
-    const encryptedModelConfig = await this.processModelConfig(
+    const processedModelInput = await this.processModelInputValues(
       data.modelId,
-      modelConfig
+      modelInput
     );
 
     const classifier = await this.prismaService.classifier.create({
@@ -35,7 +35,7 @@ export class ClassifierService {
         name: data.name,
         description: data.description,
         modelId: data.modelId,
-        modelConfig: encryptedModelConfig,
+        modelInput: processedModelInput,
       },
       select: selectClassifier(),
     });
@@ -86,7 +86,7 @@ export class ClassifierService {
       },
       select: {
         modelId: true,
-        modelConfig: true,
+        modelInput: true,
       },
     });
 
@@ -95,26 +95,26 @@ export class ClassifierService {
     }
 
     const oldModelId = classifier.modelId;
-    const oldModelConfig = classifier.modelConfig as ConfigValues | undefined;
+    const oldModelInput = classifier.modelInput as ConfigValues | undefined;
     const newModelId = data.modelId;
-    const newModelConfig = data.modelConfig ?? undefined;
+    const newModelInput = data.modelInput ?? undefined;
 
-    let modelConfigToUpdate: ConfigValues | undefined;
+    let modelInputToUpdate: ConfigValues | undefined;
 
-    if (newModelId && !newModelConfig) {
-      modelConfigToUpdate = await this.processModelConfig(
+    if (newModelId && !newModelInput) {
+      modelInputToUpdate = await this.processModelInputValues(
         newModelId,
-        oldModelConfig
+        oldModelInput
       );
-    } else if (newModelConfig && !newModelId) {
-      modelConfigToUpdate = await this.processModelConfig(
+    } else if (newModelInput && !newModelId) {
+      modelInputToUpdate = await this.processModelInputValues(
         oldModelId,
-        newModelConfig
+        newModelInput
       );
-    } else if (newModelConfig && newModelId) {
-      modelConfigToUpdate = await this.processModelConfig(
+    } else if (newModelInput && newModelId) {
+      modelInputToUpdate = await this.processModelInputValues(
         newModelId,
-        newModelConfig
+        newModelInput
       );
     }
 
@@ -126,8 +126,8 @@ export class ClassifierService {
         name: data.name,
         description: data.description,
         modelId: data.modelId,
-        modelConfig:
-          data.modelConfig === null ? Prisma.JsonNull : modelConfigToUpdate,
+        modelInput:
+          data.modelInput === null ? Prisma.JsonNull : modelInputToUpdate,
       },
       select: selectClassifier(),
     });
@@ -155,26 +155,26 @@ export class ClassifierService {
   /**
    * Validate and encrypt (if necessary) the model configuration.
    * @param fullModelId - The fully qualified model ID.
-   * @param modelConfig - The model configuration to process.
+   * @param modelInput - The model configuration to process.
    * @returns The processed model configuration.
    */
-  private async processModelConfig(
+  private async processModelInputValues(
     fullModelId: string,
-    modelConfig?: ConfigValues
+    modelInput?: ConfigValues
   ) {
     const model = this.aiPluginService.getModelOrThrow(fullModelId);
-    const validationResult = model.validateClassifierInput(modelConfig);
+    const validationResult = model.validateClassifierInput(modelInput);
 
     if (!validationResult.valid) {
       throw new InvalidInput(validationResult.errors);
     }
 
-    const encryptedModelConfig = this.encryptionService.encryptConfigValues(
-      modelConfig ?? {},
+    const encryptedModelInput = this.encryptionService.encryptConfigValues(
+      modelInput ?? {},
       model.classifierInputSchema
     );
 
-    return encryptedModelConfig;
+    return encryptedModelInput;
   }
 
   private async hydrateClassifier(
@@ -186,7 +186,7 @@ export class ClassifierService {
     return {
       ...classifier,
       model: model.toJson(),
-      modelConfigSchema: model.classifierInputSchema,
+      modelInputSchema: model.classifierInputSchema,
     };
   }
 }

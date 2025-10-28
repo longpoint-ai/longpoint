@@ -20,7 +20,7 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
   model: ModelSummaryParams;
-  modelConfigSchema: ConfigSchema;
+  modelInputSchema: ConfigSchema;
 }
 
 @ApiSchema({ name: 'Classifier' })
@@ -51,15 +51,15 @@ export class ClassifierDto {
   @IsObject()
   @IsOptional()
   @ApiProperty({
-    description: 'Configuration values to use for the model',
+    description: 'The input values to use for the model',
     example: {
       name: 'John Doe',
     },
   })
-  modelConfig?: ConfigValues | null;
+  modelInput?: ConfigValues | null;
 
   @ApiProperty({
-    description: 'The schema for the classifier configuration',
+    description: 'The schema for the classifier input',
     type: 'object',
     additionalProperties: {
       $ref: getSchemaPath(ConfigSchemaValueDto),
@@ -72,7 +72,7 @@ export class ClassifierDto {
       },
     },
   })
-  modelConfigSchema: ConfigSchemaForDto;
+  modelInputSchema: ConfigSchemaForDto;
 
   @ApiProperty({
     description: 'The model used by the classifier',
@@ -98,9 +98,9 @@ export class ClassifierDto {
     this.description = data.description;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
-    this.modelConfig = data.modelConfig as ConfigValues | null;
+    this.modelInput = data.modelInput as ConfigValues | null;
     this.model = new ModelSummaryDto(data.model);
-    this.modelConfigSchema = Object.entries(data.modelConfigSchema).reduce(
+    this.modelInputSchema = Object.entries(data.modelInputSchema).reduce(
       (acc, [key, value]) => {
         acc[key] = new ConfigSchemaValueDto(value);
         return acc;

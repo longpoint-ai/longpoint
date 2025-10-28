@@ -14,7 +14,7 @@ export const selectClassifierSummary = () => {
 export const selectClassifier = () => {
   return {
     ...selectClassifierSummary(),
-    modelConfig: true,
+    modelInput: true,
   } satisfies Prisma.ClassifierSelect;
 };
 
