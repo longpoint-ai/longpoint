@@ -1,6 +1,6 @@
 import { Prisma } from '@/database';
 
-export const selectClassifier = () => {
+export const selectClassifierSummary = () => {
   return {
     id: true,
     name: true,
@@ -8,6 +8,12 @@ export const selectClassifier = () => {
     createdAt: true,
     updatedAt: true,
     modelId: true,
+  } satisfies Prisma.ClassifierSelect;
+};
+
+export const selectClassifier = () => {
+  return {
+    ...selectClassifierSummary(),
     modelConfig: true,
   } satisfies Prisma.ClassifierSelect;
 };

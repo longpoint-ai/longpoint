@@ -1,7 +1,7 @@
 import { Prisma } from '@/database';
 import { ConfigValues } from '@longpoint/devkit';
-import { validateConfigSchema } from '@longpoint/validations';
 import { Injectable } from '@nestjs/common';
+import { PaginationQueryDto } from '../common/dtos/pagination';
 import { ClassifierNotFound, InvalidInput } from '../common/errors';
 import {
   selectClassifier,
@@ -11,6 +11,7 @@ import { AiPluginService, PrismaService } from '../common/services';
 import { EncryptionService } from '../common/services/encryption/encryption.service';
 import { ClassifierDto, ClassifierParams } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
+import { ListClassifiersResponseDto } from './dtos/list-classifiers-response.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class ClassifierService {
   async createClassifier(data: CreateClassifierDto) {
     const modelConfig = data.modelConfig ?? undefined;
 
-    const encryptedModelConfig = await this.assertModelConfig(
+    const encryptedModelConfig = await this.processModelConfig(
       data.modelId,
       modelConfig
     );
@@ -42,6 +43,40 @@ export class ClassifierService {
     const hydrated = await this.hydrateClassifier(classifier);
 
     return new ClassifierDto(hydrated);
+  }
+
+  async getClassifier(id: string) {
+    const classifier = await this.prismaService.classifier.findUnique({
+      where: {
+        id,
+      },
+      select: selectClassifier(),
+    });
+
+    if (!classifier) {
+      throw new ClassifierNotFound(id);
+    }
+
+    const hydrated = await this.hydrateClassifier(classifier);
+
+    return new ClassifierDto(hydrated);
+  }
+
+  async listClassifiers(query: PaginationQueryDto) {
+    const classifiers = await this.prismaService.classifier.findMany({
+      ...query.toPrisma(),
+      select: selectClassifier(),
+    });
+
+    const hydrated = await Promise.all(
+      classifiers.map((classifier) => this.hydrateClassifier(classifier))
+    );
+
+    return new ListClassifiersResponseDto({
+      query,
+      items: hydrated,
+      path: '/ai/classifiers',
+    });
   }
 
   async updateClassifier(id: string, data: UpdateClassifierDto) {
@@ -67,17 +102,17 @@ export class ClassifierService {
     let modelConfigToUpdate: ConfigValues | undefined;
 
     if (newModelId && !newModelConfig) {
-      modelConfigToUpdate = await this.assertModelConfig(
+      modelConfigToUpdate = await this.processModelConfig(
         newModelId,
         oldModelConfig
       );
     } else if (newModelConfig && !newModelId) {
-      modelConfigToUpdate = await this.assertModelConfig(
+      modelConfigToUpdate = await this.processModelConfig(
         oldModelId,
         newModelConfig
       );
     } else if (newModelConfig && newModelId) {
-      modelConfigToUpdate = await this.assertModelConfig(
+      modelConfigToUpdate = await this.processModelConfig(
         newModelId,
         newModelConfig
       );
@@ -102,25 +137,33 @@ export class ClassifierService {
     return new ClassifierDto(hydrated);
   }
 
-  private async assertModelConfig(
+  async deleteClassifier(id: string) {
+    try {
+      await this.prismaService.classifier.delete({
+        where: {
+          id,
+        },
+      });
+    } catch (e) {
+      if (PrismaService.isNotFoundError(e)) {
+        throw new ClassifierNotFound(id);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Validate and encrypt (if necessary) the model configuration.
+   * @param fullModelId - The fully qualified model ID.
+   * @param modelConfig - The model configuration to process.
+   * @returns The processed model configuration.
+   */
+  private async processModelConfig(
     fullModelId: string,
     modelConfig?: ConfigValues
   ) {
     const model = this.aiPluginService.getModelOrThrow(fullModelId);
-
-    const classifierInputSchema = model.manifest.classifier?.input;
-
-    if (!classifierInputSchema) {
-      if (!modelConfig) {
-        return;
-      }
-      throw new InvalidInput('Model does not support classifier input');
-    }
-
-    const validationResult = validateConfigSchema(
-      classifierInputSchema,
-      modelConfig ?? {}
-    );
+    const validationResult = model.validateClassifierInput(modelConfig);
 
     if (!validationResult.valid) {
       throw new InvalidInput(validationResult.errors);
@@ -128,7 +171,7 @@ export class ClassifierService {
 
     const encryptedModelConfig = this.encryptionService.encryptConfigValues(
       modelConfig ?? {},
-      classifierInputSchema
+      model.classifierInputSchema
     );
 
     return encryptedModelConfig;

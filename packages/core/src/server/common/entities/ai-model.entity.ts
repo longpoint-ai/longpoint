@@ -3,10 +3,14 @@ import {
   AiModelPlugin,
   AiProviderPlugin,
   ClassifyArgs,
+  ConfigSchema,
+  ConfigValues,
   JsonObject,
 } from '@longpoint/devkit';
 import { parseBytes } from '@longpoint/utils/format';
+import { validateConfigSchema, ValidationResult } from '@longpoint/validations';
 import { ModelSummaryParams } from '../dtos/model';
+import { ModelOperationNotSupported } from '../errors';
 import { AiProviderEntity } from './ai-provider.entity';
 
 export interface AiModelEntityArgs {
@@ -19,16 +23,16 @@ export class AiModelEntity {
   readonly id: string;
   readonly name: string;
   readonly description: string | null;
-  readonly supportedMimeTypes: string[];
   readonly maxFileSize: number;
   readonly provider: AiProviderEntity;
   private readonly providerPluginInstance: AiProviderPlugin;
+  private readonly manifest: AiModelManifest;
 
   constructor(args: AiModelEntityArgs) {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
     this.description = args.manifest.description ?? null;
-    this.supportedMimeTypes = args.manifest.supportedMimeTypes ?? [];
+    this.manifest = args.manifest;
     this.provider = args.providerEntity;
     this.providerPluginInstance = args.providerPluginInstance;
     this.maxFileSize = parseBytes(args.manifest.maxFileSize ?? '0B');
@@ -40,7 +44,18 @@ export class AiModelEntity {
    * @returns
    */
   async classify(args: ClassifyArgs): Promise<JsonObject> {
+    if (!this.isClassifier()) {
+      throw new ModelOperationNotSupported('classify', this.id);
+    }
     return this.getModelPluginInstance().classify(args);
+  }
+
+  /**
+   * Whether the model supports content classification.
+   * @returns true if the model supports content classification, false otherwise
+   */
+  isClassifier(): boolean {
+    return !!this.manifest.classifier;
   }
 
   /**
@@ -49,7 +64,7 @@ export class AiModelEntity {
    * @returns true if the mime type is supported, false otherwise
    */
   isMimeTypeSupported(mimeType: string): boolean {
-    return this.supportedMimeTypes.includes(mimeType);
+    return this.manifest.supportedMimeTypes?.includes(mimeType) ?? false;
   }
 
   toJson(): ModelSummaryParams {
@@ -60,6 +75,17 @@ export class AiModelEntity {
       description: this.description,
       provider: this.provider.toJson(),
     };
+  }
+
+  validateClassifierInput(input: ConfigValues = {}): ValidationResult {
+    if (!this.isClassifier()) {
+      return { valid: false, errors: ['Model is not a classifier'] };
+    }
+    return validateConfigSchema(this.manifest.classifier?.input ?? {}, input);
+  }
+
+  get classifierInputSchema(): ConfigSchema {
+    return JSON.parse(JSON.stringify(this.manifest.classifier?.input ?? {}));
   }
 
   get fullyQualifiedId(): string {

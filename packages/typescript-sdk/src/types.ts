@@ -11,7 +11,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List classifiers */
+        get: operations["listClassifiers"];
         put?: never;
         /** Create a classifier */
         post: operations["createClassifier"];
@@ -28,10 +29,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get a classifier */
+        get: operations["getClassifier"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete a classifier */
+        delete: operations["deleteClassifier"];
         options?: never;
         head?: never;
         /** Update a classifier */
@@ -271,6 +274,37 @@ export interface components {
              */
             updatedAt: string;
         };
+        ClassifierSummary: {
+            /**
+             * Format: date-time
+             * @description When the classifier was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description A brief description of the classifier
+             * @example Tag general subjects like people, places, and things
+             */
+            description: Record<string, never> | null;
+            /**
+             * @description The ID of the classifier
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /** @description The model used by the classifier */
+            model: components["schemas"]["ModelSummary"];
+            /**
+             * @description The name of the classifier
+             * @example general-tagging
+             */
+            name: string;
+            /**
+             * Format: date-time
+             * @description When the classifier was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
         CreateClassifier: {
             /**
              * @description A brief description of the classifier
@@ -319,12 +353,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-27T20:25:08.901Z
+             * @example 2025-10-28T17:03:48.179Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example a73w16fs0z7wvxuiywhds807
+             * @example zopqq5248xxcjhyhocq22nhp
              */
             id: string;
             /**
@@ -409,6 +443,12 @@ export interface components {
              */
             path: string;
         };
+        ListClassifiersResponse: {
+            /** @description The classifiers in the response */
+            items: components["schemas"]["ClassifierSummary"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
         MediaAsset: {
             /**
              * @description The aspect ratio of the media asset, if applicable
@@ -422,7 +462,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example amruacbppjfij7jbny5wo2ea
+             * @example e96so8olxk0mgutpa2qxfbma
              */
             id: string;
             /**
@@ -467,7 +507,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "njs3be5prndwb33pcl0wzu03",
+             *         "id": "iy6kjqv69a2pfg6flqh8zmz1",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -483,12 +523,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-27T19:25:08.880Z
+             * @example 2025-10-28T16:03:48.167Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example a73w16fs0z7wvxuiywhds807
+             * @example zopqq5248xxcjhyhocq22nhp
              */
             id: string;
             /**
@@ -518,12 +558,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-27T19:25:08.880Z
+             * @example 2025-10-28T16:03:48.167Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example a73w16fs0z7wvxuiywhds807
+             * @example zopqq5248xxcjhyhocq22nhp
              */
             id: string;
             /**
@@ -563,6 +603,23 @@ export interface components {
             name: string;
             /** @description The provider of the model */
             provider: components["schemas"]["AiProviderSummary"];
+        };
+        PaginationMetadata: {
+            /**
+             * @description The cursor to the next page
+             * @example jN1a2VuZHMA
+             */
+            nextCursor: Record<string, never>;
+            /**
+             * @description The link to the next page
+             * @example https://example.com/api/items?cursor=jN1a2VuZHMA
+             */
+            nextLink: Record<string, never>;
+            /**
+             * @description The number of items per page
+             * @example 100
+             */
+            pageSize: number;
         };
         SetupStatus: {
             /**
@@ -630,6 +687,27 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listClassifiers: {
+        parameters: {
+            query?: {
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListClassifiersResponse"];
+                };
+            };
+        };
+    };
     createClassifier: {
         parameters: {
             query?: never;
@@ -649,6 +727,83 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Classifier"];
+                };
+            };
+        };
+    };
+    getClassifier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                classifierId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Classifier"];
+                };
+            };
+            /** @description The classifier was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Classifier with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteClassifier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                classifierId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The classifier was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The classifier was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Classifier with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
                 };
             };
         };
@@ -762,7 +917,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "AI provider with id j64sj5l3mn1g2y6se6rfteye not found"
+                     *         "AI provider with id yx8b605goiz69g5ayjs1aasz not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -873,7 +1028,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id kms50vsl0l7t0l8tfd3ylog6 not found"
+                     *         "Media container with id j0h99zt0x9zrk2u7crlkh53v not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -940,7 +1095,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id kms50vsl0l7t0l8tfd3ylog6 not found"
+                     *         "Media container with id j0h99zt0x9zrk2u7crlkh53v not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -999,7 +1154,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id kms50vsl0l7t0l8tfd3ylog6 not found"
+                     *         "Media container with id j0h99zt0x9zrk2u7crlkh53v not found"
                      *       ]
                      *     } */
                     "application/json": {

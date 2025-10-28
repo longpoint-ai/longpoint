@@ -61,11 +61,45 @@ class AiClient {
   }
 
     /**
+   * List classifiers
+   */
+    async listClassifiers(options?: { pageSize?: number }): Promise<components['schemas']['ListClassifiersResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `ai/classifiers${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a classifier
+   */
+    async getClassifier(classifierId: string): Promise<components['schemas']['Classifier']> {
+        const url = `ai/classifiers/${classifierId}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
    * Update a classifier
    */
     async updateClassifier(classifierId: string, data: components['schemas']['UpdateClassifier']): Promise<components['schemas']['Classifier']> {
         const url = `ai/classifiers/${classifierId}`;
         const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a classifier
+   */
+    async deleteClassifier(classifierId: string): Promise<void> {
+        const url = `ai/classifiers/${classifierId}`;
+        const response = await this.httpClient.delete(url);
         return response.data;
   }
 
