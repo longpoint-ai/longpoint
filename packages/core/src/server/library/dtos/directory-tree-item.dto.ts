@@ -1,12 +1,21 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { TreeItem, TreeItemType } from '../library.types';
 
-export interface DirectoryTreeItemParams {
+export interface DirectoryTreeItemParams extends TreeItem {
+  treeItemType: typeof TreeItemType.DIRECTORY;
   path: string;
   url: string;
 }
 
 @ApiSchema({ name: 'DirectoryTreeItem' })
-export class DirectoryTreeItemDto {
+export class DirectoryTreeItemDto implements TreeItem {
+  @ApiProperty({
+    description: 'The type of the tree item',
+    example: TreeItemType.DIRECTORY,
+    enum: [TreeItemType.DIRECTORY],
+  })
+  treeItemType: typeof TreeItemType.DIRECTORY = TreeItemType.DIRECTORY;
+
   @ApiProperty({
     description: 'The full path to the directory',
     example: '/skate-tricks/kickflips',
@@ -23,5 +32,6 @@ export class DirectoryTreeItemDto {
   constructor(data: DirectoryTreeItemParams) {
     this.path = data.path;
     this.url = data.url;
+    this.treeItemType = data.treeItemType;
   }
 }

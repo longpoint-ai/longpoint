@@ -598,7 +598,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-29T21:23:24.757Z
+             * @example 2025-10-30T00:45:54.093Z
              */
             expiresAt: string;
             /**
@@ -643,6 +643,12 @@ export interface components {
              */
             path: string;
             /**
+             * @description The type of the tree item
+             * @example DIRECTORY
+             * @enum {string}
+             */
+            treeItemType: "DIRECTORY";
+            /**
              * @description The URL to list the contents of the directory
              * @example https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips
              */
@@ -681,7 +687,7 @@ export interface components {
              *       }
              *     ]
              */
-            items: components["schemas"]["TreeItem"][];
+            items: (components["schemas"]["DirectoryTreeItem"] | components["schemas"]["MediaContainerTreeItem"])[];
             /**
              * @description The library tree path
              * @example /skate-tricks/kickflips
@@ -765,7 +771,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T20:23:24.745Z
+             * @example 2025-10-29T23:45:54.080Z
              */
             createdAt: string;
             /**
@@ -796,11 +802,11 @@ export interface components {
              */
             type: "IMAGE";
         };
-        MediaContainerSummary: {
+        MediaContainerTreeItem: {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T20:23:24.745Z
+             * @example 2025-10-29T23:45:54.080Z
              */
             createdAt: string;
             /**
@@ -824,6 +830,12 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /**
+             * @description The type of the tree item
+             * @example MEDIA
+             * @enum {string}
+             */
+            treeItemType: "MEDIA";
         };
         SetupStatus: {
             /**
@@ -831,16 +843,6 @@ export interface components {
              * @example false
              */
             isFirstTimeSetup: boolean;
-        };
-        TreeItem: {
-            /** @description The content of the tree item */
-            content: Record<string, never>;
-            /**
-             * @description The tree item type
-             * @example DIRECTORY
-             * @enum {string}
-             */
-            type: "DIRECTORY" | "MEDIA";
         };
         UpdateAiProviderConfig: {
             /**

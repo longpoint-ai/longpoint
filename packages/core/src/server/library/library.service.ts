@@ -39,8 +39,8 @@ export class LibraryService {
       if (container.path === normalizedPath) {
         // Container is at exact path - it's a media item
         mediaItems.push({
-          type: TreeItemType.MEDIA,
-          content: container,
+          treeItemType: TreeItemType.MEDIA,
+          ...container,
         });
       } else if (container.path.startsWith(normalizedPath + '/')) {
         // Container is in a subdirectory - extract the directory name
@@ -62,6 +62,7 @@ export class LibraryService {
           directories.set(directoryPath, {
             path: directoryPath,
             url: url.href,
+            treeItemType: TreeItemType.DIRECTORY,
           });
         }
       } else if (normalizedPath === '/' && container.path !== '/') {
@@ -83,18 +84,14 @@ export class LibraryService {
           directories.set(directoryPath, {
             path: directoryPath,
             url: url.href,
+            treeItemType: TreeItemType.DIRECTORY,
           });
         }
       }
     }
 
     // Convert directories to tree items
-    const directoryItems: TreeItemParams[] = Array.from(
-      directories.values()
-    ).map((dir) => ({
-      type: TreeItemType.DIRECTORY,
-      content: dir,
-    }));
+    const directoryItems: TreeItemParams[] = Array.from(directories.values());
 
     // Combine all items
     const allItems = [...directoryItems, ...mediaItems];

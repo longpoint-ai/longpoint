@@ -4,3 +4,7 @@ export const TreeItemType = {
 } as const;
 
 export type TreeItemType = (typeof TreeItemType)[keyof typeof TreeItemType];
+
+export interface TreeItem {
+  treeItemType: TreeItemType;
+}

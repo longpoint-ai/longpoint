@@ -1,22 +1,17 @@
+import { components } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Card, CardContent } from '@longpoint/ui/components/card';
 import { FolderIcon, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MediaGridItemProps {
-  item: {
-    type: 'DIRECTORY' | 'MEDIA';
-    content: any;
-  };
+  item: components['schemas']['LibraryTree']['items'][number];
   onFolderClick?: (path: string) => void;
 }
 
 export function MediaGridItem({ item, onFolderClick }: MediaGridItemProps) {
-  const isDirectory = item.type === 'DIRECTORY';
-  const isMedia = item.type === 'MEDIA';
-
-  if (isDirectory) {
-    const { path } = item.content;
+  if (item.treeItemType === 'DIRECTORY') {
+    const { path } = item;
     const folderName = path.split('/').pop() || 'Folder';
 
     return (
@@ -44,8 +39,8 @@ export function MediaGridItem({ item, onFolderClick }: MediaGridItemProps) {
     );
   }
 
-  if (isMedia) {
-    const { id, name, status } = item.content;
+  if (item.treeItemType === 'MEDIA') {
+    const { id, name, status } = item;
     const isReady = status === 'READY';
 
     return (
