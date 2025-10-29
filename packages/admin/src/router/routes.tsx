@@ -8,7 +8,7 @@ import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
 import { DashboardHome } from '../pages/dashboard/home';
 import { Library } from '../pages/dashboard/library';
 import { MediaDetail } from '../pages/dashboard/media-detail';
-import { Settings } from '../pages/dashboard/settings';
+import { Settings } from '../pages/dashboard/settings/settings';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,

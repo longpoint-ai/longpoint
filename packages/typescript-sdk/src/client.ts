@@ -52,6 +52,15 @@ class AiClient {
   }
 
     /**
+   * List installed AI providers
+   */
+    async listAiProviders(): Promise<components['schemas']['AiProviderSummary'][]> {
+        const url = `ai/providers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
    * Create a classifier
    */
     async createClassifier(data: components['schemas']['CreateClassifier']): Promise<components['schemas']['Classifier']> {

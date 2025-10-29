@@ -1,11 +1,21 @@
 import { ConfigValues } from '@longpoint/devkit';
 import { Injectable } from '@nestjs/common';
-import { AiProviderDto } from '../common/dtos/ai-provider';
+import {
+  AiProviderDto,
+  AiProviderSummaryDto,
+} from '../common/dtos/ai-provider';
 import { AiPluginService } from '../common/services';
 
 @Injectable()
 export class AiProviderService {
   constructor(private readonly aiPluginService: AiPluginService) {}
+
+  async listAiProviders() {
+    const providers = await this.aiPluginService.listProviders();
+    return providers.map(
+      (provider) => new AiProviderSummaryDto(provider.toJson())
+    );
+  }
 
   async getAiProvider(providerId: string) {
     const provider = await this.aiPluginService.getProviderOrThrow(providerId);

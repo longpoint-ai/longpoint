@@ -75,6 +75,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List installed AI providers */
+        get: operations["listAiProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/providers/{providerId}": {
         parameters: {
             query?: never;
@@ -226,6 +243,10 @@ export interface components {
              *     }
              */
             config: Record<string, never> | null;
+            /** @description The schema for the provider config */
+            configSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            } | null;
             /**
              * @description The ID of the AI provider
              * @example anthropic
@@ -467,12 +488,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-28T21:50:49.525Z
+             * @example 2025-10-29T16:40:47.700Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example ub01158nt9yahlqtc2sey6hb
+             * @example ctre4pym4t7ub6m9qpvwgfda
              */
             id: string;
             /**
@@ -570,7 +591,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example v8bx5cn8ebjc8j2aq9dzxkxc
+             * @example jl2tbsht5sp80djpw1phmjrw
              */
             id: string;
             /**
@@ -615,7 +636,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "fiwj66xdkmu8n080zmwpejw9",
+             *         "id": "cas75xyuczppvoeurswqicny",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -631,12 +652,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-28T20:50:49.503Z
+             * @example 2025-10-29T15:40:47.681Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example ub01158nt9yahlqtc2sey6hb
+             * @example ctre4pym4t7ub6m9qpvwgfda
              */
             id: string;
             /**
@@ -666,12 +687,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-28T20:50:49.503Z
+             * @example 2025-10-29T15:40:47.681Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example ub01158nt9yahlqtc2sey6hb
+             * @example ctre4pym4t7ub6m9qpvwgfda
              */
             id: string;
             /**
@@ -964,6 +985,25 @@ export interface operations {
             };
         };
     };
+    listAiProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProviderSummary"][];
+                };
+            };
+        };
+    };
     getAiProvider: {
         parameters: {
             query?: never;
@@ -992,7 +1032,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "AI provider with id dsuzwt35ikhhguzqrured7rw not found"
+                     *         "AI provider with id h40245w8xw6vwjop6zoh7rtd not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1103,7 +1143,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id y8knpxa9aox2fftmzsag2v5o not found"
+                     *         "Media container with id me4xzr9y48gkpb00vmm1j7ab not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1170,7 +1210,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id y8knpxa9aox2fftmzsag2v5o not found"
+                     *         "Media container with id me4xzr9y48gkpb00vmm1j7ab not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1229,7 +1269,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id y8knpxa9aox2fftmzsag2v5o not found"
+                     *         "Media container with id me4xzr9y48gkpb00vmm1j7ab not found"
                      *       ]
                      *     } */
                     "application/json": {

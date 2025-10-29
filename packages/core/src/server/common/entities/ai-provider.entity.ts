@@ -26,6 +26,7 @@ export class AiProviderEntity {
       image: this.image ?? null,
       config: this.pluginInstance.configValues,
       needsConfig: this.needsConfig,
+      configSchema: this.pluginInstance.manifest.provider.config,
     };
   }
 

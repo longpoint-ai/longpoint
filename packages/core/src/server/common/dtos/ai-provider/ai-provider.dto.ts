@@ -1,5 +1,6 @@
-import { ConfigValues } from '@longpoint/devkit';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
+import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
+import { ConfigSchemaForDto, toConfigSchemaForDto } from '../config-schema';
 
 export interface AiProviderParams {
   id: string;
@@ -7,6 +8,7 @@ export interface AiProviderParams {
   image: string | null;
   needsConfig?: boolean;
   config?: ConfigValues;
+  configSchema?: ConfigSchema;
 }
 
 @ApiSchema({ name: 'AiProvider' })
@@ -45,11 +47,24 @@ export class AiProviderDto {
   })
   config: ConfigValues | null;
 
+  @ApiProperty({
+    description: 'The schema for the provider config',
+    type: 'object',
+    additionalProperties: {
+      $ref: getSchemaPath('ConfigSchemaValue'),
+    },
+    nullable: true,
+  })
+  configSchema: ConfigSchemaForDto | null;
+
   constructor(data: AiProviderParams) {
     this.id = data.id;
     this.name = data.name ?? this.id;
     this.image = data.image ?? null;
     this.needsConfig = data.needsConfig ?? false;
     this.config = data.config ?? null;
+    this.configSchema = data.configSchema
+      ? toConfigSchemaForDto(data.configSchema)
+      : null;
   }
 }
