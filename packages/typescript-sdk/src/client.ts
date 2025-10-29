@@ -54,7 +54,7 @@ class AiClient {
     /**
    * List installed AI providers
    */
-    async listAiProviders(): Promise<components['schemas']['AiProviderSummary'][]> {
+    async listAiProviders(): Promise<components['schemas']['AiProvider'][]> {
         const url = `ai/providers`;
         const response = await this.httpClient.get(url);
         return response.data;

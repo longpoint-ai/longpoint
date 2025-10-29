@@ -27,6 +27,15 @@ export class AiProviderEntity {
       config: this.pluginInstance.configValues,
       needsConfig: this.needsConfig,
       configSchema: this.pluginInstance.manifest.provider.config,
+      models: Object.keys(this.pluginInstance.manifest.models).map(
+        (modelId) => ({
+          id: modelId,
+          name: this.pluginInstance.manifest.models[modelId].name ?? modelId,
+          description:
+            this.pluginInstance.manifest.models[modelId].description ?? null,
+          fullyQualifiedId: `${this.id}/${modelId}`,
+        })
+      ),
     };
   }
 

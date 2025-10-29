@@ -5,8 +5,8 @@ import {
   TabsTrigger,
 } from '@longpoint/ui/components/tabs';
 import { BellIcon, BotIcon, BoxIcon, SettingsIcon } from 'lucide-react';
-import { AiSettings } from './ai-settings/ai-settings';
 import { GeneralSettings } from './general-settings';
+import { ModelSettings } from './model-settings/model-settings';
 import { NotificationSettings } from './notification-settings';
 import { StorageSettings } from './storage-settings';
 
@@ -26,7 +26,7 @@ export function Settings() {
           </TabsTrigger>
           <TabsTrigger value="ai">
             <BotIcon className="h-4 w-4" />
-            Intelligence
+            Models
           </TabsTrigger>
           <TabsTrigger value="notifications">
             <BellIcon className="h-4 w-4" />
@@ -40,7 +40,7 @@ export function Settings() {
           <StorageSettings />
         </TabsContent>
         <TabsContent value="ai">
-          <AiSettings />
+          <ModelSettings />
         </TabsContent>
         <TabsContent value="notifications">
           <NotificationSettings />

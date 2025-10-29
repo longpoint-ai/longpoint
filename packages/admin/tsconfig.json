@@ -10,19 +10,22 @@
   },
   "references": [
     {
-      "path": "../react"
+      "path": "../devkit"
     },
     {
       "path": "../utils"
-    },
-    {
-      "path": "../typescript-sdk"
     },
     {
       "path": "../ui"
     },
     {
       "path": "../types"
+    },
+    {
+      "path": "../typescript-sdk"
+    },
+    {
+      "path": "../react"
     },
     {
       "path": "./tsconfig.app.json"

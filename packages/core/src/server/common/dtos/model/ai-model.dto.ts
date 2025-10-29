@@ -40,6 +40,7 @@ export class AiModelDto {
 
   @ApiProperty({
     description: 'A brief description of the model',
+    type: 'string',
     example:
       'Claude Haiku 4.5 is a small, fast, and powerful model for text generation',
     nullable: true,

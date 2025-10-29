@@ -1,9 +1,6 @@
 import { ConfigValues } from '@longpoint/devkit';
 import { Injectable } from '@nestjs/common';
-import {
-  AiProviderDto,
-  AiProviderSummaryDto,
-} from '../common/dtos/ai-provider';
+import { AiProviderDto } from '../common/dtos/ai-provider';
 import { AiPluginService } from '../common/services';
 
 @Injectable()
@@ -12,9 +9,7 @@ export class AiProviderService {
 
   async listAiProviders() {
     const providers = await this.aiPluginService.listProviders();
-    return providers.map(
-      (provider) => new AiProviderSummaryDto(provider.toJson())
-    );
+    return providers.map((provider) => new AiProviderDto(provider.toJson()));
   }
 
   async getAiProvider(providerId: string) {

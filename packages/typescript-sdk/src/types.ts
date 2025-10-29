@@ -216,7 +216,7 @@ export interface components {
              * @description A brief description of the model
              * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
              */
-            description: Record<string, never> | null;
+            description: string | null;
             /**
              * @description The fully qualified ID of the model
              * @example anthropic/claude-haiku-4-5-20251001
@@ -235,6 +235,28 @@ export interface components {
             /** @description The provider of the model */
             provider: components["schemas"]["AiProviderSummary"];
         };
+        AiModelShort: {
+            /**
+             * @description A brief description of the model
+             * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
+             */
+            description: string | null;
+            /**
+             * @description The fully qualified ID of the model
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the model
+             * @example claude-haiku-4-5-20251001
+             */
+            id: string;
+            /**
+             * @description The display name of the model
+             * @example Claude Haiku 4.5
+             */
+            name: string;
+        };
         AiProvider: {
             /**
              * @description The config values for the provider
@@ -242,8 +264,19 @@ export interface components {
              *       "apiKey": "sk-1234567890"
              *     }
              */
-            config: Record<string, never> | null;
-            /** @description The schema for the provider config */
+            config: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description The schema for the provider config
+             * @example {
+             *       "apiKey": {
+             *         "label": "API Key",
+             *         "type": "secret",
+             *         "required": true
+             *       }
+             *     }
+             */
             configSchema: {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
             } | null;
@@ -256,7 +289,18 @@ export interface components {
              * @description An icon image of the AI provider
              * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
              */
-            image: Record<string, never>;
+            image: string;
+            /**
+             * @description The models supported by the provider
+             * @example [
+             *       {
+             *         "id": "claude-haiku-4-5-20251001",
+             *         "name": "Claude Haiku 4.5",
+             *         "fullyQualifiedId": "anthropic/claude-haiku-4-5-20251001"
+             *       }
+             *     ]
+             */
+            models: components["schemas"]["AiModelShort"][];
             /**
              * @description The name of the AI provider
              * @example Anthropic
@@ -278,7 +322,7 @@ export interface components {
              * @description An icon image of the AI provider
              * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
              */
-            image: Record<string, never>;
+            image: string;
             /**
              * @description The name of the AI provider
              * @example Anthropic
@@ -488,12 +532,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-29T16:40:47.700Z
+             * @example 2025-10-29T17:57:41.766Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example ctre4pym4t7ub6m9qpvwgfda
+             * @example x5l4ru00g22wgiwd7oyxp54f
              */
             id: string;
             /**
@@ -591,7 +635,7 @@ export interface components {
             height: Record<string, never> | null;
             /**
              * @description The ID of the media asset
-             * @example jl2tbsht5sp80djpw1phmjrw
+             * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
             /**
@@ -636,7 +680,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "cas75xyuczppvoeurswqicny",
+             *         "id": "dcby53ig74xj79c95d9h4vj4",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -652,12 +696,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T15:40:47.681Z
+             * @example 2025-10-29T16:57:41.753Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example ctre4pym4t7ub6m9qpvwgfda
+             * @example x5l4ru00g22wgiwd7oyxp54f
              */
             id: string;
             /**
@@ -687,12 +731,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T15:40:47.681Z
+             * @example 2025-10-29T16:57:41.753Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example ctre4pym4t7ub6m9qpvwgfda
+             * @example x5l4ru00g22wgiwd7oyxp54f
              */
             id: string;
             /**
@@ -999,7 +1043,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AiProviderSummary"][];
+                    "application/json": components["schemas"]["AiProvider"][];
                 };
             };
         };
@@ -1032,7 +1076,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "AI provider with id h40245w8xw6vwjop6zoh7rtd not found"
+                     *         "AI provider with id hxrt481w3xa7e1lptnr8ku44 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1143,7 +1187,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id me4xzr9y48gkpb00vmm1j7ab not found"
+                     *         "Media container with id pi4y6no0hnm72izl5pv1xey3 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1210,7 +1254,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id me4xzr9y48gkpb00vmm1j7ab not found"
+                     *         "Media container with id pi4y6no0hnm72izl5pv1xey3 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1269,7 +1313,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id me4xzr9y48gkpb00vmm1j7ab not found"
+                     *         "Media container with id pi4y6no0hnm72izl5pv1xey3 not found"
                      *       ]
                      *     } */
                     "application/json": {

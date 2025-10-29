@@ -2,10 +2,7 @@ import { Permission } from '@longpoint/types';
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiSdkTag, RequirePermission } from '../common/decorators';
-import {
-  AiProviderDto,
-  AiProviderSummaryDto,
-} from '../common/dtos/ai-provider';
+import { AiProviderDto } from '../common/dtos/ai-provider';
 import { ApiAiProviderNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
 import { AiProviderService } from './ai-provider.service';
@@ -35,7 +32,7 @@ export class AiProviderController {
     summary: 'List installed AI providers',
     operationId: 'listAiProviders',
   })
-  @ApiOkResponse({ type: [AiProviderSummaryDto] })
+  @ApiOkResponse({ type: [AiProviderDto] })
   async listAiProviders() {
     return this.aiProviderService.listAiProviders();
   }
