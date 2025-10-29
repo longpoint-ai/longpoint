@@ -385,6 +385,72 @@ export interface components {
              */
             updatedAt: string;
         };
+        ClassifierRun: {
+            /** @description The classifier that was used to run the classifier run */
+            classifier: components["schemas"]["ClassifierShort"];
+            /**
+             * @description When the classifier run completed
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            completedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the classifier run was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The error message of the classifier run
+             * @example An error occurred while running the classifier
+             */
+            errorMessage: string | null;
+            /**
+             * @description The ID of the classifier run
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description The result of the classifier run
+             * @example {
+             *       "tags": [
+             *         "person",
+             *         "car",
+             *         "tree"
+             *       ]
+             *     }
+             */
+            result: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description When the classifier run started
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            startedAt: string | null;
+            /**
+             * @description The status of the classifier run
+             * @example SUCCESS
+             * @enum {string}
+             */
+            status: "PROCESSING" | "SUCCESS" | "FAILED";
+        };
+        ClassifierShort: {
+            /**
+             * @description A brief description of the classifier
+             * @example Tag general subjects like people, places, and things
+             */
+            description: Record<string, never> | null;
+            /**
+             * @description The ID of the classifier
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The name of the classifier
+             * @example general-tagging
+             */
+            name: string;
+        };
         ClassifierSummary: {
             /**
              * Format: date-time
@@ -532,7 +598,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-29T19:24:11.117Z
+             * @example 2025-10-29T21:23:24.757Z
              */
             expiresAt: string;
             /**
@@ -628,6 +694,8 @@ export interface components {
              * @example 1.777777
              */
             aspectRatio: number | null;
+            /** @description The classifier runs for the media asset */
+            classifierRuns: components["schemas"]["ClassifierRun"][];
             /**
              * @description The height of the media asset in pixels, if applicable
              * @example 100
@@ -697,7 +765,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T18:24:11.105Z
+             * @example 2025-10-29T20:23:24.745Z
              */
             createdAt: string;
             /**
@@ -732,7 +800,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T18:24:11.105Z
+             * @example 2025-10-29T20:23:24.745Z
              */
             createdAt: string;
             /**

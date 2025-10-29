@@ -15,11 +15,10 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { ApiSdkTag, RequirePermission } from '../common/decorators';
+import { ClassifierDto, ClassifierSummaryDto } from '../common/dtos/classifier';
 import { ApiClassifierNotFoundResponse } from '../common/errors';
 import { SdkTag } from '../common/types/swagger.types';
 import { ClassifierService } from './classifier.service';
-import { ClassifierSummaryDto } from './dtos/classifier-summary.dto';
-import { ClassifierDto } from './dtos/classifier.dto';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { UpdateClassifierDto } from './dtos/update-classifier.dto';
 

@@ -2,6 +2,7 @@ import { MediaAssetStatus, MediaAssetVariant } from '@/database';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { type SelectedMediaAsset } from '../../selectors/media.selectors';
+import { ClassifierRunDto } from '../classifier';
 
 export type MediaAssetParams = SelectedMediaAsset & {
   url?: string;
@@ -77,6 +78,12 @@ export class MediaAssetDto {
   })
   url: string | null;
 
+  @ApiProperty({
+    description: 'The classifier runs for the media asset',
+    type: [ClassifierRunDto],
+  })
+  classifierRuns: ClassifierRunDto[];
+
   constructor(data: MediaAssetParams) {
     this.id = data.id;
     this.variant = data.variant;
@@ -87,5 +94,8 @@ export class MediaAssetDto {
     this.size = data.size;
     this.aspectRatio = data.aspectRatio;
     this.url = data.url ?? null;
+    this.classifierRuns = data.classifierRuns.map(
+      (classifierRun) => new ClassifierRunDto(classifierRun)
+    );
   }
 }

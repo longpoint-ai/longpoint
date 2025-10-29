@@ -6,7 +6,7 @@ import {
   PickType,
 } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import { ClassifierDto } from './classifier.dto';
+import { ClassifierDto } from '../../common/dtos/classifier';
 
 @ApiSchema({ name: 'CreateClassifier' })
 export class CreateClassifierDto extends IntersectionType(
