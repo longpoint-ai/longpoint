@@ -21,7 +21,7 @@ export class MediaContainerNotFound extends ResourceNotFound {
   }
 }
 export const mediaContainerNotFoundDoc = apiErrorDoc(
-  new MediaContainerNotFound(createId())
+  new MediaContainerNotFound('mbjq36xe6397dsi6x9nq4ghc')
 );
 export const ApiMediaContainerNotFoundResponse = () => {
   return applyDecorators(
@@ -54,7 +54,9 @@ export class ModelNotFound extends ResourceNotFound {
     super('Model', id);
   }
 }
-export const modelNotFoundDoc = apiErrorDoc(new ModelNotFound(createId()));
+export const modelNotFoundDoc = apiErrorDoc(
+  new ModelNotFound('a9ri6j9r33yku4m8wrevlp29')
+);
 export const ApiModelNotFoundResponse = () => {
   return applyDecorators(
     ApiNotFoundResponse({
@@ -86,7 +88,7 @@ export class AiProviderNotFound extends ResourceNotFound {
   }
 }
 export const aiProviderNotFoundDoc = apiErrorDoc(
-  new AiProviderNotFound(createId())
+  new AiProviderNotFound('r2qwyd76nvd98cu6ewg8ync2')
 );
 export const ApiAiProviderNotFoundResponse = () => {
   return applyDecorators(

@@ -11,14 +11,13 @@ import {
   IsValidMediaContainerPath,
 } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { createId } from '@paralleldrive/cuid2';
 import { MediaAssetVariantsDto } from './media-asset-variants.dto';
 
 @ApiSchema({ name: 'MediaContainer' })
 export class MediaContainerDto {
   @ApiProperty({
     description: 'The ID of the media container',
-    example: createId(),
+    example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
 
@@ -61,7 +60,7 @@ export class MediaContainerDto {
     type: MediaAssetVariantsDto,
     example: {
       original: {
-        id: createId(),
+        id: 'okie3r17vhfswyyp38v9lrsl',
         variant: MediaAssetVariant.PRIMARY,
         status: MediaAssetStatus.READY,
         mimeType: SupportedMimeType.JPEG,

@@ -532,12 +532,12 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-29T17:57:41.766Z
+             * @example 2025-10-29T19:24:11.117Z
              */
             expiresAt: string;
             /**
              * @description The ID of the media container
-             * @example x5l4ru00g22wgiwd7oyxp54f
+             * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
             /**
@@ -568,7 +568,7 @@ export interface components {
              * @default false
              * @example false
              */
-            permanently: Record<string, never>;
+            permanently: boolean;
         };
         DirectoryTreeItem: {
             /**
@@ -627,12 +627,12 @@ export interface components {
              * @description The aspect ratio of the media asset, if applicable
              * @example 1.777777
              */
-            aspectRatio: Record<string, never> | null;
+            aspectRatio: number | null;
             /**
              * @description The height of the media asset in pixels, if applicable
              * @example 100
              */
-            height: Record<string, never> | null;
+            height: number | null;
             /**
              * @description The ID of the media asset
              * @example r2qwyd76nvd98cu6ewg8ync2
@@ -648,7 +648,7 @@ export interface components {
              * @description The size of the media asset in bytes
              * @example 100
              */
-            size: Record<string, never> | null;
+            size: number | null;
             /**
              * @description The status of the media asset
              * @example WAITING_FOR_UPLOAD
@@ -659,9 +659,10 @@ export interface components {
              * @description The URL of the media asset
              * @example https://longpoint.example.com/storage/default/abc123/original.jpg
              */
-            url: Record<string, never> | null;
+            url: string | null;
             /**
              * @description The variant of the media asset
+             * @example PRIMARY
              * @enum {string}
              */
             variant: "PRIMARY";
@@ -669,7 +670,7 @@ export interface components {
              * @description The width of the media asset in pixels, if applicable
              * @example 100
              */
-            width: Record<string, never> | null;
+            width: number | null;
         };
         MediaAssetVariants: {
             /** @description The primary media asset */
@@ -680,7 +681,7 @@ export interface components {
              * @description The accessible media assets in the container
              * @example {
              *       "original": {
-             *         "id": "dcby53ig74xj79c95d9h4vj4",
+             *         "id": "okie3r17vhfswyyp38v9lrsl",
              *         "variant": "PRIMARY",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
@@ -696,12 +697,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T16:57:41.753Z
+             * @example 2025-10-29T18:24:11.105Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example x5l4ru00g22wgiwd7oyxp54f
+             * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
             /**
@@ -731,12 +732,12 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T16:57:41.753Z
+             * @example 2025-10-29T18:24:11.105Z
              */
             createdAt: string;
             /**
              * @description The ID of the media container
-             * @example x5l4ru00g22wgiwd7oyxp54f
+             * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
             /**
@@ -1076,7 +1077,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "AI provider with id hxrt481w3xa7e1lptnr8ku44 not found"
+                     *         "AI provider with id r2qwyd76nvd98cu6ewg8ync2 not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1187,7 +1188,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id pi4y6no0hnm72izl5pv1xey3 not found"
+                     *         "Media container with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1254,7 +1255,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id pi4y6no0hnm72izl5pv1xey3 not found"
+                     *         "Media container with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
                      *     } */
                     "application/json": {
@@ -1313,7 +1314,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Media container with id pi4y6no0hnm72izl5pv1xey3 not found"
+                     *         "Media container with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
                      *     } */
                     "application/json": {

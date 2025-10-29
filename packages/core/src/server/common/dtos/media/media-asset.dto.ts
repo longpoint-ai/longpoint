@@ -1,7 +1,6 @@
 import { MediaAssetStatus, MediaAssetVariant } from '@/database';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { createId } from '@paralleldrive/cuid2';
 import { type SelectedMediaAsset } from '../../selectors/media.selectors';
 
 export type MediaAssetParams = SelectedMediaAsset & {
@@ -12,13 +11,13 @@ export type MediaAssetParams = SelectedMediaAsset & {
 export class MediaAssetDto {
   @ApiProperty({
     description: 'The ID of the media asset',
-    example: createId(),
+    example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
 
   @ApiProperty({
     description: 'The variant of the media asset',
-    example: MediaAssetVariant.ORIGINAL,
+    example: MediaAssetVariant.PRIMARY,
     enum: MediaAssetVariant,
   })
   variant: MediaAssetVariant;
@@ -40,6 +39,7 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The width of the media asset in pixels, if applicable',
     example: 100,
+    type: 'number',
     nullable: true,
   })
   width: number | null;
@@ -47,6 +47,7 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The height of the media asset in pixels, if applicable',
     example: 100,
+    type: 'number',
     nullable: true,
   })
   height: number | null;
@@ -54,6 +55,7 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The size of the media asset in bytes',
     example: 100,
+    type: 'number',
     nullable: true,
   })
   size: number | null;
@@ -61,12 +63,14 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The aspect ratio of the media asset, if applicable',
     example: 1.777777,
+    type: 'number',
     nullable: true,
   })
   aspectRatio: number | null;
 
   @ApiProperty({
     description: 'The URL of the media asset',
+    type: 'string',
     example:
       'https://longpoint.example.com/storage/default/abc123/original.jpg',
     nullable: true,

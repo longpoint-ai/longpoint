@@ -10,5 +10,5 @@ export class DeleteMediaContainerDto {
     example: false,
     default: false,
   })
-  permanently = false;
+  permanently: boolean = false;
 }
