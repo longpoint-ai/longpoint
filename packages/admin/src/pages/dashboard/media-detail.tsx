@@ -324,14 +324,6 @@ export function MediaDetail() {
                       {enumToTitleCase(primaryAsset.status)}
                     </Badge>
                   </Field>
-                  {primaryAsset.url && (
-                    <Field>
-                      <FieldLabel>URL</FieldLabel>
-                      <p className="text-sm font-mono text-muted-foreground truncate">
-                        {primaryAsset.url}
-                      </p>
-                    </Field>
-                  )}
                 </FieldGroup>
               </CardContent>
             </Card>
