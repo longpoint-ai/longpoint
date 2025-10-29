@@ -41,7 +41,6 @@ export function ModelSettings() {
     queryKey: ['ai-providers'],
     queryFn: () => client.ai.listAiProviders(),
   });
-  console.log(providers);
 
   // Store model enabled state (stub - no backend)
   const [enabledModels, setEnabledModels] = useState<Set<string>>(new Set());

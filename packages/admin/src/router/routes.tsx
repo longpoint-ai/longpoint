@@ -79,7 +79,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/settings"
+        path="/settings/:tab?"
         element={
           <SetupGuard>
             <AuthGuard>
