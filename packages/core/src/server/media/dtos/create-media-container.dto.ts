@@ -1,7 +1,13 @@
 import { MediaContainerDto } from '@/server/common/dtos/media';
 import { SupportedMimeType } from '@longpoint/types';
-import { ApiProperty, ApiSchema, PartialType, PickType } from '@nestjs/swagger';
-import { IsEnum } from 'class-validator';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiSchema,
+  PartialType,
+  PickType,
+} from '@nestjs/swagger';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export type CreateMediaContainerParam = Pick<
   MediaContainerDto,
@@ -21,4 +27,15 @@ export class CreateMediaContainerDto extends PartialType(
     enum: SupportedMimeType,
   })
   mimeType!: SupportedMimeType;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  @ApiPropertyOptional({
+    description:
+      'Names of classifiers to run on the uploaded asset after processing',
+    example: ['general-tagging'],
+    type: [String],
+  })
+  classifiersOnUpload?: string[];
 }

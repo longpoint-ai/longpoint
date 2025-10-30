@@ -16,13 +16,13 @@ export class PaginationMetadataDto {
 
   @ApiProperty({
     description: 'The cursor to the next page',
-    example: '123',
+    example: 'jN1a2VuZHMA',
   })
   nextCursor: string | null = null;
 
   @ApiProperty({
     description: 'The link to the next page',
-    example: 'https://example.com/api/items?cursor=123',
+    example: 'https://example.com/api/items?cursor=jN1a2VuZHMA',
   })
   nextLink: string | null = null;
 

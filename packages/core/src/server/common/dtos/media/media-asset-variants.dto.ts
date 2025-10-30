@@ -8,22 +8,22 @@ export type MediaAssetVariantsParams = SelectedMediaContainer['assets'];
 @ApiSchema({ name: 'MediaAssetVariants' })
 export class MediaAssetVariantsDto {
   @ApiProperty({
-    description: 'The original media asset',
+    description: 'The primary media asset',
     type: MediaAssetDto,
   })
-  original: MediaAssetDto;
+  primary: MediaAssetDto;
 
   constructor(data: MediaAssetVariantsParams) {
-    this.original = this.getOriginalAsset(data);
+    this.primary = this.getPrimaryAsset(data);
   }
 
-  private getOriginalAsset(data: MediaAssetVariantsParams) {
-    const original = data.find(
-      (asset) => asset.variant === MediaAssetVariant.ORIGINAL
+  private getPrimaryAsset(data: MediaAssetVariantsParams) {
+    const primary = data.find(
+      (asset) => asset.variant === MediaAssetVariant.PRIMARY
     );
-    if (!original) {
-      throw new Error('Expected original asset - not found');
+    if (!primary) {
+      throw new Error('Expected primary asset - not found');
     }
-    return new MediaAssetDto(original);
+    return new MediaAssetDto(primary);
   }
 }

@@ -28,6 +28,9 @@ const envSchema = z.object({
   // Storage
   STORAGE_LOCAL_BASE_PATH: z.string().default(path.join('data', 'storage')),
 
+  // Encryption
+  ENCRYPTION_SECRET: z.string(),
+
   // CORS
   CORS_ORIGINS: z
     .string()
@@ -76,6 +79,9 @@ export const createConfig = (env: Env) =>
     },
     database: {
       url: env.DATABASE_URL,
+    },
+    encryption: {
+      secret: env.ENCRYPTION_SECRET,
     },
     server: {
       baseUrl: env.BASE_URL,

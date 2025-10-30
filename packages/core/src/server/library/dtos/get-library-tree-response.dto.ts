@@ -1,13 +1,32 @@
 import { MediaType } from '@/database';
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { TreeItemDto, TreeItemParams } from './tree-item.dto';
+import {
+  ApiExtraModels,
+  ApiProperty,
+  ApiSchema,
+  getSchemaPath,
+} from '@nestjs/swagger';
+import { TreeItemType } from '../library.types';
+import {
+  DirectoryTreeItemDto,
+  DirectoryTreeItemParams,
+} from './directory-tree-item.dto';
+import {
+  MediaContainerTreeItemDto,
+  MediaContainerTreeItemParams,
+} from './media-container-tree-item.dto';
 
 export interface LibraryTreeParams {
   path: string;
   items: TreeItemParams[];
 }
 
+export type TreeItemDto = MediaContainerTreeItemDto | DirectoryTreeItemDto;
+export type TreeItemParams =
+  | MediaContainerTreeItemParams
+  | DirectoryTreeItemParams;
+
 @ApiSchema({ name: 'LibraryTree' })
+@ApiExtraModels(DirectoryTreeItemDto, MediaContainerTreeItemDto)
 export class LibraryTreeDto {
   @ApiProperty({
     description: 'The library tree path',
@@ -17,7 +36,18 @@ export class LibraryTreeDto {
 
   @ApiProperty({
     description: 'The items in the tree',
-    type: [TreeItemDto],
+    isArray: true,
+    discriminator: {
+      propertyName: 'treeItemType',
+      mapping: {
+        [TreeItemType.DIRECTORY]: getSchemaPath(DirectoryTreeItemDto),
+        [TreeItemType.MEDIA]: getSchemaPath(MediaContainerTreeItemDto),
+      },
+    },
+    oneOf: [
+      { $ref: getSchemaPath(DirectoryTreeItemDto) },
+      { $ref: getSchemaPath(MediaContainerTreeItemDto) },
+    ],
     example: [
       {
         type: 'DIRECTORY',
@@ -52,6 +82,13 @@ export class LibraryTreeDto {
 
   constructor(data: LibraryTreeParams) {
     this.path = data.path;
-    this.items = data.items.map((item) => new TreeItemDto(item));
+    this.items = data.items.map((item) => this.getItemDto(item));
+  }
+
+  private getItemDto(item: TreeItemParams): TreeItemDto {
+    if (item.treeItemType === TreeItemType.DIRECTORY) {
+      return new DirectoryTreeItemDto(item);
+    }
+    return new MediaContainerTreeItemDto(item);
   }
 }

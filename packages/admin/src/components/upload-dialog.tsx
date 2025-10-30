@@ -19,6 +19,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import React, { useCallback, useRef, useState } from 'react';
+import { ClassifierCombobox } from './classifier-combobox';
 
 export function UploadDialog() {
   const {
@@ -34,6 +35,7 @@ export function UploadDialog() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedClassifiers, setSelectedClassifiers] = useState<string[]>([]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -56,17 +58,17 @@ export function UploadDialog() {
         addFiles(newFiles);
       }
     },
-    [addFiles]
+    [addFiles, selectedClassifiers]
   );
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
         const newFiles = Array.from(e.target.files);
-        addFiles(newFiles);
+        addFiles(newFiles, selectedClassifiers);
       }
     },
-    [addFiles]
+    [addFiles, selectedClassifiers]
   );
 
   const handleClose = useCallback(() => {
@@ -162,6 +164,10 @@ export function UploadDialog() {
               />
             </div>
           </div>
+          <ClassifierCombobox
+            value={selectedClassifiers}
+            onChange={setSelectedClassifiers}
+          />
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">

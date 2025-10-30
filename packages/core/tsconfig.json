@@ -4,13 +4,16 @@
   "include": [],
   "references": [
     {
+      "path": "../devkit"
+    },
+    {
+      "path": "../validations"
+    },
+    {
       "path": "../utils"
     },
     {
       "path": "../types"
-    },
-    {
-      "path": "../validations"
     },
     {
       "path": "./tsconfig.app.json"

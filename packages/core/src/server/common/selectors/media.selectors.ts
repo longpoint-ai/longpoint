@@ -1,4 +1,5 @@
 import { Prisma } from '@/database';
+import { selectClassifierRun } from './classifier.selectors';
 
 export const selectMediaContainerSummary = () => {
   return {
@@ -8,6 +9,9 @@ export const selectMediaContainerSummary = () => {
     status: true,
     path: true,
     createdAt: true,
+    assets: {
+      select: selectMediaAsset(),
+    },
   } satisfies Prisma.MediaContainerSelect;
 };
 
@@ -38,6 +42,9 @@ export const selectMediaAsset = () => {
     height: true,
     size: true,
     aspectRatio: true,
+    classifierRuns: {
+      select: selectClassifierRun(),
+    },
   } satisfies Prisma.MediaAssetSelect;
 };
 

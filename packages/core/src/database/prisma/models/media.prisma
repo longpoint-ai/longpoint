@@ -29,9 +29,11 @@ model UploadToken {
 }
 
 model MediaAsset {
-  id      String            @id @default(cuid(2))
-  variant MediaAssetVariant @default(ORIGINAL)
-  status  MediaAssetStatus
+  id                  String            @id @default(cuid(2))
+  variant             MediaAssetVariant @default(PRIMARY)
+  status              MediaAssetStatus
+  /// Names of the classifiers to run on the uploaded asset after processing
+  classifiersOnUpload String[]
 
   // asset metadata
   mimeType    String
@@ -43,15 +45,17 @@ model MediaAsset {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  containerId String
-  container   MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  uploadToken UploadToken?
+  containerId    String
+  container      MediaContainer  @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  uploadToken    UploadToken?
+  classifierRuns ClassifierRun[]
 
   @@index([containerId, status])
 }
 
 enum MediaAssetVariant {
-  ORIGINAL
+  PRIMARY
+  THUMBNAIL
 }
 
 enum MediaContainerStatus {

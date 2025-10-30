@@ -1,8 +1,8 @@
-import { MediaAssetStatus, MediaAssetVariant } from '@/database';
+import { MediaAssetStatus } from '@/database';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { createId } from '@paralleldrive/cuid2';
 import { type SelectedMediaAsset } from '../../selectors/media.selectors';
+import { ClassifierRunDto } from '../classifier';
 
 export type MediaAssetParams = SelectedMediaAsset & {
   url?: string;
@@ -12,16 +12,9 @@ export type MediaAssetParams = SelectedMediaAsset & {
 export class MediaAssetDto {
   @ApiProperty({
     description: 'The ID of the media asset',
-    example: createId(),
+    example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
-
-  @ApiProperty({
-    description: 'The variant of the media asset',
-    example: MediaAssetVariant.ORIGINAL,
-    enum: MediaAssetVariant,
-  })
-  variant: MediaAssetVariant;
 
   @ApiProperty({
     description: 'The status of the media asset',
@@ -40,6 +33,7 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The width of the media asset in pixels, if applicable',
     example: 100,
+    type: 'number',
     nullable: true,
   })
   width: number | null;
@@ -47,6 +41,7 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The height of the media asset in pixels, if applicable',
     example: 100,
+    type: 'number',
     nullable: true,
   })
   height: number | null;
@@ -54,6 +49,7 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The size of the media asset in bytes',
     example: 100,
+    type: 'number',
     nullable: true,
   })
   size: number | null;
@@ -61,21 +57,28 @@ export class MediaAssetDto {
   @ApiProperty({
     description: 'The aspect ratio of the media asset, if applicable',
     example: 1.777777,
+    type: 'number',
     nullable: true,
   })
   aspectRatio: number | null;
 
   @ApiProperty({
     description: 'The URL of the media asset',
+    type: 'string',
     example:
       'https://longpoint.example.com/storage/default/abc123/original.jpg',
     nullable: true,
   })
   url: string | null;
 
+  @ApiProperty({
+    description: 'The classifier runs for the media asset',
+    type: [ClassifierRunDto],
+  })
+  classifierRuns: ClassifierRunDto[];
+
   constructor(data: MediaAssetParams) {
     this.id = data.id;
-    this.variant = data.variant;
     this.status = data.status;
     this.mimeType = data.mimeType as SupportedMimeType;
     this.width = data.width;
@@ -83,5 +86,8 @@ export class MediaAssetDto {
     this.size = data.size;
     this.aspectRatio = data.aspectRatio;
     this.url = data.url ?? null;
+    this.classifierRuns = data.classifierRuns.map(
+      (classifierRun) => new ClassifierRunDto(classifierRun)
+    );
   }
 }

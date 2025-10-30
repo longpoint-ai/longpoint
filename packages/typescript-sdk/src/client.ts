@@ -9,6 +9,7 @@ export interface ClientConfig {
 
 export class Longpoint {
   private httpClient: AxiosInstance;
+  ai: AiClient;
   library: LibraryClient;
   media: MediaClient;
   tools: ToolsClient;
@@ -22,9 +23,104 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
+    this.ai = new AiClient(this.httpClient);
     this.library = new LibraryClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.tools = new ToolsClient(this.httpClient);
+  }
+}
+
+class AiClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Get an AI provider
+   */
+    async getAiProvider(providerId: string): Promise<components['schemas']['AiProvider']> {
+        const url = `ai/providers/${encodeURIComponent(String(providerId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update the config for an AI provider
+   */
+    async updateAiProviderConfig(providerId: string, data: components['schemas']['UpdateAiProviderConfig']): Promise<components['schemas']['AiProvider']> {
+        const url = `ai/providers/${encodeURIComponent(String(providerId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * List installed AI providers
+   */
+    async listAiProviders(): Promise<components['schemas']['AiProvider'][]> {
+        const url = `ai/providers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Create a classifier
+   */
+    async createClassifier(data: components['schemas']['CreateClassifier']): Promise<components['schemas']['Classifier']> {
+        const url = `ai/classifiers`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List classifiers
+   */
+    async listClassifiers(): Promise<components['schemas']['ClassifierSummary'][]> {
+        const url = `ai/classifiers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a classifier
+   */
+    async getClassifier(classifierId: string): Promise<components['schemas']['Classifier']> {
+        const url = `ai/classifiers/${encodeURIComponent(String(classifierId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a classifier
+   */
+    async updateClassifier(classifierId: string, data: components['schemas']['UpdateClassifier']): Promise<components['schemas']['Classifier']> {
+        const url = `ai/classifiers/${encodeURIComponent(String(classifierId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a classifier
+   */
+    async deleteClassifier(classifierId: string): Promise<void> {
+        const url = `ai/classifiers/${encodeURIComponent(String(classifierId))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * Get a model
+   */
+    async getModel(id: string): Promise<components['schemas']['AiModel']> {
+        const url = `ai/models/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * List installed models
+   */
+    async listModels(): Promise<components['schemas']['AiModel'][]> {
+        const url = `ai/models`;
+        const response = await this.httpClient.get(url);
+        return response.data;
   }
 }
 
@@ -66,7 +162,7 @@ class MediaClient {
    * Get a media container
    */
     async getMedia(containerId: string): Promise<components['schemas']['MediaContainer']> {
-        const url = `media/${containerId}`;
+        const url = `media/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -75,7 +171,7 @@ class MediaClient {
    * Update a media container
    */
     async updateMedia(containerId: string, data: components['schemas']['UpdateMediaContainer']): Promise<components['schemas']['MediaContainer']> {
-        const url = `media/${containerId}`;
+        const url = `media/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
@@ -86,7 +182,7 @@ class MediaClient {
    * All associated assets will be deleted.
    */
     async deleteMedia(containerId: string, data: components['schemas']['DeleteMediaContainer']): Promise<void> {
-        const url = `media/${containerId}`;
+        const url = `media/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
   }
@@ -102,7 +198,7 @@ class MediaClient {
           }
         }
         const queryString = params.toString();
-        const url = `media/${containerId}/upload${queryString ? `?${queryString}` : ''}`;
+        const url = `media/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.put(url);
         return response.data;
   }

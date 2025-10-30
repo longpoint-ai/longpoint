@@ -4,7 +4,11 @@ import {
   MediaContainerStatus,
   Prisma,
 } from '@/database';
-import { PrismaService, StorageService } from '@/server/common/services';
+import {
+  CommonClassifierService,
+  PrismaService,
+  StorageService,
+} from '@/server/common/services';
 import { StorageProvider } from '@/server/common/services/storage/storage.types';
 import { SupportedMimeType } from '@longpoint/types';
 import {
@@ -17,13 +21,15 @@ import { isAfter } from 'date-fns';
 import { Request } from 'express';
 import { ProbeService } from '../../services/probe.service';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
+import { TokenExpired } from './upload.errors';
 
 @Injectable()
 export class UploadService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly storageService: StorageService,
-    private readonly probeService: ProbeService
+    private readonly probeService: ProbeService,
+    private readonly commonClassifierService: CommonClassifierService
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
@@ -39,19 +45,14 @@ export class UploadService {
             id: true,
             containerId: true,
             mimeType: true,
+            classifiersOnUpload: true,
           },
         },
       },
     });
 
-    if (!uploadToken) {
-      // throw invalid token error
-      throw new Error();
-    }
-
-    if (isAfter(new Date(), uploadToken.expiresAt)) {
-      // throw expired token error
-      throw new Error();
+    if (!uploadToken || isAfter(new Date(), uploadToken.expiresAt)) {
+      throw new TokenExpired();
     }
 
     await this.updateAsset(uploadToken.mediaAsset.id, {
@@ -62,7 +63,7 @@ export class UploadService {
       uploadToken.mediaAsset.mimeType as SupportedMimeType
     );
     const fullPath = getMediaContainerPath(containerId, {
-      suffix: `original.${extension}`,
+      suffix: `primary.${extension}`,
     });
 
     try {
@@ -74,6 +75,8 @@ export class UploadService {
       });
       throw error;
     }
+
+    this.runClassifiers(uploadToken.mediaAsset);
   }
 
   private async finalize(
@@ -188,5 +191,22 @@ export class UploadService {
         },
       });
     });
+  }
+
+  /**
+   * Run any classifiers that are configured to run on the uploaded asset
+   * @param asset
+   */
+  private async runClassifiers(
+    asset: Pick<MediaAsset, 'id' | 'classifiersOnUpload'>
+  ) {
+    if (asset.classifiersOnUpload.length === 0) {
+      return;
+    }
+    await Promise.all(
+      asset.classifiersOnUpload.map((classifierName) =>
+        this.commonClassifierService.runClassifier(asset.id, classifierName)
+      )
+    );
   }
 }

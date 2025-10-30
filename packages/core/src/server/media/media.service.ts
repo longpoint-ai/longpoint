@@ -43,9 +43,10 @@ export class MediaService {
         status: 'WAITING_FOR_UPLOAD',
         assets: {
           create: {
-            variant: 'ORIGINAL',
+            variant: 'PRIMARY',
             status: 'WAITING_FOR_UPLOAD',
             mimeType: data.mimeType,
+            classifiersOnUpload: data.classifiersOnUpload,
             uploadToken: {
               create: {
                 token,
@@ -82,7 +83,7 @@ export class MediaService {
       throw new MediaContainerNotFound(id);
     }
 
-    const [hydrated] = await this.commonMediaService.hydrateContainer(media);
+    const [hydrated] = await this.commonMediaService.hydrateContainers(media);
 
     return new MediaContainerDto(hydrated);
   }
@@ -137,7 +138,7 @@ export class MediaService {
       select: selectMediaContainer(),
     });
 
-    const [hydrated] = await this.commonMediaService.hydrateContainer(
+    const [hydrated] = await this.commonMediaService.hydrateContainers(
       updatedContainer
     );
 

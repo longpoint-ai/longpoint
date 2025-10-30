@@ -1,6 +1,6 @@
 import { length, registerDecorator, ValidationOptions } from 'class-validator';
 
-export const constants = {
+export const pathValidationConstants = {
   MIN_PATH_LENGTH: 1,
   MAX_PATH_LENGTH: 500,
   // Allow alphanumeric, spaces, hyphens, underscores, slashes, dots, parentheses, brackets
@@ -22,22 +22,22 @@ export const isValidMediaContainerPath = (path: string) => {
   if (
     !length(
       normalizedPath,
-      constants.MIN_PATH_LENGTH,
-      constants.MAX_PATH_LENGTH
+      pathValidationConstants.MIN_PATH_LENGTH,
+      pathValidationConstants.MAX_PATH_LENGTH
     )
   ) {
     return false;
   }
 
   // Check for disallowed patterns
-  for (const pattern of constants.DISALLOWED_PATTERNS) {
+  for (const pattern of pathValidationConstants.DISALLOWED_PATTERNS) {
     if (pattern.test(normalizedPath)) {
       return false;
     }
   }
 
   // Check allowed characters (including control characters check)
-  if (!constants.ALLOWED_CHARS.test(normalizedPath)) {
+  if (!pathValidationConstants.ALLOWED_CHARS.test(normalizedPath)) {
     return false;
   }
 

@@ -39,6 +39,29 @@ export function pascalCase(str: string, delimiter = '-') {
 }
 
 /**
+ * Capitalizes the first letter of a string.
+ * @param str - The string to capitalize.
+ * @returns The capitalized string.
+ * @example
+ * capitalize('hello') // 'Hello'
+ * capitalize('HELLO') // 'Hello'
+ */
+export function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Converts an enum formatted string to title case.
+ * @param str - The string to convert to title case.
+ * @returns The title case string.
+ * @example
+ * enumToTitleCase('HELLO_WORLD') // 'Hello World'
+ */
+export function enumToTitleCase(str: string) {
+  return str.split('_').map(capitalize).join(' ');
+}
+
+/**
  * Encode a string to base64
  * @param str - The string to encode
  * @returns The base64 encoded string

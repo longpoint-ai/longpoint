@@ -21,13 +21,80 @@ export class MediaContainerNotFound extends ResourceNotFound {
   }
 }
 export const mediaContainerNotFoundDoc = apiErrorDoc(
-  new MediaContainerNotFound(createId())
+  new MediaContainerNotFound('mbjq36xe6397dsi6x9nq4ghc')
 );
 export const ApiMediaContainerNotFoundResponse = () => {
   return applyDecorators(
     ApiNotFoundResponse({
       description: 'Media container not found',
       ...mediaContainerNotFoundDoc,
+    })
+  );
+};
+
+export class MediaAssetNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Media asset', id, 'id');
+  }
+}
+export const mediaAssetNotFoundDoc = apiErrorDoc(
+  new MediaAssetNotFound(createId())
+);
+export const ApiMediaAssetNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Media asset not found',
+      ...mediaAssetNotFoundDoc,
+    })
+  );
+};
+
+export class ModelNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Model', id);
+  }
+}
+export const modelNotFoundDoc = apiErrorDoc(
+  new ModelNotFound('a9ri6j9r33yku4m8wrevlp29')
+);
+export const ApiModelNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Model not found',
+      ...modelNotFoundDoc,
+    })
+  );
+};
+
+export class ClassifierNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Classifier', id);
+  }
+}
+export const classifierNotFoundDoc = apiErrorDoc(
+  new ClassifierNotFound('ukt4084q1kaqmsq74f2fxg43')
+);
+export const ApiClassifierNotFoundResponse = () =>
+  applyDecorators(
+    ApiNotFoundResponse({
+      description: 'The classifier was not found',
+      ...classifierNotFoundDoc,
+    })
+  );
+
+export class AiProviderNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('AI provider', id);
+  }
+}
+export const aiProviderNotFoundDoc = apiErrorDoc(
+  new AiProviderNotFound('r2qwyd76nvd98cu6ewg8ync2')
+);
+export const ApiAiProviderNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'AI provider not found',
+      ...aiProviderNotFoundDoc,
     })
   );
 };

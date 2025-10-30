@@ -11,14 +11,14 @@ import {
   IsValidMediaContainerPath,
 } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { createId } from '@paralleldrive/cuid2';
 import { MediaAssetVariantsDto } from './media-asset-variants.dto';
+import { MediaAssetDto } from './media-asset.dto';
 
 @ApiSchema({ name: 'MediaContainer' })
 export class MediaContainerDto {
   @ApiProperty({
     description: 'The ID of the media container',
-    example: createId(),
+    example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
 
@@ -60,9 +60,9 @@ export class MediaContainerDto {
     description: 'The accessible media assets in the container',
     type: MediaAssetVariantsDto,
     example: {
-      original: {
-        id: createId(),
-        variant: MediaAssetVariant.ORIGINAL,
+      primary: {
+        id: 'okie3r17vhfswyyp38v9lrsl',
+        variant: MediaAssetVariant.PRIMARY,
         status: MediaAssetStatus.READY,
         mimeType: SupportedMimeType.JPEG,
         width: 1920,
@@ -73,7 +73,14 @@ export class MediaContainerDto {
       },
     },
   })
-  assets: MediaAssetVariantsDto;
+  variants: MediaAssetVariantsDto;
+
+  @ApiProperty({
+    description: 'Thumbnails for the media container',
+    type: () => MediaAssetDto,
+    isArray: true,
+  })
+  thumbnails: MediaAssetDto[];
 
   constructor(data: SelectedMediaContainer) {
     this.id = data.id;
@@ -82,6 +89,13 @@ export class MediaContainerDto {
     this.type = data.type;
     this.status = data.status;
     this.createdAt = data.createdAt;
-    this.assets = new MediaAssetVariantsDto(data.assets);
+    this.variants = new MediaAssetVariantsDto(data.assets);
+    this.thumbnails = this.getThumbnailAssets(data);
+  }
+
+  private getThumbnailAssets(data: SelectedMediaContainer) {
+    return data.assets
+      .filter((asset) => asset.variant === MediaAssetVariant.THUMBNAIL)
+      .map((asset) => new MediaAssetDto(asset));
   }
 }

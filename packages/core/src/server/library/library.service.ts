@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { selectMediaContainerSummary } from '../common/selectors/media.selectors';
-import { ConfigService, PrismaService } from '../common/services';
+import {
+  CommonMediaService,
+  ConfigService,
+  PrismaService,
+} from '../common/services';
 import {
   DirectoryTreeItemParams,
   GetLibraryTreeQueryDto,
@@ -14,7 +18,8 @@ import { TreeItemType } from './library.types';
 export class LibraryService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly commonMediaService: CommonMediaService
   ) {}
 
   async getTree(query: GetLibraryTreeQueryDto): Promise<LibraryTreeDto> {
@@ -31,16 +36,20 @@ export class LibraryService {
       select: selectMediaContainerSummary(),
     });
 
+    const hydratedContainers = await this.commonMediaService.hydrateContainers(
+      containers
+    );
+
     // Extract directories and media items
     const directories = new Map<string, DirectoryTreeItemParams>();
     const mediaItems: TreeItemParams[] = [];
 
-    for (const container of containers) {
+    for (const container of hydratedContainers) {
       if (container.path === normalizedPath) {
         // Container is at exact path - it's a media item
         mediaItems.push({
-          type: TreeItemType.MEDIA,
-          content: container,
+          treeItemType: TreeItemType.MEDIA,
+          ...container,
         });
       } else if (container.path.startsWith(normalizedPath + '/')) {
         // Container is in a subdirectory - extract the directory name
@@ -62,6 +71,7 @@ export class LibraryService {
           directories.set(directoryPath, {
             path: directoryPath,
             url: url.href,
+            treeItemType: TreeItemType.DIRECTORY,
           });
         }
       } else if (normalizedPath === '/' && container.path !== '/') {
@@ -83,18 +93,14 @@ export class LibraryService {
           directories.set(directoryPath, {
             path: directoryPath,
             url: url.href,
+            treeItemType: TreeItemType.DIRECTORY,
           });
         }
       }
     }
 
     // Convert directories to tree items
-    const directoryItems: TreeItemParams[] = Array.from(
-      directories.values()
-    ).map((dir) => ({
-      type: TreeItemType.DIRECTORY,
-      content: dir,
-    }));
+    const directoryItems: TreeItemParams[] = Array.from(directories.values());
 
     // Combine all items
     const allItems = [...directoryItems, ...mediaItems];

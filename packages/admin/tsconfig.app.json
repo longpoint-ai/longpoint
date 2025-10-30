@@ -42,19 +42,22 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../react/tsconfig.lib.json"
+      "path": "../devkit/tsconfig.lib.json"
     },
     {
       "path": "../utils/tsconfig.lib.json"
-    },
-    {
-      "path": "../typescript-sdk"
     },
     {
       "path": "../ui"
     },
     {
       "path": "../types/tsconfig.lib.json"
+    },
+    {
+      "path": "../typescript-sdk"
+    },
+    {
+      "path": "../react/tsconfig.lib.json"
     }
   ]
 }
