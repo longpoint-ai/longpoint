@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
+import { Checkbox } from '@longpoint/ui/components/checkbox';
 import { CopyButton } from '@longpoint/ui/components/copy-button';
 import {
   Dialog,
@@ -33,6 +34,7 @@ export function MediaDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [permanentlyDelete, setPermanentlyDelete] = useState(false);
 
   const {
     data: media,
@@ -45,12 +47,14 @@ export function MediaDetail() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.media.deleteMedia(id!, { permanently: false }),
+    mutationFn: () =>
+      client.media.deleteMedia(id!, { permanently: permanentlyDelete }),
     onSuccess: () => {
       toast.success('Media deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['library-tree'] });
       queryClient.invalidateQueries({ queryKey: ['media'] });
       setDeleteDialogOpen(false);
+      setPermanentlyDelete(false);
       navigate('/library');
     },
     onError: (error) => {
@@ -505,7 +509,15 @@ export function MediaDetail() {
         </div>
       </div>
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <Dialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setPermanentlyDelete(false);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Media</DialogTitle>
@@ -515,6 +527,25 @@ export function MediaDetail() {
               cannot be undone.
             </DialogDescription>
           </DialogHeader>
+          <div>
+            <Field>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="permanently-delete"
+                  checked={permanentlyDelete}
+                  onCheckedChange={(checked) =>
+                    setPermanentlyDelete(checked === true)
+                  }
+                />
+                <FieldLabel
+                  htmlFor="permanently-delete"
+                  className="font-normal cursor-pointer"
+                >
+                  Permanently delete
+                </FieldLabel>
+              </div>
+            </Field>
+          </div>
           <DialogFooter>
             <Button
               variant="outline"
