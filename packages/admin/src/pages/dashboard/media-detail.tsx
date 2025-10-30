@@ -52,7 +52,6 @@ export function MediaDetail() {
     onSuccess: () => {
       toast.success('Media deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['library-tree'] });
-      queryClient.invalidateQueries({ queryKey: ['media'] });
       setDeleteDialogOpen(false);
       setPermanentlyDelete(false);
       navigate('/library');

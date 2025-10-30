@@ -6,6 +6,7 @@ import {
   FieldLabel,
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
+import { PasswordInput } from '@longpoint/ui/components/password-input';
 import { Control, Controller } from 'react-hook-form';
 import { ArrayField } from './array-field';
 import { ObjectField } from './object-field';
@@ -109,6 +110,33 @@ export function ConfigSchemaField({
                 const val = e.target.value;
                 field.onChange(val === '' ? '' : Number(val));
               }}
+              aria-invalid={fieldState.invalid}
+              placeholder={label}
+            />
+            {description && (
+              <FieldDescription>{String(description)}</FieldDescription>
+            )}
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+    );
+  }
+
+  if (type === 'secret') {
+    return (
+      <Controller
+        name={name as any}
+        control={control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={fieldId}>
+              {label}
+              {required && <span className="ml-1 text-destructive">*</span>}
+            </FieldLabel>
+            <PasswordInput
+              {...field}
+              id={fieldId}
               aria-invalid={fieldState.invalid}
               placeholder={label}
             />

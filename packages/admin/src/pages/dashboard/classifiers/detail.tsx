@@ -16,7 +16,7 @@ import {
 } from '@longpoint/ui/components/field';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, ScanSearchIcon, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -75,12 +75,10 @@ export function ClassifierDetail() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/classifiers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+        <div className="flex items-start gap-2">
+          <ScanSearchIcon className="h-6 w-6 text-muted-foreground mt-2" />
           <div>
+            {' '}
             <h2 className="text-3xl font-bold">{classifier.name}</h2>
             {classifier.description && (
               <p className="text-muted-foreground mt-2">
