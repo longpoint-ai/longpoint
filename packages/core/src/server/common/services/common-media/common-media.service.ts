@@ -27,7 +27,7 @@ export class CommonMediaService {
    * @param containers The media container(s) to hydrate.
    * @returns The hydrated media container(s).
    */
-  async hydrateContainer<T extends HydratableMediaContainer>(
+  async hydrateContainers<T extends HydratableMediaContainer>(
     containers: T | T[]
   ): Promise<HydratedMediaContainer<T>[]> {
     const containerArray: T[] = Array.isArray(containers)

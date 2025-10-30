@@ -598,7 +598,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-30T00:45:54.093Z
+             * @example 2025-10-30T01:24:38.882Z
              */
             expiresAt: string;
             /**
@@ -735,12 +735,6 @@ export interface components {
              */
             url: string | null;
             /**
-             * @description The variant of the media asset
-             * @example PRIMARY
-             * @enum {string}
-             */
-            variant: "PRIMARY";
-            /**
              * @description The width of the media asset in pixels, if applicable
              * @example 100
              */
@@ -752,9 +746,44 @@ export interface components {
         };
         MediaContainer: {
             /**
+             * Format: date-time
+             * @description When the media container was created
+             * @example 2025-10-30T00:24:38.870Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the media container
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying media
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The directory path of the media container
+             * @example /
+             */
+            path: string;
+            /**
+             * @description The status of the media container
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /** @description Thumbnails for the media container */
+            thumbnails: components["schemas"]["MediaAsset"][];
+            /**
+             * @description The primary media type.
+             * @example IMAGE
+             * @enum {string}
+             */
+            type: "IMAGE";
+            /**
              * @description The accessible media assets in the container
              * @example {
-             *       "original": {
+             *       "primary": {
              *         "id": "okie3r17vhfswyyp38v9lrsl",
              *         "variant": "PRIMARY",
              *         "status": "READY",
@@ -767,46 +796,13 @@ export interface components {
              *       }
              *     }
              */
-            assets: components["schemas"]["MediaAssetVariants"];
-            /**
-             * Format: date-time
-             * @description When the media container was created
-             * @example 2025-10-29T23:45:54.080Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the media container
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
-             */
-            name: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path: string;
-            /**
-             * @description The status of the media container
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /**
-             * @description The primary media type.
-             * @example IMAGE
-             * @enum {string}
-             */
-            type: "IMAGE";
+            variants: components["schemas"]["MediaAssetVariants"];
         };
         MediaContainerTreeItem: {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-29T23:45:54.080Z
+             * @example 2025-10-30T00:24:38.870Z
              */
             createdAt: string;
             /**
@@ -830,6 +826,8 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /** @description Thumbnails for the media container */
+            thumbnails: components["schemas"]["MediaAsset"][];
             /**
              * @description The type of the tree item
              * @example MEDIA

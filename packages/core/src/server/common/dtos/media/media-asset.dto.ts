@@ -1,4 +1,4 @@
-import { MediaAssetStatus, MediaAssetVariant } from '@/database';
+import { MediaAssetStatus } from '@/database';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { type SelectedMediaAsset } from '../../selectors/media.selectors';
@@ -15,13 +15,6 @@ export class MediaAssetDto {
     example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
-
-  @ApiProperty({
-    description: 'The variant of the media asset',
-    example: MediaAssetVariant.PRIMARY,
-    enum: MediaAssetVariant,
-  })
-  variant: MediaAssetVariant;
 
   @ApiProperty({
     description: 'The status of the media asset',
@@ -86,7 +79,6 @@ export class MediaAssetDto {
 
   constructor(data: MediaAssetParams) {
     this.id = data.id;
-    this.variant = data.variant;
     this.status = data.status;
     this.mimeType = data.mimeType as SupportedMimeType;
     this.width = data.width;

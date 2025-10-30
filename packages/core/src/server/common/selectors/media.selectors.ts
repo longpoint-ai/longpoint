@@ -9,6 +9,9 @@ export const selectMediaContainerSummary = () => {
     status: true,
     path: true,
     createdAt: true,
+    assets: {
+      select: selectMediaAsset(),
+    },
   } satisfies Prisma.MediaContainerSelect;
 };
 

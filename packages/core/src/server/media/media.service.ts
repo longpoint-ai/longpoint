@@ -83,7 +83,7 @@ export class MediaService {
       throw new MediaContainerNotFound(id);
     }
 
-    const [hydrated] = await this.commonMediaService.hydrateContainer(media);
+    const [hydrated] = await this.commonMediaService.hydrateContainers(media);
 
     return new MediaContainerDto(hydrated);
   }
@@ -138,7 +138,7 @@ export class MediaService {
       select: selectMediaContainer(),
     });
 
-    const [hydrated] = await this.commonMediaService.hydrateContainer(
+    const [hydrated] = await this.commonMediaService.hydrateContainers(
       updatedContainer
     );
 

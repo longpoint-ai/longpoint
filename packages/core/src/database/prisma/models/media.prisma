@@ -55,6 +55,7 @@ model MediaAsset {
 
 enum MediaAssetVariant {
   PRIMARY
+  THUMBNAIL
 }
 
 enum MediaContainerStatus {

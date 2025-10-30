@@ -64,7 +64,7 @@ export function MediaDetail() {
   });
 
   const handleDownload = async () => {
-    const primaryAsset = media?.assets?.primary;
+    const primaryAsset = media?.variants?.primary;
     if (primaryAsset?.url) {
       try {
         const response = await fetch(primaryAsset.url);
@@ -92,7 +92,7 @@ export function MediaDetail() {
     deleteMutation.mutate();
   };
 
-  const primaryAsset = media?.assets?.primary;
+  const primaryAsset = media?.variants?.primary;
 
   if (isLoading) {
     return (
