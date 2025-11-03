@@ -11,5 +11,5 @@ export class GetLibraryTreeQueryDto {
     example: '/',
     default: '/',
   })
-  path: string = '/';
+  path = '/';
 }

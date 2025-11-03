@@ -598,7 +598,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-10-30T01:24:38.882Z
+             * @example 2025-11-03T19:13:55.956Z
              */
             expiresAt: string;
             /**
@@ -634,7 +634,7 @@ export interface components {
              * @default false
              * @example false
              */
-            permanently: boolean;
+            permanently: Record<string, never>;
         };
         DirectoryTreeItem: {
             /**
@@ -748,7 +748,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-30T00:24:38.870Z
+             * @example 2025-11-03T18:13:55.944Z
              */
             createdAt: string;
             /**
@@ -802,7 +802,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-10-30T00:24:38.870Z
+             * @example 2025-11-03T18:13:55.944Z
              */
             createdAt: string;
             /**
@@ -835,6 +835,7 @@ export interface components {
              */
             treeItemType: "MEDIA";
         };
+        Object: Record<string, never>;
         SetupStatus: {
             /**
              * @description Whether the first time setup is complete
@@ -1185,7 +1186,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description The path to get the tree for */
-                path?: string;
+                path?: components["schemas"]["Object"];
             };
             header?: never;
             path?: never;

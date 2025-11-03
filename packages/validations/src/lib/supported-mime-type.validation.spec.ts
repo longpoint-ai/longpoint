@@ -79,7 +79,7 @@ describe('isSupportedMimeType', () => {
 
   describe('type narrowing', () => {
     it('should narrow the type correctly for supported mime types', () => {
-      const mimeType: string = 'image/jpeg';
+      const mimeType = 'image/jpeg';
 
       if (isSupportedMimeType(mimeType)) {
         // This should compile without errors

@@ -18,4 +18,7 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: 'test-output/jest/coverage',
+  transformIgnorePatterns: [
+    'node_modules/(?!(chalk|ansi-styles|strip-ansi|ansi-regex|supports-color)/)',
+  ],
 };

@@ -53,8 +53,12 @@ describe('MediaContainerPathValidation', () => {
     describe('invalid paths - length constraints', () => {
       it('should return false for empty or null paths', () => {
         expect(isValidMediaContainerPath('')).toBe(false);
-        expect(isValidMediaContainerPath(null as any)).toBe(false);
-        expect(isValidMediaContainerPath(undefined as any)).toBe(false);
+        expect(isValidMediaContainerPath(null as unknown as string)).toBe(
+          false
+        );
+        expect(isValidMediaContainerPath(undefined as unknown as string)).toBe(
+          false
+        );
       });
 
       it('should return false for paths that are too long', () => {
@@ -129,9 +133,9 @@ describe('MediaContainerPathValidation', () => {
       });
 
       it('should handle non-string inputs', () => {
-        expect(isValidMediaContainerPath(123 as any)).toBe(false);
-        expect(isValidMediaContainerPath({} as any)).toBe(false);
-        expect(isValidMediaContainerPath([] as any)).toBe(false);
+        expect(isValidMediaContainerPath(123 as unknown as string)).toBe(false);
+        expect(isValidMediaContainerPath({} as unknown as string)).toBe(false);
+        expect(isValidMediaContainerPath([] as unknown as string)).toBe(false);
       });
     });
   });

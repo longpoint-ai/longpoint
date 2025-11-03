@@ -11,8 +11,8 @@ import { OpenAPISpec } from './parsers/types';
 import { SDKGenerator } from './sdk-generator';
 
 export async function generateSDK(
-  target: string = 'typescript',
-  specUrl: string = 'http://localhost:3000/docs-json',
+  target = 'typescript',
+  specUrl = 'http://localhost:3000/docs-json',
   outputDir?: string
 ): Promise<void> {
   try {

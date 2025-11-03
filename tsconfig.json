@@ -4,9 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./tools/scaffold"
-    },
-    {
       "path": "./packages/types"
     },
     {

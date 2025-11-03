@@ -36,6 +36,7 @@ export class CommonMediaService {
       ? containers
       : [containers];
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const mainThis: CommonMediaService = this;
 
     const results = await Promise.all(
