@@ -6,7 +6,7 @@ import {
   CreateSignedUrlOptions,
   SignedUrlResponse,
   StorageProvider,
-} from '../storage.types';
+} from '../../types/storage-provider.types';
 
 export interface LocalStorageProviderConfig {
   /**
@@ -36,6 +36,21 @@ export class LocalStorageProvider implements StorageProvider {
   async deleteDirectory(path: string): Promise<void> {
     const fullPath = join(this.config.basePath, path);
     await fs.promises.rm(fullPath, { recursive: true, force: true });
+  }
+
+  async getFileContents(path: string): Promise<Buffer> {
+    const fullPath = join(this.config.basePath, path);
+    return fs.promises.readFile(fullPath);
+  }
+
+  async exists(path: string): Promise<boolean> {
+    const fullPath = join(this.config.basePath, path);
+    try {
+      await fs.promises.access(fullPath, fs.constants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async createSignedUrl(

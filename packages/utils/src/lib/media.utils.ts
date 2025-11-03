@@ -68,29 +68,41 @@ export function mimeTypeToExtension(mimeType: SupportedMimeType) {
       return 'jpg';
     case SupportedMimeType.WEBP:
       return 'webp';
-    // case SupportedMimeType.PLAIN_TEXT:
-    //   return 'txt';
-    // case SupportedMimeType.MP4:
-    //   return 'mp4';
-    // case SupportedMimeType.WEBM:
-    //   return 'webm';
-    // case SupportedMimeType.OGV:
-    //   return 'ogv';
-    // case SupportedMimeType.MOV:
-    //   return 'mov';
-    // case SupportedMimeType.SVG:
-    //   return 'svg';
-    // case SupportedMimeType.AAC:
-    //   return 'aac';
-    // case SupportedMimeType.MP3:
-    //   return 'mp3';
-    // case SupportedMimeType.WAV:
-    //   return 'wav';
-    // case SupportedMimeType.OGA:
-    //   return 'oga';
-    // case SupportedMimeType.WEBA:
-    //   return 'weba';
     default:
       return 'bin';
   }
+}
+
+/**
+ * Gets the MIME type for a given file extension or format name.
+ * @param extensionOrFormat The file extension (e.g., 'jpg', 'png') or format name (e.g., 'jpeg', 'webp')
+ * @returns The MIME type
+ */
+export function getMimeType(extensionOrFormat: string): string {
+  const normalized = extensionOrFormat.toLowerCase();
+  switch (normalized) {
+    case 'webp':
+      return 'image/webp';
+    case 'jpeg':
+    case 'jpg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'svg':
+      return 'image/svg+xml';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+/**
+ * Determines content type from file extension.
+ * @param filename The filename (e.g., 'image.jpg', 'photo.png')
+ * @returns The content type MIME type
+ */
+export function getContentType(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  return getMimeType(ext);
 }

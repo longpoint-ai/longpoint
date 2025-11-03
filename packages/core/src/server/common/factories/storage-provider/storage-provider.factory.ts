@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
-import { LocalStorageProvider } from './storage-providers';
-import { StorageProvider } from './storage.types';
+import { ConfigService } from '../../services/config/config.service';
+import { StorageProvider } from '../../types/storage-provider.types';
+import { LocalStorageProvider } from './local.storage-provider';
 
 @Injectable()
-export class StorageService {
+export class StorageProviderFactory {
   constructor(private readonly configService: ConfigService) {}
 
   /**

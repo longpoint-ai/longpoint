@@ -7,12 +7,12 @@ import crypto from 'crypto';
 import { addHours } from 'date-fns';
 import { MediaContainerDto } from '../common/dtos/media';
 import { MediaContainerNotFound } from '../common/errors';
+import { StorageProviderFactory } from '../common/factories';
 import { selectMediaContainer } from '../common/selectors/media.selectors';
 import {
   CommonMediaService,
   ConfigService,
   PrismaService,
-  StorageService,
 } from '../common/services';
 import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
@@ -26,7 +26,7 @@ export class MediaService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly storageService: StorageService,
+    private readonly storageProviderFactory: StorageProviderFactory,
     private readonly commonMediaService: CommonMediaService
   ) {}
 
@@ -162,7 +162,8 @@ export class MediaService {
           id,
         },
       });
-      const storageProvider = await this.storageService.getDefaultProvider();
+      const storageProvider =
+        await this.storageProviderFactory.getDefaultProvider();
       await storageProvider.deleteDirectory(getMediaContainerPath(id));
     } else {
       await this.prismaService.mediaContainer.update({

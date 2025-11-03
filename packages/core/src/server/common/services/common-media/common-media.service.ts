@@ -5,9 +5,9 @@ import {
 } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import { MediaAssetParams } from '../../dtos/media';
+import { StorageProviderFactory } from '../../factories';
 import { SelectedMediaContainer } from '../../selectors/media.selectors';
-import { StorageService } from '../storage/storage.service';
-import { StorageProvider } from '../storage/storage.types';
+import { StorageProvider } from '../../types/storage-provider.types';
 
 type HydratableMediaContainer = Pick<SelectedMediaContainer, 'id' | 'assets'>;
 type HydratableMediaAsset = Pick<MediaAssetParams, 'mimeType'>;
@@ -20,7 +20,9 @@ type HydratedMediaContainer<T extends HydratableMediaContainer> = T & {
 
 @Injectable()
 export class CommonMediaService {
-  constructor(private readonly storageService: StorageService) {}
+  constructor(
+    private readonly storageProviderFactory: StorageProviderFactory
+  ) {}
 
   /**
    * Hydrates one or more media containers with dynamic information, such as the URLs of assets.
@@ -38,9 +40,10 @@ export class CommonMediaService {
 
     const results = await Promise.all(
       containerArray.map(async (container) => {
-        const provider = await this.storageService.getProviderByContainerId(
-          container.id
-        );
+        const provider =
+          await this.storageProviderFactory.getProviderByContainerId(
+            container.id
+          );
 
         const hydratedAssets = await Promise.all(
           container.assets.map(async (asset) => {
@@ -67,7 +70,7 @@ export class CommonMediaService {
     mediaContainerId: string,
     asset: T
   ): Promise<HydratedMediaAsset<T>> {
-    const provider = await this.storageService.getProviderByContainerId(
+    const provider = await this.storageProviderFactory.getProviderByContainerId(
       mediaContainerId
     );
     return this.hydrateAssetInternal(mediaContainerId, provider, asset);
