@@ -13,6 +13,7 @@ import type {
   TransformParamsDto,
 } from './dtos/transform-params.dto';
 import { ImageTransformService } from './services/image-transform.service';
+import { FileNotFound } from './storage.errors';
 
 @Injectable()
 export class StorageService {
@@ -50,12 +51,15 @@ export class StorageService {
         res.send(buffer);
         return;
       } catch (error) {
-        throw new NotFoundException('File not found');
+        throw new FileNotFound(originalPath);
       }
     }
 
     try {
-      const recipeHash = this.generateCacheHash({ w: query.w, h: query.h });
+      const recipeHash = this.generateCacheHash(filename, {
+        w: query.w,
+        h: query.h,
+      });
       const outputExt = 'webp';
       const cachePath = this.getCachePath(containerId, recipeHash, outputExt);
 
@@ -95,7 +99,7 @@ export class StorageService {
         res.setHeader('Cache-Control', 'public, max-age=31536000');
         res.send(buffer);
       } catch {
-        throw new NotFoundException('File not found');
+        throw new FileNotFound(originalPath);
       }
     }
   }
@@ -115,9 +119,12 @@ export class StorageService {
     return entries.join(',');
   }
 
-  private generateCacheHash(params: TransformParams) {
+  private generateCacheHash(fileName: string, params: TransformParams) {
     const normalized = this.normalizeTransformParams(params);
-    const hash = crypto.createHash('sha256').update(normalized).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(`${fileName}-${normalized}`)
+      .digest('hex');
     return hash.substring(0, 16);
   }
 
