@@ -1,7 +1,0 @@
-import { <%= pluralName %> } from "./example.<%= name %>.js";
-
-describe('<%= pluralName %>', () => {
-  it('should work', () => {
-    expect(<%= pluralName %>()).toEqual('<%= pluralName %>');
-  });
-});

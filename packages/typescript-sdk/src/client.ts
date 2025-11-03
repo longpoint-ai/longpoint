@@ -34,6 +34,24 @@ class AiClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
+   * Get a model
+   */
+    async getModel(id: string): Promise<components['schemas']['AiModel']> {
+        const url = `ai/models/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * List installed models
+   */
+    async listModels(): Promise<components['schemas']['AiModel'][]> {
+        const url = `ai/models`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
    * Get an AI provider
    */
     async getAiProvider(providerId: string): Promise<components['schemas']['AiProvider']> {
@@ -104,24 +122,6 @@ class AiClient {
         const response = await this.httpClient.delete(url);
         return response.data;
   }
-
-    /**
-   * Get a model
-   */
-    async getModel(id: string): Promise<components['schemas']['AiModel']> {
-        const url = `ai/models/${encodeURIComponent(String(id))}`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * List installed models
-   */
-    async listModels(): Promise<components['schemas']['AiModel'][]> {
-        const url = `ai/models`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
 }
 
 class LibraryClient {
@@ -130,7 +130,7 @@ class LibraryClient {
     /**
    * List the contents of a library tree
    */
-    async getTree(options?: { path?: string }): Promise<components['schemas']['LibraryTree']> {
+    async getTree(options?: { path?: components['schemas']['Object'] }): Promise<components['schemas']['LibraryTree']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.path !== undefined) {

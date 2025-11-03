@@ -22,7 +22,7 @@ export class PaginationQueryDto {
   @IsNumber()
   @IsOptional()
   @ApiPropertyOptional({ default: 100 })
-  pageSize: number = 100;
+  pageSize = 100;
 
   /**
    * Converts the pagination query into a Prisma cursor pagination object.

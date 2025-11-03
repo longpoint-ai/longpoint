@@ -1,15 +1,15 @@
 import { validate } from 'class-validator';
 import {
-  constants,
   IsValidMediaContainerName,
   isValidMediaContainerName,
+  mediaContainerNameConstants,
 } from './media-container-name.validation.js';
 
 describe('MediaContainerNameValidation', () => {
   describe('constants', () => {
     it('should have correct min and max length values', () => {
-      expect(constants.MIN_NAME_LENGTH).toBe(2);
-      expect(constants.MAX_NAME_LENGTH).toBe(255);
+      expect(mediaContainerNameConstants.MIN_NAME_LENGTH).toBe(2);
+      expect(mediaContainerNameConstants.MAX_NAME_LENGTH).toBe(255);
     });
   });
 

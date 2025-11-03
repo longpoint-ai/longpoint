@@ -1,7 +1,6 @@
 import { findPackagePath } from '@longpoint/utils/path';
 import { DynamicModule } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { existsSync } from 'fs';
 import { join } from 'path';
 
 export function getStaticModule(): DynamicModule {
@@ -37,15 +36,7 @@ export function getStaticModule(): DynamicModule {
 
   // ------------------------------------------------------------
 
-  // Storage directory configuration for local storage provider
-  const storageBasePath = join(process.cwd(), 'data', 'storage');
-  if (existsSync(storageBasePath)) {
-    serveStaticConfigs.push({
-      rootPath: storageBasePath,
-      serveRoot: '/storage',
-      exclude: ['/api*'],
-    });
-  }
+  // Note: Local storage provider files are served via StorageController, not ServeStaticModule
 
   return ServeStaticModule.forRoot(...serveStaticConfigs);
 }

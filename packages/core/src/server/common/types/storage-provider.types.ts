@@ -2,8 +2,8 @@ import { Readable } from 'stream';
 
 export interface StorageProvider {
   upload(path: string, body: Readable | Buffer | string): Promise<boolean>;
-  // getFileContents(path: string): Promise<Buffer>;
-  // exists(path: string): Promise<boolean>;
+  getFileContents(path: string): Promise<Buffer>;
+  exists(path: string): Promise<boolean>;
   // deleteFile(path: string): Promise<void>;
   // deleteDirectory(path: string): Promise<void>;
   deleteDirectory(path: string): Promise<void>;

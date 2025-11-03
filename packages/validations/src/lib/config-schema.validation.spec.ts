@@ -1,5 +1,5 @@
 import { ConfigSchema } from '@longpoint/devkit';
-import { validateConfigSchema } from './config-schema.validation';
+import { validateConfigSchema } from './config-schema.validation.js';
 
 describe('validateConfigSchema', () => {
   describe('required field validation', () => {
@@ -382,7 +382,7 @@ describe('validateConfigSchema', () => {
       const tooShortResult = validateConfigSchema(schema, { items: [] });
       expect(tooShortResult.valid).toBe(false);
       expect(tooShortResult.errors).toContain(
-        'items must have at least 1 items'
+        'items must have at least 1 item'
       );
 
       const tooLongResult = validateConfigSchema(schema, {
@@ -410,7 +410,7 @@ describe('validateConfigSchema', () => {
       const tooShortResult = validateConfigSchema(schema, { config: {} });
       expect(tooShortResult.valid).toBe(false);
       expect(tooShortResult.errors).toContain(
-        'config must have at least 1 properties'
+        'config must have at least 1 property'
       );
 
       const tooLongResult = validateConfigSchema(schema, {
@@ -657,7 +657,7 @@ describe('validateConfigSchema', () => {
       });
       expect(noPropsResult.valid).toBe(false);
       expect(noPropsResult.errors).toContain(
-        'config must have at least 1 properties'
+        'config must have at least 1 property'
       );
     });
   });

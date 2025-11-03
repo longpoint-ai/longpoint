@@ -4,12 +4,12 @@ import {
   MediaContainerStatus,
   Prisma,
 } from '@/database';
+import { StorageProviderFactory } from '@/server/common/factories';
 import {
   CommonClassifierService,
   PrismaService,
-  StorageService,
 } from '@/server/common/services';
-import { StorageProvider } from '@/server/common/services/storage/storage.types';
+import { StorageProvider } from '@/server/common/types/storage-provider.types';
 import { SupportedMimeType } from '@longpoint/types';
 import {
   getMediaContainerPath,
@@ -27,13 +27,14 @@ import { TokenExpired } from './upload.errors';
 export class UploadService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly storageService: StorageService,
+    private readonly storageProviderFactory: StorageProviderFactory,
     private readonly probeService: ProbeService,
     private readonly commonClassifierService: CommonClassifierService
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
-    const storageProvider = await this.storageService.getDefaultProvider();
+    const storageProvider =
+      await this.storageProviderFactory.getDefaultProvider();
     const uploadToken = await this.prismaService.uploadToken.findUnique({
       where: {
         token: query.token,

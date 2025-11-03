@@ -4,7 +4,7 @@ export const pathValidationConstants = {
   MIN_PATH_LENGTH: 1,
   MAX_PATH_LENGTH: 500,
   // Allow alphanumeric, spaces, hyphens, underscores, slashes, dots, parentheses, brackets
-  ALLOWED_CHARS: /^[a-zA-Z0-9\s\-_\/\.\(\)\[\]]+$/,
+  ALLOWED_CHARS: /^[a-zA-Z0-9\s_/.()[\]-]+$/,
   DISALLOWED_PATTERNS: [
     /\.\./, // Path traversal
     /~/, // Home directory reference
@@ -42,6 +42,7 @@ export const isValidMediaContainerPath = (path: string) => {
   }
 
   // Check for control characters specifically
+  // eslint-disable-next-line no-control-regex
   if (/[\x00-\x1F\x7F]/.test(normalizedPath)) {
     return false;
   }
@@ -55,7 +56,7 @@ export const isValidMediaContainerPath = (path: string) => {
       .filter((segment) => segment.length > 0);
     for (const segment of pathSegments) {
       // Each segment should be valid
-      if (!/^[a-zA-Z0-9\s\-_\.\(\)\[\]]+$/.test(segment)) {
+      if (!/^[a-zA-Z0-9\s_.()[\]-]+$/.test(segment)) {
         return false;
       }
     }
@@ -67,7 +68,7 @@ export const isValidMediaContainerPath = (path: string) => {
 export const IsValidMediaContainerPath = (
   validationOptions?: ValidationOptions
 ) => {
-  return function (object: any, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName,

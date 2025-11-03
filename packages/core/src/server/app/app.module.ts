@@ -11,6 +11,7 @@ import { LibraryModule } from '../library/library.module';
 import { LoggerModule } from '../logger/logger.module';
 import { MediaModule } from '../media/media.module';
 import { SetupModule } from '../setup/setup.module';
+import { StorageModule } from '../storage/storage.module';
 import { getStaticModule } from './get-static-module';
 
 @Module({
@@ -19,13 +20,14 @@ import { getStaticModule } from './get-static-module';
     CommonModule,
     LoggerModule,
     // Feature modules
+    AiModelModule,
     AiProviderModule,
     AuthModule,
     ClassifierModule,
     LibraryModule,
     MediaModule,
-    AiModelModule,
     SetupModule,
+    StorageModule,
   ],
   providers: [
     {

@@ -12,7 +12,7 @@ export class PaginationMetadataDto {
     description: 'The number of items per page',
     example: 100,
   })
-  pageSize: number = 100;
+  pageSize = 100;
 
   @ApiProperty({
     description: 'The cursor to the next page',

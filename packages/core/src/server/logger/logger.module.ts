@@ -12,7 +12,7 @@ import { Logger } from './logger';
       useFactory: (configService: ConfigService) => {
         return {
           pinoHttp: {
-            customProps: (req, res) => ({
+            customProps: () => ({
               context: 'HTTP',
             }),
             level: configService.get('server.logLevel'),

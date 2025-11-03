@@ -40,10 +40,6 @@
         }
       },
       "build": {
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "cp -r packages/cli/templates packages/cli/dist/templates"
-        },
         "dependsOn": [
           "compile"
         ]
