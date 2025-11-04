@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { selectMediaContainerSummary } from '../common/selectors/media.selectors';
-import {
-  CommonMediaService,
-  ConfigService,
-  PrismaService,
-} from '../common/services';
+import { ConfigService, MediaContainerService } from '../common/services';
 import {
   DirectoryTreeItemParams,
   GetLibraryTreeQueryDto,
@@ -17,27 +12,18 @@ import { TreeItemType } from './library.types';
 @Injectable()
 export class LibraryService {
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly commonMediaService: CommonMediaService
+    private readonly mediaContainerService: MediaContainerService
   ) {}
 
   async getTree(query: GetLibraryTreeQueryDto): Promise<LibraryTreeDto> {
-    // Normalize path: ensure leading slash, no trailing slash
     const normalizedPath =
       query.path === '/' ? '/' : `/${query.path.replace(/^\/+|\/+$/g, '')}`;
-
-    // Query containers with path prefix matching
-    const containers = await this.prismaService.mediaContainer.findMany({
-      where: {
-        path: { startsWith: normalizedPath },
-        deletedAt: null,
-      },
-      select: selectMediaContainerSummary(),
-    });
-
-    const hydratedContainers = await this.commonMediaService.hydrateContainers(
-      containers
+    const containers = await this.mediaContainerService.listContainersByPath(
+      normalizedPath
+    );
+    const hydratedContainers = await Promise.all(
+      containers.map((container) => container.serialize())
     );
 
     // Extract directories and media items

@@ -1,126 +1,62 @@
-import { mimeTypeToMediaType } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
-import crypto from 'crypto';
-import { addHours } from 'date-fns';
 import { MediaContainerDto } from '../common/dtos/media';
-import { MediaContainerNotFound } from '../common/errors';
-import { selectMediaContainer } from '../common/selectors/media.selectors';
-import {
-  CommonMediaService,
-  ConfigService,
-  PrismaService,
-  StorageUnitService,
-} from '../common/services';
+import { ConfigService, MediaContainerService } from '../common/services';
 import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
 import { DeleteMediaContainerDto } from './dtos/delete-media-container.dto';
 import { UpdateMediaContainerDto } from './dtos/update-media-container.dto';
-import { PLACEHOLDER_CONTAINER_NAME } from './media.constants';
 import { MediaContainerAlreadyExists } from './media.errors';
 
 @Injectable()
 export class MediaService {
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly storageUnitService: StorageUnitService,
-    private readonly commonMediaService: CommonMediaService
+    private readonly mediaContainerService: MediaContainerService
   ) {}
 
   async createMediaContainer(data: CreateMediaContainerDto) {
     const path = data.path ?? '/';
-    const { token, expiresAt } = this.generateUploadToken();
-    const mediaType = mimeTypeToMediaType(data.mimeType);
 
-    const defaultStorageUnit =
-      await this.storageUnitService.getOrCreateDefaultStorageUnit();
-
-    const media = await this.prismaService.mediaContainer.create({
-      data: {
-        name: await this.getEffectiveName(data.path, data.name),
+    const { container, uploadToken } =
+      await this.mediaContainerService.createMediaContainer({
+        name: data.name,
         path: path,
-        type: mediaType,
-        status: 'WAITING_FOR_UPLOAD',
-        storageUnitId: defaultStorageUnit.id,
-        assets: {
-          create: {
-            variant: 'PRIMARY',
-            status: 'WAITING_FOR_UPLOAD',
-            mimeType: data.mimeType,
-            classifiersOnUpload: data.classifiersOnUpload,
-            uploadToken: {
-              create: {
-                token,
-                expiresAt,
-              },
-            },
-          },
-        },
-      },
-      select: selectMediaContainer(),
-    });
+        mimeType: data.mimeType,
+        classifiersOnUpload: data.classifiersOnUpload,
+      });
 
     return new CreateMediaContainerResponseDto({
-      id: media.id,
-      name: media.name,
-      status: media.status,
-      path: media.path,
+      id: container.id,
+      name: container.name,
+      status: container.status,
+      path: container.path,
       url: `${this.configService.get('server.baseUrl')}/media/${
-        media.id
-      }/upload?token=${token}`,
-      expiresAt,
+        container.id
+      }/upload?token=${uploadToken.token}`,
+      expiresAt: uploadToken.expiresAt,
     });
   }
 
   async getMediaContainer(id: string) {
-    const media = await this.prismaService.mediaContainer.findUnique({
-      where: {
-        id,
-      },
-      select: selectMediaContainer(),
-    });
-
-    if (!media) {
-      throw new MediaContainerNotFound(id);
-    }
-
-    const [hydrated] = await this.commonMediaService.hydrateContainers(media);
-
-    return new MediaContainerDto(hydrated);
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(id);
+    return new MediaContainerDto(await container.serialize());
   }
 
   async updateMediaContainer(id: string, data: UpdateMediaContainerDto) {
-    const container = await this.prismaService.mediaContainer.findUnique({
-      where: {
-        id,
-      },
-      select: {
-        name: true,
-        path: true,
-      },
-    });
-
-    if (!container) {
-      throw new MediaContainerNotFound(id);
-    }
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(id);
 
     const { name: newName, path: newPath } = data;
 
     if (newName || newPath) {
       const existingContainer =
-        await this.prismaService.mediaContainer.findUnique({
-          where: {
-            path_name: {
-              path: newPath ?? container.path,
-              name: newName ?? container.name,
-            },
-          },
-          select: {
-            id: true,
-          },
-        });
+        await this.mediaContainerService.getMediaContainerByPathName(
+          newPath ?? container.path,
+          newName ?? container.name
+        );
 
-      if (existingContainer && existingContainer.id !== id) {
+      if (existingContainer) {
         throw new MediaContainerAlreadyExists(
           newName ?? container.name,
           newPath ?? container.path
@@ -128,92 +64,17 @@ export class MediaService {
       }
     }
 
-    const updatedContainer = await this.prismaService.mediaContainer.update({
-      where: {
-        id,
-      },
-      data: {
-        name: newName,
-        path: newPath,
-      },
-      select: selectMediaContainer(),
+    await container.update({
+      name: newName,
+      path: newPath,
     });
 
-    const [hydrated] = await this.commonMediaService.hydrateContainers(
-      updatedContainer
-    );
-
-    return new MediaContainerDto(hydrated);
+    return new MediaContainerDto(await container.serialize());
   }
 
   async deleteMediaContainer(id: string, data: DeleteMediaContainerDto) {
-    const container = await this.commonMediaService.getMediaContainerById(id);
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(id);
     await container.delete(data.permanently);
-  }
-
-  private generateUploadToken() {
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = addHours(new Date(), 1);
-    return { token, expiresAt };
-  }
-
-  private async getEffectiveName(path = '/', name?: string) {
-    if (name) {
-      const existingContainer =
-        await this.prismaService.mediaContainer.findUnique({
-          where: {
-            path_name: {
-              path,
-              name,
-            },
-          },
-        });
-
-      if (existingContainer) {
-        throw new MediaContainerAlreadyExists(name, path);
-      }
-
-      return name;
-    }
-
-    const containers = await this.prismaService.mediaContainer.findMany({
-      where: {
-        path,
-        name: {
-          startsWith: PLACEHOLDER_CONTAINER_NAME,
-        },
-      },
-    });
-
-    let counter = 1;
-    const MAX_COUNTER = 9999;
-
-    // Check if base name exists, if not use it
-    const baseExists = containers.some(
-      (container) => container.name === PLACEHOLDER_CONTAINER_NAME
-    );
-
-    if (!baseExists) {
-      return PLACEHOLDER_CONTAINER_NAME;
-    } else {
-      // Find the next available sequential name
-      while (
-        counter <= MAX_COUNTER &&
-        containers.some(
-          (container) =>
-            container.name === `${PLACEHOLDER_CONTAINER_NAME} ${counter}`
-        )
-      ) {
-        counter++;
-      }
-
-      if (counter > MAX_COUNTER) {
-        throw new Error(
-          `Maximum number of placeholder containers (${MAX_COUNTER}) exceeded for path: ${path}`
-        );
-      }
-
-      return `${PLACEHOLDER_CONTAINER_NAME} ${counter}`;
-    }
   }
 }

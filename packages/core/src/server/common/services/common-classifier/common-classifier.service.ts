@@ -2,8 +2,9 @@ import { ClassifierRunStatus } from '@/database/generated/prisma';
 import { ConfigValues } from '@longpoint/devkit';
 import { Injectable, Logger } from '@nestjs/common';
 import { ClassifierNotFound, MediaAssetNotFound } from '../../errors';
+import { Unexpected } from '../../errors/unexpected.errors';
 import { AiPluginService } from '../ai-plugin/ai-plugin.service';
-import { CommonMediaService } from '../common-media/common-media.service';
+import { MediaContainerService } from '../media-container/media-container.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -12,7 +13,7 @@ export class CommonClassifierService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly commonMediaService: CommonMediaService,
+    private readonly mediaContainerService: MediaContainerService,
     private readonly aiPluginService: AiPluginService
   ) {}
 
@@ -113,9 +114,28 @@ export class CommonClassifierService {
       throw new MediaAssetNotFound(mediaAssetId);
     }
 
-    return this.commonMediaService.hydrateAsset(
-      mediaAsset.containerId,
-      mediaAsset
-    );
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(
+        mediaAsset.containerId
+      );
+    const serialized = await container.serialize();
+    const asset = serialized.assets.find((asset) => asset.id === mediaAssetId);
+
+    if (!asset) {
+      throw new Unexpected(
+        `Media asset "${mediaAssetId}" not found in container "${container.id}"`
+      );
+    }
+
+    if (!asset.url) {
+      throw new Unexpected(
+        `Media asset "${mediaAssetId}" has no URL in container "${container.id}"`
+      );
+    }
+
+    return {
+      ...asset,
+      url: asset.url,
+    };
   }
 }

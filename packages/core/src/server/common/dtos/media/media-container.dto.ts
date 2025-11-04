@@ -12,7 +12,11 @@ import {
 } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { MediaAssetVariantsDto } from './media-asset-variants.dto';
-import { MediaAssetDto } from './media-asset.dto';
+import { MediaAssetDto, MediaAssetParams } from './media-asset.dto';
+
+export type MediaContainerParams = Omit<SelectedMediaContainer, 'assets'> & {
+  assets: MediaAssetParams[];
+};
 
 @ApiSchema({ name: 'MediaContainer' })
 export class MediaContainerDto {
@@ -82,7 +86,7 @@ export class MediaContainerDto {
   })
   thumbnails: MediaAssetDto[];
 
-  constructor(data: SelectedMediaContainer) {
+  constructor(data: MediaContainerParams) {
     this.id = data.id;
     this.name = data.name;
     this.path = data.path;
@@ -93,7 +97,7 @@ export class MediaContainerDto {
     this.thumbnails = this.getThumbnailAssets(data);
   }
 
-  private getThumbnailAssets(data: SelectedMediaContainer) {
+  private getThumbnailAssets(data: MediaContainerParams) {
     return data.assets
       .filter((asset) => asset.variant === MediaAssetVariant.THUMBNAIL)
       .map((asset) => new MediaAssetDto(asset));
