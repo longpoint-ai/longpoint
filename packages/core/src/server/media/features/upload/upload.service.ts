@@ -4,10 +4,10 @@ import {
   MediaContainerStatus,
   Prisma,
 } from '@/database';
-import { StorageProviderFactory } from '@/server/common/factories';
 import {
   CommonClassifierService,
   PrismaService,
+  StorageUnitService,
 } from '@/server/common/services';
 import { StorageProvider } from '@/server/common/types/storage-provider.types';
 import { SupportedMimeType } from '@longpoint/types';
@@ -27,14 +27,12 @@ import { TokenExpired } from './upload.errors';
 export class UploadService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly storageProviderFactory: StorageProviderFactory,
+    private readonly storageUnitService: StorageUnitService,
     private readonly probeService: ProbeService,
     private readonly commonClassifierService: CommonClassifierService
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
-    const storageProvider =
-      await this.storageProviderFactory.getDefaultProvider();
     const uploadToken = await this.prismaService.uploadToken.findUnique({
       where: {
         token: query.token,
@@ -47,6 +45,11 @@ export class UploadService {
             containerId: true,
             mimeType: true,
             classifiersOnUpload: true,
+            container: {
+              select: {
+                storageUnitId: true,
+              },
+            },
           },
         },
       },
@@ -56,6 +59,9 @@ export class UploadService {
       throw new TokenExpired();
     }
 
+    const storageUnit =
+      await this.storageUnitService.getStorageUnitByContainerId(containerId);
+
     await this.updateAsset(uploadToken.mediaAsset.id, {
       status: 'PROCESSING',
     });
@@ -64,12 +70,17 @@ export class UploadService {
       uploadToken.mediaAsset.mimeType as SupportedMimeType
     );
     const fullPath = getMediaContainerPath(containerId, {
+      storageUnitId: uploadToken.mediaAsset.container.storageUnitId,
       suffix: `primary.${extension}`,
     });
 
     try {
-      await storageProvider.upload(fullPath, req);
-      await this.finalize(fullPath, storageProvider, uploadToken.mediaAsset);
+      await storageUnit.provider.upload(fullPath, req);
+      await this.finalize(
+        fullPath,
+        storageUnit.provider,
+        uploadToken.mediaAsset
+      );
     } catch (error) {
       await this.updateAsset(uploadToken.mediaAsset.id, {
         status: 'FAILED',
@@ -82,11 +93,11 @@ export class UploadService {
 
   private async finalize(
     fullPath: string,
-    storageProvider: StorageProvider,
+    provider: StorageProvider,
     asset: Pick<MediaAsset, 'id' | 'containerId' | 'mimeType'>
   ) {
     try {
-      const { url } = await storageProvider.createSignedUrl({
+      const { url } = await provider.createSignedUrl({
         path: fullPath,
         action: 'read',
       });

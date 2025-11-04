@@ -18,11 +18,15 @@ export function mimeTypeToMediaType(mimeType: string): MediaType {
 
 export interface GetMediaContainerPathOptions {
   /**
+   * The storage unit ID to use in the path
+   */
+  storageUnitId: string;
+  /**
    * The prefix to add to the path
    * @example
    * ```
-   * getMediaContainerPath('123', { prefix: 'public' });
-   * // returns 'public/default/123'
+   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', prefix: 'public' });
+   * // returns 'public/unit-abc/123'
    * ```
    */
   prefix?: string;
@@ -30,8 +34,8 @@ export interface GetMediaContainerPathOptions {
    * The suffix to add to the path
    * @example
    * ```
-   * getMediaContainerPath('123', { suffix: 'original.mp4' });
-   * // returns 'default/123/original.mp4'
+   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', suffix: 'original.mp4' });
+   * // returns 'unit-abc/123/original.mp4'
    * ```
    */
   suffix?: string;
@@ -40,15 +44,15 @@ export interface GetMediaContainerPathOptions {
 /**
  * Gets the storage path for a media container
  * @param containerId The id of the media container
- * @param options The options for the path
+ * @param options The options for the path, including storageUnitId
  * @returns
  */
 export function getMediaContainerPath(
   containerId: string,
-  options?: GetMediaContainerPathOptions
+  options: GetMediaContainerPathOptions
 ) {
-  const { prefix = '', suffix = '' } = options ?? {};
-  return join(prefix, 'default', containerId, suffix);
+  const { storageUnitId, prefix = '', suffix = '' } = options;
+  return join(prefix, storageUnitId, containerId, suffix);
 }
 
 /**

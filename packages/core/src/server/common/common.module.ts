@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { StorageProviderFactory } from './factories';
+import { StorageUnitService } from './services';
 import { AiPluginService } from './services/ai-plugin/ai-plugin.service';
 import { CommonClassifierService } from './services/common-classifier/common-classifier.service';
 import { CommonMediaService } from './services/common-media/common-media.service';
@@ -11,10 +11,10 @@ const EXPORTS = [
   AiPluginService,
   CommonClassifierService,
   CommonMediaService,
-  EncryptionService,
   ConfigService,
+  EncryptionService,
   PrismaService,
-  StorageProviderFactory,
+  StorageUnitService,
 ];
 
 @Global()

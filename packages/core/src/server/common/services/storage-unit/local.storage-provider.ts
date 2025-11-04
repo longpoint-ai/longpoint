@@ -17,16 +17,41 @@ export interface LocalStorageProviderConfig {
    * The base URL of the server
    */
   baseUrl: string;
+  /**
+   * The storage unit ID
+   */
+  storageUnitId: string;
+  /**
+   * The base path for this storage unit (subdirectory within basePath)
+   */
+  unitBasePath: string;
 }
 
 export class LocalStorageProvider implements StorageProvider {
   constructor(private readonly config: LocalStorageProviderConfig) {}
 
+  /**
+   * Construct the full path for a file.
+   * The path parameter should be in format: {storageUnitId}/{containerId}/...
+   * We prepend the basePath and use unitBasePath as the subdirectory for this storage unit.
+   */
+  private getFullPath(path: string): string {
+    // Path format from getMediaContainerPath: {storageUnitId}/{containerId}/...
+    // For local storage, we use unitBasePath as the subdirectory instead of storageUnitId
+    // This allows multiple local storage units to have separate directories
+    const pathWithoutStorageUnitId = path.split('/').slice(1).join('/');
+    return join(
+      this.config.basePath,
+      this.config.unitBasePath,
+      pathWithoutStorageUnitId
+    );
+  }
+
   async upload(
     path: string,
     body: Readable | Buffer | string
   ): Promise<boolean> {
-    const fullPath = join(this.config.basePath, path);
+    const fullPath = this.getFullPath(path);
     const dirPath = dirname(fullPath);
     await fs.promises.mkdir(dirPath, { recursive: true });
     await fs.promises.writeFile(fullPath, body);
@@ -34,17 +59,17 @@ export class LocalStorageProvider implements StorageProvider {
   }
 
   async deleteDirectory(path: string): Promise<void> {
-    const fullPath = join(this.config.basePath, path);
+    const fullPath = this.getFullPath(path);
     await fs.promises.rm(fullPath, { recursive: true, force: true });
   }
 
   async getFileContents(path: string): Promise<Buffer> {
-    const fullPath = join(this.config.basePath, path);
+    const fullPath = this.getFullPath(path);
     return fs.promises.readFile(fullPath);
   }
 
   async exists(path: string): Promise<boolean> {
-    const fullPath = join(this.config.basePath, path);
+    const fullPath = this.getFullPath(path);
     try {
       await fs.promises.access(fullPath, fs.constants.F_OK);
       return true;

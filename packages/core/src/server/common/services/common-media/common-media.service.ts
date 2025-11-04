@@ -5,9 +5,15 @@ import {
 } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import { MediaAssetParams } from '../../dtos/media';
-import { StorageProviderFactory } from '../../factories';
-import { SelectedMediaContainer } from '../../selectors/media.selectors';
+import { MediaContainerEntity } from '../../entities';
+import { MediaContainerNotFound } from '../../errors';
+import {
+  SelectedMediaContainer,
+  selectMediaContainer,
+} from '../../selectors/media.selectors';
 import { StorageProvider } from '../../types/storage-provider.types';
+import { PrismaService } from '../prisma/prisma.service';
+import { StorageUnitService } from '../storage-unit/storage-unit.service';
 
 type HydratableMediaContainer = Pick<SelectedMediaContainer, 'id' | 'assets'>;
 type HydratableMediaAsset = Pick<MediaAssetParams, 'mimeType'>;
@@ -21,8 +27,28 @@ type HydratedMediaContainer<T extends HydratableMediaContainer> = T & {
 @Injectable()
 export class CommonMediaService {
   constructor(
-    private readonly storageProviderFactory: StorageProviderFactory
+    private readonly prismaService: PrismaService,
+    private readonly storageUnitService: StorageUnitService
   ) {}
+
+  async getMediaContainerById(id: string): Promise<MediaContainerEntity> {
+    const container = await this.prismaService.mediaContainer.findUnique({
+      where: { id },
+      select: selectMediaContainer(),
+    });
+
+    if (!container) {
+      throw new MediaContainerNotFound(id);
+    }
+
+    return new MediaContainerEntity({
+      ...container,
+      storageUnit: await this.storageUnitService.getStorageUnitByContainerId(
+        id
+      ),
+      prismaService: this.prismaService,
+    });
+  }
 
   /**
    * Hydrates one or more media containers with dynamic information, such as the URLs of assets.
@@ -41,14 +67,17 @@ export class CommonMediaService {
 
     const results = await Promise.all(
       containerArray.map(async (container) => {
-        const provider =
-          await this.storageProviderFactory.getProviderByContainerId(
+        const storageUnit =
+          await this.storageUnitService.getStorageUnitByContainerId(
             container.id
           );
-
         const hydratedAssets = await Promise.all(
           container.assets.map(async (asset) => {
-            return mainThis.hydrateAssetInternal(container.id, provider, asset);
+            return mainThis.hydrateAssetInternal(
+              container.id,
+              storageUnit.provider,
+              asset
+            );
           })
         );
 
@@ -71,10 +100,15 @@ export class CommonMediaService {
     mediaContainerId: string,
     asset: T
   ): Promise<HydratedMediaAsset<T>> {
-    const provider = await this.storageProviderFactory.getProviderByContainerId(
-      mediaContainerId
+    const storageUnit =
+      await this.storageUnitService.getStorageUnitByContainerId(
+        mediaContainerId
+      );
+    return this.hydrateAssetInternal(
+      mediaContainerId,
+      storageUnit.provider,
+      asset
     );
-    return this.hydrateAssetInternal(mediaContainerId, provider, asset);
   }
 
   private async hydrateAssetInternal<T extends HydratableMediaAsset>(
@@ -82,8 +116,22 @@ export class CommonMediaService {
     provider: StorageProvider,
     asset: T
   ) {
+    const container = await this.prismaService.mediaContainer.findUnique({
+      where: {
+        id: mediaContainerId,
+      },
+      select: {
+        storageUnitId: true,
+      },
+    });
+
+    if (!container) {
+      throw new MediaContainerNotFound(mediaContainerId);
+    }
+
     // Assumes primary as the only variant for now
     const assetPath = getMediaContainerPath(mediaContainerId, {
+      storageUnitId: container.storageUnitId,
       suffix: `primary.${mimeTypeToExtension(
         asset.mimeType as SupportedMimeType
       )}`,

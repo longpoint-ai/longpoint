@@ -9,11 +9,15 @@ model MediaContainer {
   updatedAt DateTime             @updatedAt
   deletedAt DateTime?
 
+  storageUnitId String
+  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id])
+
   assets MediaAsset[]
 
   @@unique([path, name])
   @@index([path])
   @@index([status])
+  @@index([storageUnitId])
 }
 
 model UploadToken {

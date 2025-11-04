@@ -1,18 +1,15 @@
-import {
-  getMediaContainerPath,
-  mimeTypeToMediaType,
-} from '@longpoint/utils/media';
+import { mimeTypeToMediaType } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
 import { MediaContainerDto } from '../common/dtos/media';
 import { MediaContainerNotFound } from '../common/errors';
-import { StorageProviderFactory } from '../common/factories';
 import { selectMediaContainer } from '../common/selectors/media.selectors';
 import {
   CommonMediaService,
   ConfigService,
   PrismaService,
+  StorageUnitService,
 } from '../common/services';
 import { CreateMediaContainerResponseDto } from './dtos/create-media-container-response.dto';
 import { CreateMediaContainerDto } from './dtos/create-media-container.dto';
@@ -26,7 +23,7 @@ export class MediaService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly storageProviderFactory: StorageProviderFactory,
+    private readonly storageUnitService: StorageUnitService,
     private readonly commonMediaService: CommonMediaService
   ) {}
 
@@ -35,12 +32,16 @@ export class MediaService {
     const { token, expiresAt } = this.generateUploadToken();
     const mediaType = mimeTypeToMediaType(data.mimeType);
 
+    const defaultStorageUnit =
+      await this.storageUnitService.getOrCreateDefaultStorageUnit();
+
     const media = await this.prismaService.mediaContainer.create({
       data: {
         name: await this.getEffectiveName(data.path, data.name),
         path: path,
         type: mediaType,
         status: 'WAITING_FOR_UPLOAD',
+        storageUnitId: defaultStorageUnit.id,
         assets: {
           create: {
             variant: 'PRIMARY',
@@ -146,36 +147,8 @@ export class MediaService {
   }
 
   async deleteMediaContainer(id: string, data: DeleteMediaContainerDto) {
-    const container = await this.prismaService.mediaContainer.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!container) {
-      throw new MediaContainerNotFound(id);
-    }
-
-    if (data.permanently) {
-      await this.prismaService.mediaContainer.delete({
-        where: {
-          id,
-        },
-      });
-      const storageProvider =
-        await this.storageProviderFactory.getDefaultProvider();
-      await storageProvider.deleteDirectory(getMediaContainerPath(id));
-    } else {
-      await this.prismaService.mediaContainer.update({
-        where: {
-          id,
-        },
-        data: {
-          status: 'DELETED',
-          deletedAt: new Date(),
-        },
-      });
-    }
+    const container = await this.commonMediaService.getMediaContainerById(id);
+    await container.delete(data.permanently);
   }
 
   private generateUploadToken() {
