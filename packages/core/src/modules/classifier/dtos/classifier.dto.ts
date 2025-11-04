@@ -1,4 +1,4 @@
-import { AiModelDto, AiModelParams } from '@/modules/ai/dtos';
+import { AiModelDto, AiModelSummaryDto } from '@/modules/ai/dtos';
 import {
   ConfigSchemaItemsDto,
   ConfigSchemaValueDto,
@@ -16,7 +16,7 @@ import {
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
-  model: AiModelParams;
+  model: AiModelDto;
   modelInputSchema: ConfigSchema;
 }
 
@@ -73,9 +73,9 @@ export class ClassifierDto {
 
   @ApiProperty({
     description: 'The model used by the classifier',
-    type: AiModelDto,
+    type: AiModelSummaryDto,
   })
-  model: AiModelDto;
+  model: AiModelSummaryDto;
 
   @ApiProperty({
     description: 'When the classifier was created',
@@ -96,7 +96,7 @@ export class ClassifierDto {
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.modelInput = data.modelInput as ConfigValues | null;
-    this.model = new AiModelDto(data.model);
+    this.model = new AiModelSummaryDto(data.model);
     this.modelInputSchema = Object.entries(data.modelInputSchema).reduce(
       (acc, [key, value]) => {
         acc[key] = new ConfigSchemaValueDto(value);

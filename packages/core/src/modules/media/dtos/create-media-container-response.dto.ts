@@ -14,7 +14,7 @@ export type CreateMediaContainerResponseParam = Pick<
 @ApiSchema({ name: 'CreateMediaContainerResponse' })
 export class CreateMediaContainerResponseDto extends PickType(
   MediaContainerDto,
-  ['id', 'name', 'path', 'status']
+  ['id', 'name', 'path', 'status'] as const
 ) {
   @ApiProperty({
     description: 'The signed URL to upload the asset with.',

@@ -10,6 +10,7 @@ export class GetLibraryTreeQueryDto {
     description: 'The path to get the tree for',
     example: '/',
     default: '/',
+    type: 'string',
   })
   path = '/';
 }

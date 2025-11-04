@@ -1,18 +1,33 @@
-import { PLACEHOLDER_CONTAINER_NAME } from '@/modules/media/media.constants';
-import { MediaContainerAlreadyExists } from '@/modules/media/media.errors';
+import { ConfigService } from '@/modules/common/services';
+import { SupportedMimeType } from '@longpoint/types';
 import { mimeTypeToMediaType } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
-import { MediaContainerNotFound } from '../../../../shared/errors';
 import {
   selectMediaContainer,
   selectMediaContainerSummary,
-} from '../../../../shared/selectors/media.selectors';
-import { StorageUnitService } from '../../../storage-unit/storage-unit.service';
-import { MediaContainerEntity } from '../../entities';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateMediaContainerParams } from './media-container-service.types';
+} from '../../../shared/selectors/media.selectors';
+import { MediaContainerEntity } from '../../common/entities';
+import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { StorageUnitService } from '../../storage-unit/storage-unit.service';
+import { CreateMediaContainerDto } from '../dtos';
+import {
+  MediaAssetNotFound,
+  MediaContainerAlreadyExists,
+  MediaContainerNotFound,
+} from '../media.errors';
+
+export interface CreateMediaContainerParams {
+  path: string;
+  name?: string;
+  mimeType: SupportedMimeType;
+  classifiersOnUpload?: string[];
+  uploadToken?: {
+    token: string;
+    expiresAt: Date;
+  };
+}
 
 /**
  * Service for managing media containers and their associated assets.
@@ -21,9 +36,12 @@ import { CreateMediaContainerParams } from './media-container-service.types';
  */
 @Injectable()
 export class MediaContainerService {
+  private readonly PLACEHOLDER_CONTAINER_NAME = 'New Media';
+
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly storageUnitService: StorageUnitService
+    private readonly storageUnitService: StorageUnitService,
+    private readonly configService: ConfigService
   ) {}
 
   /**
@@ -44,7 +62,8 @@ export class MediaContainerService {
    *
    * @throws {MediaContainerAlreadyExists} If a container with the same path and name already exists
    */
-  async createMediaContainer(data: CreateMediaContainerParams) {
+  async createMediaContainer(data: CreateMediaContainerDto) {
+    const path = data.path ?? '/';
     const uploadToken = this.generateUploadToken();
     const mediaType = mimeTypeToMediaType(data.mimeType);
     const defaultStorageUnit =
@@ -52,8 +71,8 @@ export class MediaContainerService {
 
     const container = await this.prismaService.mediaContainer.create({
       data: {
-        name: await this.getEffectiveName(data.path, data.name),
-        path: data.path,
+        name: await this.getEffectiveName(path, data.name),
+        path,
         type: mediaType,
         status: 'WAITING_FOR_UPLOAD',
         storageUnitId: defaultStorageUnit.id,
@@ -77,6 +96,9 @@ export class MediaContainerService {
 
     return {
       uploadToken,
+      uploadUrl: `${this.configService.get('server.baseUrl')}/media/${
+        container.id
+      }/upload?token=${uploadToken.token}`,
       container: new MediaContainerEntity({
         ...container,
         storageUnit: defaultStorageUnit,
@@ -171,6 +193,33 @@ export class MediaContainerService {
     });
   }
 
+  async getMediaContainerByAssetId(
+    assetId: string
+  ): Promise<MediaContainerEntity | null> {
+    const asset = await this.prismaService.mediaAsset.findUnique({
+      where: { id: assetId },
+      select: {
+        containerId: true,
+      },
+    });
+
+    if (!asset) {
+      return null;
+    }
+
+    return this.getMediaContainerById(asset.containerId);
+  }
+
+  async getMediaContainerByAssetIdOrThrow(
+    assetId: string
+  ): Promise<MediaContainerEntity> {
+    const container = await this.getMediaContainerByAssetId(assetId);
+    if (!container) {
+      throw new MediaAssetNotFound(assetId);
+    }
+    return container;
+  }
+
   /**
    * Lists all media containers that are located at or under the specified path.
    *
@@ -246,7 +295,7 @@ export class MediaContainerService {
       where: {
         path,
         name: {
-          startsWith: PLACEHOLDER_CONTAINER_NAME,
+          startsWith: this.PLACEHOLDER_CONTAINER_NAME,
         },
       },
     });
@@ -256,18 +305,18 @@ export class MediaContainerService {
 
     // Check if base name exists, if not use it
     const baseExists = containers.some(
-      (container) => container.name === PLACEHOLDER_CONTAINER_NAME
+      (container) => container.name === this.PLACEHOLDER_CONTAINER_NAME
     );
 
     if (!baseExists) {
-      return PLACEHOLDER_CONTAINER_NAME;
+      return this.PLACEHOLDER_CONTAINER_NAME;
     } else {
       // Find the next available sequential name
       while (
         counter <= MAX_COUNTER &&
         containers.some(
           (container) =>
-            container.name === `${PLACEHOLDER_CONTAINER_NAME} ${counter}`
+            container.name === `${this.PLACEHOLDER_CONTAINER_NAME} ${counter}`
         )
       ) {
         counter++;
@@ -279,7 +328,7 @@ export class MediaContainerService {
         );
       }
 
-      return `${PLACEHOLDER_CONTAINER_NAME} ${counter}`;
+      return `${this.PLACEHOLDER_CONTAINER_NAME} ${counter}`;
     }
   }
 

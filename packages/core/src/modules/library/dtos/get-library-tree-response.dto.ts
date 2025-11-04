@@ -17,7 +17,7 @@ import {
 
 export interface LibraryTreeParams {
   path: string;
-  items: TreeItemParams[];
+  items: TreeItemDto[];
 }
 
 export type TreeItemDto = MediaContainerTreeItemDto | DirectoryTreeItemDto;
@@ -82,13 +82,6 @@ export class LibraryTreeDto {
 
   constructor(data: LibraryTreeParams) {
     this.path = data.path;
-    this.items = data.items.map((item) => this.getItemDto(item));
-  }
-
-  private getItemDto(item: TreeItemParams): TreeItemDto {
-    if (item.treeItemType === TreeItemType.DIRECTORY) {
-      return new DirectoryTreeItemDto(item);
-    }
-    return new MediaContainerTreeItemDto(item);
+    this.items = data.items;
   }
 }

@@ -20,13 +20,30 @@ export const ApiAiProviderNotFoundResponse = () => {
   );
 };
 
-export class ModelOperationNotSupported extends BaseError {
-  constructor(operation: string, modelId: string) {
+export class ModelNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Model', id);
+  }
+}
+export const modelNotFoundDoc = apiErrorDoc(
+  new ModelNotFound('a9ri6j9r33yku4m8wrevlp29')
+);
+export const ApiModelNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Model not found',
+      ...modelNotFoundDoc,
+    })
+  );
+};
+
+export class ClassifierNotSupported extends BaseError {
+  constructor(modelId: string) {
     super(
       ErrorCode.OPERATION_NOT_SUPPORTED,
-      `Operation '${operation}' is not supported for model '${modelId}'`,
+      `Classifier capabilities not supported for model '${modelId}'`,
       HttpStatus.BAD_REQUEST,
-      { operation, modelId }
+      { modelId }
     );
   }
 }

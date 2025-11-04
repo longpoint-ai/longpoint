@@ -1,4 +1,4 @@
-import { AiModelDto } from '@/modules/ai/dtos';
+import { AiModelSummaryDto } from '@/modules/ai/dtos';
 import { ApiSchema, PickType } from '@nestjs/swagger';
 import { ClassifierDto, ClassifierParams } from './classifier.dto';
 
@@ -20,7 +20,7 @@ export class ClassifierSummaryDto extends PickType(ClassifierDto, [
     super();
     this.id = data.id;
     this.name = data.name;
-    this.model = new AiModelDto(data.model);
+    this.model = new AiModelSummaryDto(data.model);
     this.description = data.description;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;

@@ -1,8 +1,4 @@
-import {
-  AiProviderNotFound,
-  InvalidInput,
-  ModelNotFound,
-} from '@/shared/errors';
+import { InvalidInput } from '@/shared/errors';
 import {
   AiModelManifest,
   AiPluginManifest,
@@ -20,6 +16,7 @@ import { join } from 'path';
 import { AiModelEntity } from '../../common/entities';
 import { EncryptionService } from '../../common/services/encryption/encryption.service';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { AiProviderNotFound, ModelNotFound } from '../ai.errors';
 import { AiProviderEntity } from '../entities/ai-provider.entity';
 
 interface ProviderPluginRegistryEntry {
@@ -111,6 +108,7 @@ export class AiPluginService implements OnModuleInit {
       manifest: modelManifest,
       providerPluginInstance,
       providerEntity,
+      encryptionService: this.encryptionService,
     });
   }
 

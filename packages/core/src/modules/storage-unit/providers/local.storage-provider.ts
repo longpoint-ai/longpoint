@@ -6,7 +6,7 @@ import {
   CreateSignedUrlOptions,
   SignedUrlResponse,
   StorageProvider,
-} from './types/storage-provider.types';
+} from '../types/storage-provider.types';
 
 export interface LocalStorageProviderConfig {
   /**

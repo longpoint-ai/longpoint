@@ -16,7 +16,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { ApiSdkTag, RequirePermission } from '../../shared/decorators';
-import { ApiClassifierNotFoundResponse } from '../../shared/errors';
+import { ApiClassifierNotFoundResponse } from './classifier.errors';
 import { ClassifierService } from './classifier.service';
 import {
   ClassifierDto,
@@ -39,7 +39,8 @@ export class ClassifierController {
   })
   @ApiCreatedResponse({ type: ClassifierDto })
   async createClassifier(@Body() body: CreateClassifierDto) {
-    return this.classifierService.createClassifier(body);
+    const classifier = await this.classifierService.createClassifier(body);
+    return classifier.toDto();
   }
 
   @Get(':classifierId')
@@ -51,7 +52,10 @@ export class ClassifierController {
   @ApiOkResponse({ type: ClassifierDto })
   @ApiClassifierNotFoundResponse()
   async getClassifier(@Param('classifierId') classifierId: string) {
-    return this.classifierService.getClassifier(classifierId);
+    const classifier = await this.classifierService.getClassifierByIdOrThrow(
+      classifierId
+    );
+    return classifier.toDto();
   }
 
   @Get()
@@ -62,7 +66,8 @@ export class ClassifierController {
   })
   @ApiOkResponse({ type: [ClassifierSummaryDto] })
   async listClassifiers() {
-    return this.classifierService.listClassifiers();
+    const classifiers = await this.classifierService.listClassifiers();
+    return classifiers.map((classifier) => classifier.toDto());
   }
 
   @Patch(':classifierId')
@@ -77,7 +82,11 @@ export class ClassifierController {
     @Param('classifierId') classifierId: string,
     @Body() body: UpdateClassifierDto
   ) {
-    return this.classifierService.updateClassifier(classifierId, body);
+    const classifier = await this.classifierService.getClassifierByIdOrThrow(
+      classifierId
+    );
+    await classifier.update(body);
+    return classifier.toDto();
   }
 
   @Delete(':classifierId')
@@ -89,6 +98,9 @@ export class ClassifierController {
   @ApiOkResponse({ description: 'The classifier was deleted' })
   @ApiClassifierNotFoundResponse()
   async deleteClassifier(@Param('classifierId') classifierId: string) {
-    return this.classifierService.deleteClassifier(classifierId);
+    const classifier = await this.classifierService.getClassifierByIdOrThrow(
+      classifierId
+    );
+    await classifier.delete();
   }
 }

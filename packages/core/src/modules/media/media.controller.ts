@@ -1,5 +1,4 @@
 import { ApiSdkTag, RequirePermission } from '@/shared/decorators';
-import { ApiMediaContainerNotFoundResponse } from '@/shared/errors';
 import { SdkTag } from '@/shared/types/swagger.types';
 import { Permission } from '@longpoint/types';
 import {
@@ -24,14 +23,17 @@ import {
   MediaContainerDto,
   UpdateMediaContainerDto,
 } from './dtos';
-import { ApiMediaContainerAlreadyExistsResponse } from './media.errors';
-import { MediaService } from './media.service';
+import {
+  ApiMediaContainerAlreadyExistsResponse,
+  ApiMediaContainerNotFoundResponse,
+} from './media.errors';
+import { MediaContainerService } from './services/media-container.service';
 
 @Controller('media')
 @ApiSdkTag(SdkTag.Media)
 @ApiBearerAuth()
 export class MediaController {
-  constructor(private readonly mediaService: MediaService) {}
+  constructor(private readonly mediaContainerService: MediaContainerService) {}
 
   @Post()
   @RequirePermission(Permission.MEDIA_CONTAINER_CREATE)
@@ -46,7 +48,17 @@ export class MediaController {
     type: CreateMediaContainerResponseDto,
   })
   async createMediaContainer(@Body() body: CreateMediaContainerDto) {
-    return this.mediaService.createMediaContainer(body);
+    const { container, uploadUrl, uploadToken } =
+      await this.mediaContainerService.createMediaContainer(body);
+
+    return new CreateMediaContainerResponseDto({
+      id: container.id,
+      name: container.name,
+      status: container.status,
+      path: container.path,
+      url: uploadUrl,
+      expiresAt: uploadToken.expiresAt,
+    });
   }
 
   @Get(':containerId')
@@ -58,7 +70,11 @@ export class MediaController {
   @ApiOkResponse({ type: MediaContainerDto })
   @ApiMediaContainerNotFoundResponse()
   async getMediaContainer(@Param('containerId') containerId: string) {
-    return this.mediaService.getMediaContainer(containerId);
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(
+        containerId
+      );
+    return container.toDto();
   }
 
   @Patch(':containerId')
@@ -74,7 +90,12 @@ export class MediaController {
     @Param('containerId') containerId: string,
     @Body() body: UpdateMediaContainerDto
   ) {
-    return this.mediaService.updateMediaContainer(containerId, body);
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(
+        containerId
+      );
+    await container.update(body);
+    return container.toDto();
   }
 
   @Delete(':containerId')
@@ -89,6 +110,11 @@ export class MediaController {
     @Param('containerId') containerId: string,
     @Body() body: DeleteMediaContainerDto
   ) {
-    return this.mediaService.deleteMediaContainer(containerId, body);
+    const container =
+      await this.mediaContainerService.getMediaContainerByIdOrThrow(
+        containerId
+      );
+    await container.delete(body.permanently);
+    return container.toDto();
   }
 }

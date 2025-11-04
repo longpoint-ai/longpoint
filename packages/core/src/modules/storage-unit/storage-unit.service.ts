@@ -2,10 +2,10 @@ import { ConfigValues } from '@longpoint/devkit';
 import { Injectable } from '@nestjs/common';
 import type { SelectedStorageUnit } from '../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../shared/selectors/storage-unit.selectors';
-import { StorageUnitEntity } from '../common/entities/storage-unit.entity';
 import { ConfigService } from '../common/services/config/config.service';
 import { EncryptionService } from '../common/services/encryption/encryption.service';
 import { PrismaService } from '../common/services/prisma/prisma.service';
+import { StorageUnitEntity } from './entities/storage-unit.entity';
 import {
   isCoreProvider,
   type CoreStorageProvider,
@@ -16,8 +16,8 @@ import {
   STORAGE_PROVIDER_CONFIG_SCHEMAS,
   type BaseStorageProviderConfig,
   type LocalStorageProviderConfig,
-} from './providers/types/storage-provider-config.types';
-import { StorageProvider } from './providers/types/storage-provider.types';
+} from './types/storage-provider-config.types';
+import { StorageProvider } from './types/storage-provider.types';
 
 /**
  * StorageUnitService handles instantiation and caching of storage unit entities

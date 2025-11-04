@@ -4,7 +4,8 @@ import {
 } from '@/shared/dtos/config-schema';
 import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
-import { AiModelShortDto, AiModelShortParams } from './ai-model-short.dto';
+import type { AiModelShortParams } from './ai-model-short.dto';
+import { AiModelShortDto } from './ai-model-short.dto';
 
 export interface AiProviderParams {
   id: string;

@@ -18,7 +18,7 @@ export type CreateMediaContainerParam = Pick<
 
 @ApiSchema({ name: 'CreateMediaContainer' })
 export class CreateMediaContainerDto extends PartialType(
-  PickType(MediaContainerDto, ['name', 'path'])
+  PickType(MediaContainerDto, ['name', 'path'] as const)
 ) {
   @IsEnum(SupportedMimeType)
   @ApiProperty({

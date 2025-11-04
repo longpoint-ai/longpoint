@@ -1,4 +1,6 @@
-import { StorageProvider } from '@/modules/storage-unit';
+import { PrismaService } from '@/modules/common/services';
+import { MediaContainerNotFound } from '@/modules/media';
+import { StorageProvider, StorageUnitService } from '@/modules/storage-unit';
 import {
   getContentType,
   getMediaContainerPath,
@@ -7,8 +9,6 @@ import {
 import { Injectable, NotFoundException } from '@nestjs/common';
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
-import { MediaContainerNotFound } from '../../../shared/errors';
-import { PrismaService, StorageUnitService } from '../../common/services';
 import type {
   TransformParams,
   TransformParamsDto,

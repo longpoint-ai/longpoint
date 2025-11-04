@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { UploadController } from './features/upload/upload.controller';
-import { UploadService } from './features/upload/upload.service';
+import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
+import { StorageUnitModule } from '../storage-unit';
 import { MediaController } from './media.controller';
-import { MediaService } from './media.service';
-import { ProbeService } from './services/probe.service';
+import { MediaContainerService } from './services/media-container.service';
 
 @Module({
-  controllers: [MediaController, UploadController],
-  providers: [MediaService, ProbeService, UploadService],
+  imports: [StorageUnitModule],
+  controllers: [MediaController],
+  providers: [MediaContainerService, MediaProbeService],
+  exports: [MediaContainerService],
 })
 export class MediaModule {}

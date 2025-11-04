@@ -1,3 +1,5 @@
+import { EncryptionService } from '@/modules/common/services';
+import { InvalidInput } from '@/shared/errors';
 import {
   AiModelManifest,
   AiModelPlugin,
@@ -9,11 +11,12 @@ import {
 } from '@longpoint/devkit';
 import { parseBytes } from '@longpoint/utils/format';
 import { validateConfigSchema, ValidationResult } from '@longpoint/validations';
-import { ModelOperationNotSupported } from '../../../shared/errors';
-import { AiModelDto } from '../dtos/ai-model.dto';
+import { ClassifierNotSupported } from '../ai.errors';
+import { AiModelDto } from '../dtos';
 import { AiProviderEntity } from './ai-provider.entity';
 
 export interface AiModelEntityArgs {
+  encryptionService: EncryptionService;
   providerPluginInstance: AiProviderPlugin;
   providerEntity: AiProviderEntity;
   manifest: AiModelManifest;
@@ -27,6 +30,7 @@ export class AiModelEntity {
   readonly provider: AiProviderEntity;
   private readonly providerPluginInstance: AiProviderPlugin;
   private readonly manifest: AiModelManifest;
+  private readonly encryptionService: EncryptionService;
 
   constructor(args: AiModelEntityArgs) {
     this.id = args.manifest.id;
@@ -36,6 +40,7 @@ export class AiModelEntity {
     this.provider = args.providerEntity;
     this.providerPluginInstance = args.providerPluginInstance;
     this.maxFileSize = parseBytes(args.manifest.maxFileSize ?? '0B');
+    this.encryptionService = args.encryptionService;
   }
 
   /**
@@ -45,7 +50,7 @@ export class AiModelEntity {
    */
   async classify(args: ClassifyArgs): Promise<JsonObject> {
     if (!this.isClassifier()) {
-      throw new ModelOperationNotSupported('classify', this.id);
+      throw new ClassifierNotSupported(this.id);
     }
     return this.getModelPluginInstance().classify(args);
   }
@@ -65,6 +70,31 @@ export class AiModelEntity {
    */
   isMimeTypeSupported(mimeType: string): boolean {
     return this.manifest.supportedMimeTypes?.includes(mimeType) ?? false;
+  }
+
+  /**
+   * Validates and encrypts (when necessary) the classifier input values.
+   * @param input
+   * @returns the processed input values
+   */
+  processInboundClassifierInput(input: ConfigValues = {}): ConfigValues {
+    if (!this.isClassifier()) {
+      throw new ClassifierNotSupported(this.id);
+    }
+    const result = validateConfigSchema(
+      this.manifest.classifier?.input ?? {},
+      input
+    );
+    if (!result.valid) {
+      throw new InvalidInput(result.errors);
+    }
+
+    const encryptedModelInput = this.encryptionService.encryptConfigValues(
+      input ?? {},
+      this.classifierInputSchema
+    );
+
+    return encryptedModelInput;
   }
 
   toDto(): AiModelDto {

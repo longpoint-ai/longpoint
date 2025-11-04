@@ -1,14 +1,8 @@
-import {
-  MediaContainerSummaryDto,
-  type MediaContainerSummaryParams,
-} from '@/modules/media/dtos';
+import { MediaContainerSummaryDto } from '@/modules/media/dtos';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { TreeItem, TreeItemType } from '../library.types';
 
-export type MediaContainerTreeItemParams = MediaContainerSummaryParams & {
-  treeItemType: typeof TreeItemType.MEDIA;
-};
-
+export type MediaContainerTreeItemParams = MediaContainerSummaryDto;
 @ApiSchema({ name: 'MediaContainerTreeItem' })
 export class MediaContainerTreeItemDto
   extends MediaContainerSummaryDto
@@ -28,6 +22,5 @@ export class MediaContainerTreeItemDto
     this.path = data.path;
     this.status = data.status;
     this.createdAt = data.createdAt;
-    this.treeItemType = data.treeItemType;
   }
 }

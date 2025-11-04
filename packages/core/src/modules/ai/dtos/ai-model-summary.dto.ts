@@ -1,5 +1,4 @@
-import { ApiSchema, PickType } from '@nestjs/swagger';
-import { AiModelDto } from './ai-model.dto';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import {
   AiProviderSummaryDto,
   AiProviderSummaryParams,
@@ -14,14 +13,32 @@ export interface AiModelSummaryParams {
 }
 
 @ApiSchema({ name: 'AiModelSummary' })
-export class AiModelSummaryDto extends PickType(AiModelDto, [
-  'id',
-  'name',
-  'fullyQualifiedId',
-  'provider',
-] as const) {
+export class AiModelSummaryDto {
+  @ApiProperty({
+    description: 'The ID of the model',
+    example: 'claude-haiku-4-5-20251001',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'The fully qualified ID of the model',
+    example: 'anthropic/claude-haiku-4-5-20251001',
+  })
+  fullyQualifiedId: string;
+
+  @ApiProperty({
+    description: 'The display name of the model',
+    example: 'Claude Haiku 4.5',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'The provider of the model',
+    type: AiProviderSummaryDto,
+  })
+  provider: AiProviderSummaryDto;
+
   constructor(data: AiModelSummaryParams) {
-    super();
     this.id = data.id;
     this.fullyQualifiedId = data.fullyQualifiedId;
     this.name = data.name ?? this.id;

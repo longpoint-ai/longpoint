@@ -1,9 +1,9 @@
 import { ApiSdkTag, Public } from '@/shared/decorators';
-import { ApiMediaContainerNotFoundResponse } from '@/shared/errors';
 import { SdkTag } from '@/shared/types/swagger.types';
 import { Controller, Param, Put, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { type Request } from 'express';
+import { ApiMediaContainerNotFoundResponse } from '../media/media.errors';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { UploadService } from './upload.service';
 

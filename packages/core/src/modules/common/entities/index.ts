@@ -1,3 +1,3 @@
 export * from '../../ai/entities/ai-model.entity';
-export * from './media-container.entity';
-export * from './storage-unit.entity';
+export * from '../../media/entities/media-container.entity';
+export * from '../../storage-unit/entities/storage-unit.entity';

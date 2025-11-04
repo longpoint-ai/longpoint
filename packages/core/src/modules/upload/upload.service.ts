@@ -4,12 +4,9 @@ import {
   MediaContainerStatus,
   Prisma,
 } from '@/database';
-import {
-  CommonClassifierService,
-  PrismaService,
-  StorageUnitService,
-} from '@/modules/common/services';
-import { StorageProvider } from '@/modules/common/types/storage-provider.types';
+import { ClassifierService } from '@/modules/classifier/classifier.service';
+import { PrismaService } from '@/modules/common/services';
+import { StorageProvider, StorageUnitService } from '@/modules/storage-unit';
 import { SupportedMimeType } from '@longpoint/types';
 import {
   getMediaContainerPath,
@@ -19,7 +16,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
-import { ProbeService } from '../../services/probe.service';
+import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { TokenExpired } from './upload.errors';
 
@@ -28,8 +25,8 @@ export class UploadService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
-    private readonly probeService: ProbeService,
-    private readonly commonClassifierService: CommonClassifierService
+    private readonly probeService: MediaProbeService,
+    private readonly classifierService: ClassifierService
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
@@ -215,10 +212,12 @@ export class UploadService {
     if (asset.classifiersOnUpload.length === 0) {
       return;
     }
-    await Promise.all(
-      asset.classifiersOnUpload.map((classifierName) =>
-        this.commonClassifierService.runClassifier(asset.id, classifierName)
-      )
+
+    const classifiers = await this.classifierService.listClassifiers();
+    const entities = classifiers.filter((classifier) =>
+      asset.classifiersOnUpload.includes(classifier.name)
     );
+
+    await Promise.all(entities.map((entity) => entity.run(asset.id)));
   }
 }

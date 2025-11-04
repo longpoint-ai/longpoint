@@ -29,7 +29,7 @@ export interface AudioProbeResult {
 }
 
 @Injectable()
-export class ProbeService {
+export class MediaProbeService {
   async probeVideo(url: string): Promise<VideoProbeResult> {
     return new Promise((resolve, reject) => {
       const ffprobe = spawn('ffprobe', [

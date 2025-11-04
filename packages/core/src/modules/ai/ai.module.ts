@@ -6,5 +6,6 @@ import { AiPluginService } from './services/ai-plugin.service';
 @Module({
   controllers: [AiModelController, AiProviderController],
   providers: [AiPluginService],
+  exports: [AiPluginService],
 })
 export class AiModule {}

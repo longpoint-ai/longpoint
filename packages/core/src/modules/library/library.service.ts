@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService, MediaContainerService } from '../common/services';
+import { ConfigService } from '../common/services';
+import { MediaContainerService } from '../media';
 import {
+  DirectoryTreeItemDto,
   DirectoryTreeItemParams,
   GetLibraryTreeQueryDto,
   LibraryTreeDto,
-  TreeItemParams,
+  TreeItemDto,
 } from './dtos';
+import { MediaContainerTreeItemDto } from './dtos/media-container-tree-item.dto';
 import { PathNotFound } from './library.errors';
 import { TreeItemType } from './library.types';
 
@@ -23,20 +26,17 @@ export class LibraryService {
       normalizedPath
     );
     const hydratedContainers = await Promise.all(
-      containers.map((container) => container.serialize())
+      containers.map((container) => container.toDto())
     );
 
     // Extract directories and media items
     const directories = new Map<string, DirectoryTreeItemParams>();
-    const mediaItems: TreeItemParams[] = [];
+    const mediaItems: TreeItemDto[] = [];
 
     for (const container of hydratedContainers) {
       if (container.path === normalizedPath) {
         // Container is at exact path - it's a media item
-        mediaItems.push({
-          treeItemType: TreeItemType.MEDIA,
-          ...container,
-        });
+        mediaItems.push(new MediaContainerTreeItemDto(container));
       } else if (container.path.startsWith(normalizedPath + '/')) {
         // Container is in a subdirectory - extract the directory name
         const relativePath = container.path.substring(
@@ -86,7 +86,9 @@ export class LibraryService {
     }
 
     // Convert directories to tree items
-    const directoryItems: TreeItemParams[] = Array.from(directories.values());
+    const directoryItems: TreeItemDto[] = Array.from(directories.values()).map(
+      (directory) => new DirectoryTreeItemDto(directory)
+    );
 
     // Combine all items
     const allItems = [...directoryItems, ...mediaItems];
