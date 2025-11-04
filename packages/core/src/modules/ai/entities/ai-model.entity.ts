@@ -12,7 +12,7 @@ import {
 import { parseBytes } from '@longpoint/utils/format';
 import { validateConfigSchema, ValidationResult } from '@longpoint/validations';
 import { ClassifierNotSupported } from '../ai.errors';
-import { AiModelDto } from '../dtos';
+import { AiModelDto, AiModelSummaryDto } from '../dtos';
 import { AiProviderEntity } from './ai-provider.entity';
 
 export interface AiModelEntityArgs {
@@ -105,6 +105,16 @@ export class AiModelEntity {
       description: this.description,
       provider: this.provider.toDto(),
       classifierInputSchema: this.classifierInputSchema,
+    });
+  }
+
+  toSummaryDto(): AiModelSummaryDto {
+    return new AiModelSummaryDto({
+      id: this.id,
+      fullyQualifiedId: this.fullyQualifiedId,
+      name: this.name,
+      description: this.description,
+      provider: this.provider.toSummaryDto(),
     });
   }
 

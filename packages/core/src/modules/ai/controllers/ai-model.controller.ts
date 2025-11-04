@@ -29,6 +29,8 @@ export class AiModelController {
   })
   @ApiOkResponse({ type: [AiModelDto] })
   async listModels() {
-    return this.aiPluginService.listModels().map((model) => model.toDto());
+    return this.aiPluginService
+      .listModels()
+      .map((model) => model.toSummaryDto());
   }
 }

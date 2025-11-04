@@ -6,7 +6,11 @@ import { selectClassifier } from '@/shared/selectors/classifier.selectors';
 import { ConfigValues } from '@longpoint/devkit';
 import { Logger } from '@nestjs/common';
 import { ClassifierNotFound } from '../classifier.errors';
-import { ClassifierDto, UpdateClassifierDto } from '../dtos';
+import {
+  ClassifierDto,
+  ClassifierSummaryDto,
+  UpdateClassifierDto,
+} from '../dtos';
 
 export interface ClassifierEntityArgs
   extends Pick<
@@ -182,9 +186,20 @@ export class ClassifierEntity {
       description: this.description,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      model: this.model.toDto(),
+      model: this.model.toSummaryDto(),
       modelInputSchema: this.model.classifierInputSchema,
       modelInput: this.modelInput,
+    });
+  }
+
+  toSummaryDto(): ClassifierSummaryDto {
+    return new ClassifierSummaryDto({
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      model: this.model.toSummaryDto(),
     });
   }
 

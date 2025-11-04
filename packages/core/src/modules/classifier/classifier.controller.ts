@@ -67,7 +67,7 @@ export class ClassifierController {
   @ApiOkResponse({ type: [ClassifierSummaryDto] })
   async listClassifiers() {
     const classifiers = await this.classifierService.listClassifiers();
-    return classifiers.map((classifier) => classifier.toDto());
+    return classifiers.map((classifier) => classifier.toSummaryDto());
   }
 
   @Patch(':classifierId')

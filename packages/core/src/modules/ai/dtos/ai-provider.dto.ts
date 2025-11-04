@@ -4,7 +4,6 @@ import {
 } from '@/shared/dtos/config-schema';
 import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
-import type { AiModelShortParams } from './ai-model-short.dto';
 import { AiModelShortDto } from './ai-model-short.dto';
 
 export interface AiProviderParams {
@@ -14,7 +13,7 @@ export interface AiProviderParams {
   needsConfig?: boolean;
   config?: ConfigValues;
   configSchema?: ConfigSchema;
-  models: AiModelShortParams[];
+  models: AiModelShortDto[];
 }
 
 @ApiSchema({ name: 'AiProvider' })
@@ -97,6 +96,6 @@ export class AiProviderDto {
     this.configSchema = data.configSchema
       ? toConfigSchemaForDto(data.configSchema)
       : null;
-    this.models = data.models.map((model) => new AiModelShortDto(model));
+    this.models = data.models;
   }
 }

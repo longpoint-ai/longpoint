@@ -1,5 +1,7 @@
 import { AiProviderPlugin } from '@longpoint/devkit';
 import { validateConfigSchema } from '@longpoint/validations';
+import { AiModelShortDto } from '../dtos/ai-model-short.dto';
+import { AiProviderSummaryDto } from '../dtos/ai-provider-summary.dto';
 import { AiProviderDto } from '../dtos/ai-provider.dto';
 
 export interface AiProviderEntityArgs {
@@ -28,14 +30,24 @@ export class AiProviderEntity {
       needsConfig: this.needsConfig,
       configSchema: this.pluginInstance.manifest.provider.config,
       models: Object.keys(this.pluginInstance.manifest.models).map(
-        (modelId) => ({
-          id: modelId,
-          name: this.pluginInstance.manifest.models[modelId].name ?? modelId,
-          description:
-            this.pluginInstance.manifest.models[modelId].description ?? null,
-          fullyQualifiedId: `${this.id}/${modelId}`,
-        })
+        (modelId) =>
+          new AiModelShortDto({
+            id: modelId,
+            name: this.pluginInstance.manifest.models[modelId].name ?? modelId,
+            description:
+              this.pluginInstance.manifest.models[modelId].description ?? null,
+            fullyQualifiedId: `${this.id}/${modelId}`,
+          })
       ),
+    });
+  }
+
+  toSummaryDto(): AiProviderSummaryDto {
+    return new AiProviderSummaryDto({
+      id: this.id,
+      name: this.name,
+      image: this.image ?? null,
+      needsConfig: this.needsConfig,
     });
   }
 
