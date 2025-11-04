@@ -8,3 +8,4 @@ export { MediaModule } from './media';
 export { SetupModule } from './setup';
 export { StorageModule } from './storage';
 export { StorageUnitModule } from './storage-unit';
+export { UploadModule } from './upload';

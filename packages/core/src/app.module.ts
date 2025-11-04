@@ -11,6 +11,7 @@ import {
   SetupModule,
   StorageModule,
   StorageUnitModule,
+  UploadModule,
 } from './modules';
 import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
 
@@ -29,6 +30,7 @@ import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
     SetupModule,
     StorageModule,
     StorageUnitModule,
+    UploadModule,
   ],
   providers: [
     {
