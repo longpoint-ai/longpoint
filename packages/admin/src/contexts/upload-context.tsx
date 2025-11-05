@@ -14,8 +14,16 @@ interface UploadContextType {
   files: UploadFile[];
   openDialog: (files?: File[]) => void;
   closeDialog: () => void;
-  addFiles: (files: File[], classifiers?: string[]) => void;
-  uploadFiles: (files: File[], classifiers?: string[]) => Promise<void>;
+  addFiles: (
+    files: File[],
+    classifiers?: string[],
+    storageUnitId?: string
+  ) => void;
+  uploadFiles: (
+    files: File[],
+    classifiers?: string[],
+    storageUnitId?: string
+  ) => Promise<void>;
   cancelUpload: (fileId: string) => void;
   reset: () => void;
   isUploading: boolean;
@@ -48,7 +56,11 @@ export function UploadProvider({ children }: UploadProviderProps) {
   }, [uploadHook]);
 
   const uploadFiles = useCallback(
-    async (files: File[], classifiers: string[] = []): Promise<void> => {
+    async (
+      files: File[],
+      classifiers: string[] = [],
+      storageUnitId?: string
+    ): Promise<void> => {
       try {
         const supportedFiles = files.filter((file) => {
           const mimeType = file.type as SupportedMimeType;
@@ -73,11 +85,11 @@ export function UploadProvider({ children }: UploadProviderProps) {
 
         const uploadPromises = supportedFiles.map(async (file) => {
           try {
-            console.log(classifiers);
             const container = await client.media.createMedia({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
               classifiersOnUpload: classifiers,
+              storageUnitId,
             });
 
             await uploadHook.uploadFile(file, container.url);
@@ -100,10 +112,14 @@ export function UploadProvider({ children }: UploadProviderProps) {
   );
 
   const addFiles = useCallback(
-    async (files: File[], classifiers: string[] = []) => {
+    async (
+      files: File[],
+      classifiers: string[] = [],
+      storageUnitId?: string
+    ) => {
       setPendingFiles((prev) => [...prev, ...files]);
       try {
-        await uploadFiles(files, classifiers);
+        await uploadFiles(files, classifiers, storageUnitId);
       } catch (error) {
         console.error('Auto-upload failed:', error);
       }

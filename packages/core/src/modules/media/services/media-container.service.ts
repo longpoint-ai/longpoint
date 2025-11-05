@@ -66,8 +66,9 @@ export class MediaContainerService {
     const path = data.path ?? '/';
     const uploadToken = this.generateUploadToken();
     const mediaType = mimeTypeToMediaType(data.mimeType);
-    const defaultStorageUnit =
-      await this.storageUnitService.getOrCreateDefaultStorageUnit();
+    const storageUnit = data.storageUnitId
+      ? await this.storageUnitService.getStorageUnitById(data.storageUnitId)
+      : await this.storageUnitService.getOrCreateDefaultStorageUnit();
 
     const container = await this.prismaService.mediaContainer.create({
       data: {
@@ -75,7 +76,7 @@ export class MediaContainerService {
         path,
         type: mediaType,
         status: 'WAITING_FOR_UPLOAD',
-        storageUnitId: defaultStorageUnit.id,
+        storageUnitId: storageUnit.id,
         assets: {
           create: {
             variant: 'PRIMARY',
@@ -101,7 +102,7 @@ export class MediaContainerService {
       }/upload?token=${uploadToken.token}`,
       container: new MediaContainerEntity({
         ...container,
-        storageUnit: defaultStorageUnit,
+        storageUnit,
         prismaService: this.prismaService,
       }),
     };

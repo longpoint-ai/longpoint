@@ -203,6 +203,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/storage-units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List storage units */
+        get: operations["listStorageUnits"];
+        put?: never;
+        /** Create a storage unit */
+        post: operations["createStorageUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/storage-units/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a storage unit */
+        get: operations["getStorageUnit"];
+        put?: never;
+        post?: never;
+        /** Delete a storage unit */
+        delete: operations["deleteStorageUnit"];
+        options?: never;
+        head?: never;
+        /** Update a storage unit */
+        patch: operations["updateStorageUnit"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -256,6 +293,25 @@ export interface components {
              * @example Claude Haiku 4.5
              */
             name: string;
+        };
+        AiModelSummary: {
+            /**
+             * @description The fully qualified ID of the model
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the model
+             * @example claude-haiku-4-5-20251001
+             */
+            id: string;
+            /**
+             * @description The display name of the model
+             * @example Claude Haiku 4.5
+             */
+            name: string;
+            /** @description The provider of the model */
+            provider: components["schemas"]["AiProviderSummary"];
         };
         AiProvider: {
             /**
@@ -322,7 +378,7 @@ export interface components {
              * @description An icon image of the AI provider
              * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
              */
-            image: string;
+            image: string | null;
             /**
              * @description The name of the AI provider
              * @example Anthropic
@@ -352,7 +408,7 @@ export interface components {
              */
             id: string;
             /** @description The model used by the classifier */
-            model: components["schemas"]["AiModel"];
+            model: components["schemas"]["AiModelSummary"];
             /**
              * @description The input values to use for the model
              * @example {
@@ -469,7 +525,7 @@ export interface components {
              */
             id: string;
             /** @description The model used by the classifier */
-            model: components["schemas"]["AiModel"];
+            model: components["schemas"]["AiModelSummary"];
             /**
              * @description The name of the classifier
              * @example general-tagging
@@ -593,12 +649,17 @@ export interface components {
              * @example /
              */
             path?: string;
+            /**
+             * @description The ID of the storage unit to use. If not provided, the default storage unit will be used.
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            storageUnitId?: string;
         };
         CreateMediaContainerResponse: {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-03T19:13:55.956Z
+             * @example 2025-11-05T16:57:18.528Z
              */
             expiresAt: string;
             /**
@@ -627,6 +688,32 @@ export interface components {
              * @example https://longpoint.example.com/api/media/abc123/upload?token=abcdefghijklmnopqrst
              */
             url: string;
+        };
+        CreateStorageUnit: {
+            /**
+             * @description Provider-specific configuration
+             * @example {
+             *       "basePath": "default"
+             *     }
+             */
+            config?: Record<string, never>;
+            /**
+             * @description Whether this should be the default storage unit
+             * @default false
+             * @example false
+             */
+            isDefault: boolean;
+            /**
+             * @description The name of the storage unit
+             * @example My Storage Unit
+             */
+            name: string;
+            /**
+             * @description The storage provider type
+             * @example local
+             * @enum {string}
+             */
+            provider: "local" | "s3" | "gcs" | "azure-blob";
         };
         DeleteMediaContainer: {
             /**
@@ -748,7 +835,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-03T18:13:55.944Z
+             * @example 2025-11-05T15:57:18.528Z
              */
             createdAt: string;
             /**
@@ -802,7 +889,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-03T18:13:55.944Z
+             * @example 2025-11-05T15:57:18.528Z
              */
             createdAt: string;
             /**
@@ -835,13 +922,89 @@ export interface components {
              */
             treeItemType: "MEDIA";
         };
-        Object: Record<string, never>;
         SetupStatus: {
             /**
              * @description Whether the first time setup is complete
              * @example false
              */
             isFirstTimeSetup: boolean;
+        };
+        StorageUnit: {
+            /**
+             * @description Provider-specific configuration (decrypted)
+             * @example {
+             *       "basePath": "default"
+             *     }
+             */
+            config: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description When the storage unit was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the storage unit
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description Whether this is the default storage unit
+             * @example true
+             */
+            isDefault: boolean;
+            /**
+             * @description The name of the storage unit
+             * @example Local Default
+             */
+            name: string;
+            /**
+             * @description The storage provider type
+             * @example local
+             * @enum {string}
+             */
+            provider: "local" | "s3" | "gcs" | "azure-blob";
+            /**
+             * Format: date-time
+             * @description When the storage unit was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        StorageUnitSummary: {
+            /**
+             * Format: date-time
+             * @description When the storage unit was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the storage unit
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description Whether this is the default storage unit
+             * @example true
+             */
+            isDefault: boolean;
+            /**
+             * @description The name of the storage unit
+             * @example Local Default
+             */
+            name: string;
+            /**
+             * @description The storage provider type
+             * @example local
+             * @enum {string}
+             */
+            provider: "local" | "s3" | "gcs" | "azure-blob";
+            /**
+             * Format: date-time
+             * @description When the storage unit was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
         };
         UpdateAiProviderConfig: {
             /**
@@ -887,6 +1050,32 @@ export interface components {
              * @example /
              */
             path?: string;
+        };
+        UpdateStorageUnit: {
+            /**
+             * @description Provider-specific configuration
+             * @example {
+             *       "basePath": "default"
+             *     }
+             */
+            config?: Record<string, never>;
+            /**
+             * @description Whether this should be the default storage unit
+             * @default false
+             * @example false
+             */
+            isDefault: boolean;
+            /**
+             * @description The name of the storage unit
+             * @example My Storage Unit
+             */
+            name?: string;
+            /**
+             * @description The storage provider type
+             * @example local
+             * @enum {string}
+             */
+            provider?: "local" | "s3" | "gcs" | "azure-blob";
         };
     };
     responses: never;
@@ -1186,7 +1375,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description The path to get the tree for */
-                path?: components["schemas"]["Object"];
+                path?: string;
             };
             header?: never;
             path?: never;
@@ -1409,6 +1598,186 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SetupStatus"];
+                };
+            };
+        };
+    };
+    listStorageUnits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnitSummary"][];
+                };
+            };
+        };
+    };
+    createStorageUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStorageUnit"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnit"];
+                };
+            };
+        };
+    };
+    getStorageUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnit"];
+                };
+            };
+            /** @description Storage unit not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Storage unit with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteStorageUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The storage unit was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Storage unit not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Storage unit with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+            /** @description Storage unit is in use and cannot be deleted */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "INVALID_INPUT",
+                     *       "messages": [
+                     *         "Storage unit mbjq36xe6397dsi6x9nq4ghc cannot be deleted because it has media containers"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateStorageUnit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStorageUnit"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnit"];
+                };
+            };
+            /** @description Storage unit not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Storage unit with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
                 };
             };
         };

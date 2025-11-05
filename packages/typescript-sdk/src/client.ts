@@ -10,8 +10,8 @@ export interface ClientConfig {
 export class Longpoint {
   private httpClient: AxiosInstance;
   ai: AiClient;
-  library: LibraryClient;
   media: MediaClient;
+  library: LibraryClient;
   tools: ToolsClient;
 
   constructor(config: ClientConfig = {}) {
@@ -24,8 +24,8 @@ export class Longpoint {
       }
     });
     this.ai = new AiClient(this.httpClient);
-    this.library = new LibraryClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
+    this.library = new LibraryClient(this.httpClient);
     this.tools = new ToolsClient(this.httpClient);
   }
 }
@@ -124,26 +124,6 @@ class AiClient {
   }
 }
 
-class LibraryClient {
-  constructor(private httpClient: AxiosInstance) {}
-
-    /**
-   * List the contents of a library tree
-   */
-    async getTree(options?: { path?: components['schemas']['Object'] }): Promise<components['schemas']['LibraryTree']> {
-        const params = new URLSearchParams();
-        if (options) {
-          if (options.path !== undefined) {
-            params.append('path', String(options.path));
-          }
-        }
-        const queryString = params.toString();
-        const url = `library/tree${queryString ? `?${queryString}` : ''}`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-}
-
 class MediaClient {
   constructor(private httpClient: AxiosInstance) {}
 
@@ -188,6 +168,51 @@ class MediaClient {
   }
 
     /**
+   * Create a storage unit
+   */
+    async createStorageUnit(data: components['schemas']['CreateStorageUnit']): Promise<components['schemas']['StorageUnit']> {
+        const url = `storage-units`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List storage units
+   */
+    async listStorageUnits(): Promise<components['schemas']['StorageUnitSummary'][]> {
+        const url = `storage-units`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a storage unit
+   */
+    async getStorageUnit(id: string): Promise<components['schemas']['StorageUnit']> {
+        const url = `storage-units/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a storage unit
+   */
+    async updateStorageUnit(id: string, data: components['schemas']['UpdateStorageUnit']): Promise<components['schemas']['StorageUnit']> {
+        const url = `storage-units/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a storage unit
+   */
+    async deleteStorageUnit(id: string): Promise<void> {
+        const url = `storage-units/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
    * Upload an asset to a media container
    */
     async upload(containerId: string, options?: { token?: string }): Promise<void> {
@@ -200,6 +225,26 @@ class MediaClient {
         const queryString = params.toString();
         const url = `media/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.put(url);
+        return response.data;
+  }
+}
+
+class LibraryClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * List the contents of a library tree
+   */
+    async getTree(options?: { path?: string }): Promise<components['schemas']['LibraryTree']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.path !== undefined) {
+            params.append('path', String(options.path));
+          }
+        }
+        const queryString = params.toString();
+        const url = `library/tree${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

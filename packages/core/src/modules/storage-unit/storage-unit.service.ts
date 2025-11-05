@@ -5,12 +5,14 @@ import { selectStorageUnit } from '../../shared/selectors/storage-unit.selectors
 import { ConfigService } from '../common/services/config/config.service';
 import { EncryptionService } from '../common/services/encryption/encryption.service';
 import { PrismaService } from '../common/services/prisma/prisma.service';
+import { CreateStorageUnitDto } from './dtos/create-storage-unit.dto';
 import { StorageUnitEntity } from './entities/storage-unit.entity';
 import {
   isCoreProvider,
   type CoreStorageProvider,
 } from './providers/constants/storage-provider.constants';
 import { LocalStorageProvider } from './providers/local.storage-provider';
+import { StorageUnitNotFound } from './storage-unit.errors';
 import {
   isLocalStorageConfig,
   STORAGE_PROVIDER_CONFIG_SCHEMAS,
@@ -139,6 +141,9 @@ export class StorageUnitService {
     const entity = new StorageUnitEntity({
       storageUnit,
       provider,
+      prismaService: this.prismaService,
+      encryptionService: this.encryptionService,
+      storageUnitService: this,
     });
     this.entityCache.set(storageUnit.id, entity);
     return entity;
@@ -279,6 +284,114 @@ export class StorageUnitService {
         return storageUnit.config as T;
       }
       throw error;
+    }
+  }
+
+  /**
+   * Creates a new storage unit.
+   * @param data - The storage unit data
+   * @returns The created storage unit entity
+   */
+  async createStorageUnit(
+    data: CreateStorageUnitDto
+  ): Promise<StorageUnitEntity> {
+    // If isDefault is being set to true, ensure no other storage unit is default
+    if (data.isDefault === true) {
+      await this.ensureSingleDefault();
+    }
+
+    // Encrypt config if provided
+    let encryptedConfig: any = null;
+    if (data.config !== undefined) {
+      const schema = STORAGE_PROVIDER_CONFIG_SCHEMAS[data.provider];
+      if (schema) {
+        encryptedConfig = this.encryptionService.encryptConfigValues(
+          data.config,
+          schema
+        );
+      } else {
+        encryptedConfig = data.config;
+      }
+    }
+
+    const storageUnit = await this.prismaService.storageUnit.create({
+      data: {
+        name: data.name,
+        provider: data.provider,
+        isDefault: data.isDefault ?? false,
+        config: encryptedConfig,
+      },
+      select: selectStorageUnit(),
+    });
+
+    return this.getEntityByStorageUnit(storageUnit);
+  }
+
+  /**
+   * Lists all storage units.
+   * @returns Array of storage unit entities
+   */
+  async listStorageUnits(): Promise<StorageUnitEntity[]> {
+    const storageUnits = await this.prismaService.storageUnit.findMany({
+      select: selectStorageUnit(),
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    return Promise.all(
+      storageUnits.map((unit) => this.getEntityByStorageUnit(unit))
+    );
+  }
+
+  /**
+   * Gets a storage unit by ID or throws an error if not found.
+   * @param id - The storage unit ID
+   * @returns The storage unit entity
+   * @throws {StorageUnitNotFound} If the storage unit doesn't exist
+   */
+  async getStorageUnitByIdOrThrow(id: string): Promise<StorageUnitEntity> {
+    const storageUnit = await this.prismaService.storageUnit.findUnique({
+      where: { id },
+      select: selectStorageUnit(),
+    });
+
+    if (!storageUnit) {
+      throw new StorageUnitNotFound(id);
+    }
+
+    return this.getEntityByStorageUnit(storageUnit);
+  }
+
+  /**
+   * Ensures only one storage unit is marked as default.
+   * If multiple exist, keeps the first one and sets others to false.
+   * @param excludeId - Optional ID to exclude from being set to non-default (e.g., the one being set to default)
+   */
+  async ensureSingleDefault(excludeId?: string): Promise<void> {
+    const defaultUnit = await this.prismaService.storageUnit.findFirst({
+      where: { isDefault: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (defaultUnit) {
+      const whereClause: any = {
+        isDefault: true,
+      };
+
+      // If excludeId is provided, don't update that one
+      if (excludeId) {
+        whereClause.id = { not: excludeId };
+      } else {
+        whereClause.id = { not: defaultUnit.id };
+      }
+
+      await this.prismaService.storageUnit.updateMany({
+        where: whereClause,
+        data: {
+          isDefault: false,
+        },
+      });
     }
   }
 }
