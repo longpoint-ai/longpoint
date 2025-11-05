@@ -1,4 +1,8 @@
 import { ConfigValues } from '@longpoint/devkit';
+import {
+  NativeStorageProvider,
+  STORAGE_PROVIDER_CONFIG_SCHEMAS,
+} from '@longpoint/types';
 import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { EncryptionService } from '../../common/services/encryption/encryption.service';
@@ -12,7 +16,6 @@ import {
   StorageUnitNotFound,
 } from '../storage-unit.errors';
 import { StorageUnitService } from '../storage-unit.service';
-import { STORAGE_PROVIDER_CONFIG_SCHEMAS } from '../types/storage-provider-config.types';
 import { StorageProvider } from '../types/storage-provider.types';
 
 export interface StorageUnitEntityArgs {
@@ -126,7 +129,10 @@ export class StorageUnitEntity {
       // Encrypt config if provided (data.config is expected to be decrypted)
       let encryptedConfig: unknown = undefined;
       if (data.config !== undefined) {
-        const schema = STORAGE_PROVIDER_CONFIG_SCHEMAS[this.providerType];
+        const schema =
+          STORAGE_PROVIDER_CONFIG_SCHEMAS[
+            this.providerType as NativeStorageProvider
+          ];
         if (schema) {
           encryptedConfig = this.encryptionService.encryptConfigValues(
             data.config,
@@ -235,7 +241,10 @@ export class StorageUnitEntity {
     // Decrypt config
     let decryptedConfig: ConfigValues | null = null;
     if (storageUnit.config) {
-      const schema = STORAGE_PROVIDER_CONFIG_SCHEMAS[this.providerType];
+      const schema =
+        STORAGE_PROVIDER_CONFIG_SCHEMAS[
+          this.providerType as NativeStorageProvider
+        ];
       if (schema) {
         try {
           decryptedConfig = this.encryptionService.decryptConfigValues(

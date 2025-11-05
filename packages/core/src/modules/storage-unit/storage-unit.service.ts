@@ -1,4 +1,8 @@
 import { ConfigValues } from '@longpoint/devkit';
+import {
+  NativeStorageProvider,
+  STORAGE_PROVIDER_CONFIG_SCHEMAS,
+} from '@longpoint/types';
 import { Injectable } from '@nestjs/common';
 import type { SelectedStorageUnit } from '../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../shared/selectors/storage-unit.selectors';
@@ -15,7 +19,6 @@ import { LocalStorageProvider } from './providers/local.storage-provider';
 import { StorageUnitNotFound } from './storage-unit.errors';
 import {
   isLocalStorageConfig,
-  STORAGE_PROVIDER_CONFIG_SCHEMAS,
   type BaseStorageProviderConfig,
   type LocalStorageProviderConfig,
 } from './types/storage-provider-config.types';
@@ -265,7 +268,8 @@ export class StorageUnitService {
       throw new Error(`Storage unit ${storageUnit.id} has no configuration`);
     }
 
-    const schema = STORAGE_PROVIDER_CONFIG_SCHEMAS[provider];
+    const schema =
+      STORAGE_PROVIDER_CONFIG_SCHEMAS[provider as NativeStorageProvider];
     if (!schema) {
       throw new Error(`Unsupported storage provider: ${provider}`);
     }
@@ -303,7 +307,8 @@ export class StorageUnitService {
     // Encrypt config if provided
     let encryptedConfig: any = null;
     if (data.config !== undefined) {
-      const schema = STORAGE_PROVIDER_CONFIG_SCHEMAS[data.provider];
+      const schema =
+        STORAGE_PROVIDER_CONFIG_SCHEMAS[data.provider as NativeStorageProvider];
       if (schema) {
         encryptedConfig = this.encryptionService.encryptConfigValues(
           data.config,

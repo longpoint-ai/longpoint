@@ -3,7 +3,7 @@ import {
   getDefaultValueForType,
 } from '@/components/config-schema';
 import { useClient } from '@/hooks/common/use-client';
-import { STORAGE_PROVIDER_CONFIG_SCHEMAS } from '@/utils/storage-provider-schemas';
+import { STORAGE_PROVIDER_CONFIG_SCHEMAS } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,

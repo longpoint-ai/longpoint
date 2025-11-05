@@ -22,7 +22,6 @@ import {
   StorageUnitSummaryDto,
   UpdateStorageUnitDto,
 } from './dtos';
-import { STORAGE_PROVIDER_UI_CONFIG_SCHEMAS } from './storage-unit.constants';
 import {
   ApiCannotDeleteDefaultStorageUnitResponse,
   ApiStorageUnitInUseResponse,
@@ -111,21 +110,21 @@ export class StorageUnitController {
     await storageUnit.delete();
   }
 
-  @Get('provider-config-schemas')
-  @RequirePermission(Permission.STORAGE_UNIT_READ)
-  @ApiOperation({
-    summary: 'Get provider configuration schemas',
-    operationId: 'getProviderConfigSchemas',
-    description: 'Returns the configuration schemas for all storage providers',
-  })
-  @ApiOkResponse({
-    description: 'Provider configuration schemas',
-    schema: {
-      type: 'object',
-      additionalProperties: true,
-    },
-  })
-  async getProviderConfigSchemas() {
-    return STORAGE_PROVIDER_UI_CONFIG_SCHEMAS;
-  }
+  // @Get('provider-config-schemas')
+  // @RequirePermission(Permission.STORAGE_UNIT_READ)
+  // @ApiOperation({
+  //   summary: 'Get provider configuration schemas',
+  //   operationId: 'getProviderConfigSchemas',
+  //   description: 'Returns the configuration schemas for all storage providers',
+  // })
+  // @ApiOkResponse({
+  //   description: 'Provider configuration schemas',
+  //   schema: {
+  //     type: 'object',
+  //     additionalProperties: true,
+  //   },
+  // })
+  // async getProviderConfigSchemas() {
+  //   return STORAGE_PROVIDER_UI_CONFIG_SCHEMAS;
+  // }
 }
