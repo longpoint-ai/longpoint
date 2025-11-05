@@ -1,0 +1,20 @@
+import { Global, Module } from '@nestjs/common';
+import { MediaProbeService } from './services';
+import { ConfigService } from './services/config/config.service';
+import { EncryptionService } from './services/encryption/encryption.service';
+import { PrismaService } from './services/prisma/prisma.service';
+
+const EXPORTS = [
+  ConfigService,
+  EncryptionService,
+  PrismaService,
+  MediaProbeService,
+];
+
+@Global()
+@Module({
+  imports: [],
+  providers: [...EXPORTS],
+  exports: EXPORTS,
+})
+export class CommonModule {}
