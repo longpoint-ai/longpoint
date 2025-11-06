@@ -7,6 +7,8 @@ export const selectStorageUnit = () => {
     provider: true,
     isDefault: true,
     config: true,
+    createdAt: true,
+    updatedAt: true,
   } satisfies Prisma.StorageUnitSelect;
 };
 

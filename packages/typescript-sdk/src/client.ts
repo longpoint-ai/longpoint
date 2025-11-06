@@ -11,6 +11,7 @@ export class Longpoint {
   private httpClient: AxiosInstance;
   ai: AiClient;
   media: MediaClient;
+  storage: StorageClient;
   library: LibraryClient;
   tools: ToolsClient;
 
@@ -25,6 +26,7 @@ export class Longpoint {
     });
     this.ai = new AiClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
+    this.storage = new StorageClient(this.httpClient);
     this.library = new LibraryClient(this.httpClient);
     this.tools = new ToolsClient(this.httpClient);
   }
@@ -168,6 +170,26 @@ class MediaClient {
   }
 
     /**
+   * Upload an asset to a media container
+   */
+    async upload(containerId: string, options?: { token?: string }): Promise<void> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.token !== undefined) {
+            params.append('token', String(options.token));
+          }
+        }
+        const queryString = params.toString();
+        const url = `media/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.put(url);
+        return response.data;
+  }
+}
+
+class StorageClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
    * Create a storage unit
    */
     async createStorageUnit(data: components['schemas']['CreateStorageUnit']): Promise<components['schemas']['StorageUnit']> {
@@ -188,8 +210,8 @@ class MediaClient {
     /**
    * Get a storage unit
    */
-    async getStorageUnit(id: string): Promise<components['schemas']['StorageUnit']> {
-        const url = `storage-units/${encodeURIComponent(String(id))}`;
+    async getStorageUnit(storageUnitId: string): Promise<components['schemas']['StorageUnit']> {
+        const url = `storage-units/${encodeURIComponent(String(storageUnitId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -197,8 +219,8 @@ class MediaClient {
     /**
    * Update a storage unit
    */
-    async updateStorageUnit(id: string, data: components['schemas']['UpdateStorageUnit']): Promise<components['schemas']['StorageUnit']> {
-        const url = `storage-units/${encodeURIComponent(String(id))}`;
+    async updateStorageUnit(storageUnitId: string, data: components['schemas']['UpdateStorageUnit']): Promise<components['schemas']['StorageUnit']> {
+        const url = `storage-units/${encodeURIComponent(String(storageUnitId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
@@ -206,25 +228,18 @@ class MediaClient {
     /**
    * Delete a storage unit
    */
-    async deleteStorageUnit(id: string): Promise<void> {
-        const url = `storage-units/${encodeURIComponent(String(id))}`;
+    async deleteStorageUnit(storageUnitId: string): Promise<void> {
+        const url = `storage-units/${encodeURIComponent(String(storageUnitId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
   }
 
     /**
-   * Upload an asset to a media container
+   * List installed storage providers
    */
-    async upload(containerId: string, options?: { token?: string }): Promise<void> {
-        const params = new URLSearchParams();
-        if (options) {
-          if (options.token !== undefined) {
-            params.append('token', String(options.token));
-          }
-        }
-        const queryString = params.toString();
-        const url = `media/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
-        const response = await this.httpClient.put(url);
+    async listStorageProviders(): Promise<components['schemas']['StorageProvider'][]> {
+        const url = `storage-providers`;
+        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

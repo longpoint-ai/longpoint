@@ -30,7 +30,7 @@ export function DeleteStorageUnitDialog({
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.media.deleteStorageUnit(storageUnitId),
+    mutationFn: () => client.storage.deleteStorageUnit(storageUnitId),
     onSuccess: () => {
       toast.success('Storage unit deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['storage-units'] });

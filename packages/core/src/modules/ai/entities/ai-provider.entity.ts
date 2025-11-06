@@ -1,11 +1,12 @@
+import { ConfigSchemaService } from '@/modules/common/services';
 import { AiProviderPlugin } from '@longpoint/devkit';
-import { validateConfigSchema } from '@longpoint/validations';
 import { AiModelShortDto } from '../dtos/ai-model-short.dto';
 import { AiProviderSummaryDto } from '../dtos/ai-provider-summary.dto';
 import { AiProviderDto } from '../dtos/ai-provider.dto';
 
 export interface AiProviderEntityArgs {
   pluginInstance: AiProviderPlugin;
+  configSchemaService: ConfigSchemaService;
 }
 
 export class AiProviderEntity {
@@ -13,12 +14,14 @@ export class AiProviderEntity {
   readonly name: string;
   readonly image?: string;
   private readonly pluginInstance: AiProviderPlugin;
+  private readonly configSchemaService: ConfigSchemaService;
 
   constructor(args: AiProviderEntityArgs) {
     this.id = args.pluginInstance.id;
     this.name = args.pluginInstance.name ?? this.id;
     this.image = args.pluginInstance.manifest.provider.image;
     this.pluginInstance = args.pluginInstance;
+    this.configSchemaService = args.configSchemaService;
   }
 
   toDto(): AiProviderDto {
@@ -58,10 +61,9 @@ export class AiProviderEntity {
       return false;
     }
 
-    const result = validateConfigSchema(
-      configSchema,
-      this.pluginInstance.configValues
-    );
+    const result = this.configSchemaService
+      .get(configSchema)
+      .validate(this.pluginInstance.configValues);
 
     return !result.valid;
   }

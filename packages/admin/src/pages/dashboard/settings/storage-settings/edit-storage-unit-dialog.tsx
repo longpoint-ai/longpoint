@@ -1,6 +1,5 @@
 import { ConfigSchemaForm } from '@/components/config-schema';
 import { useClient } from '@/hooks/common/use-client';
-import { STORAGE_PROVIDER_CONFIG_SCHEMAS } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,
@@ -27,7 +26,7 @@ import * as z from 'zod';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
-  provider: z.enum(['local', 's3', 'gcs', 'azure-blob']).optional(),
+  provider: z.string().optional(),
   isDefault: z.boolean().optional(),
   config: z.record(z.string(), z.any()).optional(),
 });
@@ -51,15 +50,21 @@ export function EditStorageUnitDialog({
   const queryClient = useQueryClient();
 
   const { data: storageUnit, isLoading } = useQuery({
-    queryKey: ['storage-unit', storageUnitId],
-    queryFn: () => client.media.getStorageUnit(storageUnitId),
+    queryKey: ['storage-units', storageUnitId],
+    queryFn: ({ queryKey: [, id] }) => client.storage.getStorageUnit(id),
     enabled: open && !!storageUnitId,
+  });
+
+  const { data: providers } = useQuery({
+    queryKey: ['storage-providers'],
+    queryFn: () => client.storage.listStorageProviders(),
+    enabled: open,
   });
 
   const form = useForm<FormData>({
     defaultValues: {
       name: '',
-      provider: 'local',
+      provider: '',
       isDefault: false,
       config: {},
     },
@@ -70,16 +75,17 @@ export function EditStorageUnitDialog({
     if (storageUnit) {
       form.reset({
         name: storageUnit.name,
-        provider: storageUnit.provider,
+        provider: storageUnit.provider.id,
         isDefault: storageUnit.isDefault,
         config: storageUnit.config || {},
       });
     }
   }, [storageUnit, form]);
 
-  const selectedProvider = form.watch('provider') || storageUnit?.provider;
-  const configSchema =
-    STORAGE_PROVIDER_CONFIG_SCHEMAS[selectedProvider || 'local'] || {};
+  const selectedProviderId =
+    form.watch('provider') || storageUnit?.provider?.id;
+  const selectedProvider = providers?.find((p) => p.id === selectedProviderId);
+  const configSchema = selectedProvider?.configSchema || {};
 
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -99,14 +105,11 @@ export function EditStorageUnitDialog({
         updateData.config = data.config;
       }
 
-      return client.media.updateStorageUnit(storageUnitId, updateData as any);
+      return client.storage.updateStorageUnit(storageUnitId, updateData as any);
     },
     onSuccess: () => {
       toast.success('Storage unit updated successfully');
       queryClient.invalidateQueries({ queryKey: ['storage-units'] });
-      queryClient.invalidateQueries({
-        queryKey: ['storage-unit', storageUnitId],
-      });
       onOpenChange(false);
     },
     onError: (error) => {

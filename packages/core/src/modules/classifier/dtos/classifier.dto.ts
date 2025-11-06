@@ -5,7 +5,7 @@ import {
   type ConfigSchemaForDto,
 } from '@/shared/dtos';
 import { SelectedClassifier } from '@/shared/selectors/classifier.selectors';
-import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { IsClassifierName } from '@longpoint/validations';
 import {
   ApiExtraModels,
@@ -17,7 +17,7 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
   model: AiModelSummaryDto;
-  modelInputSchema: ConfigSchema;
+  modelInputSchema: ConfigSchemaDefinition;
 }
 
 @ApiSchema({ name: 'Classifier' })

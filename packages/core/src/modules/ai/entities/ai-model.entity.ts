@@ -1,22 +1,19 @@
-import { EncryptionService } from '@/modules/common/services';
-import { InvalidInput } from '@/shared/errors';
+import { ConfigSchemaService } from '@/modules/common/services';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import {
   AiModelManifest,
   AiModelPlugin,
   AiProviderPlugin,
   ClassifyArgs,
-  ConfigSchema,
-  ConfigValues,
-  JsonObject,
 } from '@longpoint/devkit';
+import { JsonObject } from '@longpoint/types';
 import { parseBytes } from '@longpoint/utils/format';
-import { validateConfigSchema, ValidationResult } from '@longpoint/validations';
 import { ClassifierNotSupported } from '../ai.errors';
 import { AiModelDto, AiModelSummaryDto } from '../dtos';
 import { AiProviderEntity } from './ai-provider.entity';
 
 export interface AiModelEntityArgs {
-  encryptionService: EncryptionService;
+  configSchemaService: ConfigSchemaService;
   providerPluginInstance: AiProviderPlugin;
   providerEntity: AiProviderEntity;
   manifest: AiModelManifest;
@@ -30,7 +27,7 @@ export class AiModelEntity {
   readonly provider: AiProviderEntity;
   private readonly providerPluginInstance: AiProviderPlugin;
   private readonly manifest: AiModelManifest;
-  private readonly encryptionService: EncryptionService;
+  private readonly configSchemaService: ConfigSchemaService;
 
   constructor(args: AiModelEntityArgs) {
     this.id = args.manifest.id;
@@ -40,7 +37,7 @@ export class AiModelEntity {
     this.provider = args.providerEntity;
     this.providerPluginInstance = args.providerPluginInstance;
     this.maxFileSize = parseBytes(args.manifest.maxFileSize ?? '0B');
-    this.encryptionService = args.encryptionService;
+    this.configSchemaService = args.configSchemaService;
   }
 
   /**
@@ -77,24 +74,15 @@ export class AiModelEntity {
    * @param input
    * @returns the processed input values
    */
-  processInboundClassifierInput(input: ConfigValues = {}): ConfigValues {
+  async processInboundClassifierInput(
+    input: ConfigValues = {}
+  ): Promise<ConfigValues> {
     if (!this.isClassifier()) {
       throw new ClassifierNotSupported(this.id);
     }
-    const result = validateConfigSchema(
-      this.manifest.classifier?.input ?? {},
-      input
-    );
-    if (!result.valid) {
-      throw new InvalidInput(result.errors);
-    }
-
-    const encryptedModelInput = this.encryptionService.encryptConfigValues(
-      input ?? {},
-      this.classifierInputSchema
-    );
-
-    return encryptedModelInput;
+    return await this.configSchemaService
+      .get(this.classifierInputSchema)
+      .processInboundValues(input);
   }
 
   toDto(): AiModelDto {
@@ -118,14 +106,7 @@ export class AiModelEntity {
     });
   }
 
-  validateClassifierInput(input: ConfigValues = {}): ValidationResult {
-    if (!this.isClassifier()) {
-      return { valid: false, errors: ['Model is not a classifier'] };
-    }
-    return validateConfigSchema(this.manifest.classifier?.input ?? {}, input);
-  }
-
-  get classifierInputSchema(): ConfigSchema {
+  get classifierInputSchema(): ConfigSchemaDefinition {
     return JSON.parse(JSON.stringify(this.manifest.classifier?.input ?? {}));
   }
 

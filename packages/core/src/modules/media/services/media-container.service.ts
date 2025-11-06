@@ -10,7 +10,7 @@ import {
 } from '../../../shared/selectors/media.selectors';
 import { MediaContainerEntity } from '../../common/entities';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
-import { StorageUnitService } from '../../storage-unit/storage-unit.service';
+import { StorageUnitService } from '../../storage-unit/services/storage-unit.service';
 import { CreateMediaContainerDto } from '../dtos';
 import {
   MediaAssetNotFound,

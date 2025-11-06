@@ -30,7 +30,7 @@ export function StorageSettings() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['storage-units'],
-    queryFn: () => client.media.listStorageUnits(),
+    queryFn: () => client.storage.listStorageUnits(),
   });
 
   const handleEdit = (id: string, name: string) => {
@@ -97,7 +97,7 @@ export function StorageSettings() {
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4" />
           Create Storage Unit
         </Button>
       </div>

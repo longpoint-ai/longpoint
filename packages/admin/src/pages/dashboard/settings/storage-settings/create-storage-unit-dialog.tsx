@@ -3,7 +3,6 @@ import {
   getDefaultValueForType,
 } from '@/components/config-schema';
 import { useClient } from '@/hooks/common/use-client';
-import { STORAGE_PROVIDER_CONFIG_SCHEMAS } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,
@@ -29,7 +28,7 @@ import {
   SelectValue,
 } from '@longpoint/ui/components/select';
 import { Switch } from '@longpoint/ui/components/switch';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -37,7 +36,7 @@ import * as z from 'zod';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  provider: z.enum(['local', 's3', 'gcs', 'azure-blob']),
+  provider: z.string().min(1, 'Provider is required'),
   isDefault: z.boolean().optional(),
   config: z.record(z.string(), z.any()).optional(),
 });
@@ -56,32 +55,48 @@ export function CreateStorageUnitDialog({
   const client = useClient();
   const queryClient = useQueryClient();
 
+  const { data: providers, isLoading: isLoadingProviders } = useQuery({
+    queryKey: ['storage-providers'],
+    queryFn: () => client.storage.listStorageProviders(),
+    enabled: open,
+  });
+
   const form = useForm<FormData>({
     defaultValues: {
       name: '',
-      provider: 'local',
+      provider: '',
       isDefault: false,
       config: {},
     },
   });
 
-  const selectedProvider = form.watch('provider');
-  const configSchema = STORAGE_PROVIDER_CONFIG_SCHEMAS[selectedProvider] || {};
+  const selectedProviderId = form.watch('provider');
+  const selectedProvider = providers?.find((p) => p.id === selectedProviderId);
+  const configSchema = selectedProvider?.configSchema || {};
+
+  // Set default provider when providers load
+  React.useEffect(() => {
+    if (providers && providers.length > 0 && !selectedProviderId) {
+      form.setValue('provider', providers[0].id);
+    }
+  }, [providers, selectedProviderId, form]);
 
   // Initialize config defaults when provider changes
   React.useEffect(() => {
-    const defaults: Record<string, any> = {};
-    Object.entries(configSchema).forEach(([key, value]: [string, any]) => {
-      defaults[key] = getDefaultValueForType(value);
-    });
-    form.setValue('config', defaults);
-  }, [selectedProvider, form]);
+    if (configSchema && Object.keys(configSchema).length > 0) {
+      const defaults: Record<string, any> = {};
+      Object.entries(configSchema).forEach(([key, value]: [string, any]) => {
+        defaults[key] = getDefaultValueForType(value);
+      });
+      form.setValue('config', defaults);
+    }
+  }, [selectedProviderId, configSchema, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return client.media.createStorageUnit({
+      return client.storage.createStorageUnit({
         name: data.name,
-        provider: data.provider,
+        provider: data.provider as 'local' | 's3' | 'gcs' | 'azure-blob',
         isDefault: data.isDefault ?? false,
         config: data.config as any,
       });
@@ -143,28 +158,37 @@ export function CreateStorageUnitDialog({
                   <FieldLabel htmlFor="storage-unit-provider">
                     Provider
                   </FieldLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isLoadingProviders}
+                  >
                     <SelectTrigger id="storage-unit-provider">
                       <SelectValue placeholder="Select provider" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="local">Local</SelectItem>
-                      <SelectItem value="s3" disabled>
-                        S3 (Coming Soon)
-                      </SelectItem>
-                      <SelectItem value="gcs" disabled>
-                        GCS (Coming Soon)
-                      </SelectItem>
-                      <SelectItem value="azure-blob" disabled>
-                        Azure Blob (Coming Soon)
-                      </SelectItem>
+                      {isLoadingProviders ? (
+                        <SelectItem value="" disabled>
+                          Loading providers...
+                        </SelectItem>
+                      ) : providers && providers.length > 0 ? (
+                        providers.map((provider) => (
+                          <SelectItem key={provider.id} value={provider.id}>
+                            {provider.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          No providers available
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                   <FieldDescription>
-                    Only Local storage is currently supported.
+                    Select a storage provider for this storage unit.
                   </FieldDescription>
                 </Field>
               )}

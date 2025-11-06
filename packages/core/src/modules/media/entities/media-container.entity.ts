@@ -110,7 +110,8 @@ export class MediaContainerEntity {
         await this.prismaService.mediaContainer.delete({
           where: { id: this.id },
         });
-        await this.storageUnit.provider.deleteDirectory(this.path);
+        const provider = await this.storageUnit.getProvider();
+        await provider.deleteDirectory(this.path);
         return;
       }
 
@@ -181,7 +182,9 @@ export class MediaContainerEntity {
       )}`,
     });
 
-    const { url } = await this.storageUnit.provider.createSignedUrl({
+    const provider = await this.storageUnit.getProvider();
+
+    const { url } = await provider.createSignedUrl({
       path: assetPath,
       action: 'read',
     });

@@ -1,6 +1,6 @@
+import { ConfigValues } from '@longpoint/config-schema';
 import { AiModelManifest, AiPluginManifest } from './ai-manifest.js';
 import { AiModelPlugin } from './ai-model-plugin.js';
-import { ConfigValues } from './config-schema.js';
 
 export interface AiProviderPluginArgs<
   M extends AiPluginManifest = AiPluginManifest

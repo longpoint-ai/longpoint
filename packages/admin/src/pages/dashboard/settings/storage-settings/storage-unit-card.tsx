@@ -13,7 +13,10 @@ interface StorageUnitCardProps {
   storageUnit: {
     id: string;
     name: string;
-    provider: string;
+    provider: {
+      id: string;
+      name: string;
+    };
     isDefault: boolean;
   };
   onEdit: (id: string, name: string) => void;
@@ -37,7 +40,7 @@ export function StorageUnitCard({
               )}
             </CardTitle>
             <CardDescription className="mt-1">
-              {storageUnit.provider}
+              {storageUnit.provider.name}
             </CardDescription>
           </div>
         </div>

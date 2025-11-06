@@ -1,4 +1,4 @@
-import { ConfigValues } from '@longpoint/devkit';
+import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
 import { selectClassifier } from '../../shared/selectors/classifier.selectors';
 import { AiPluginService } from '../ai';
@@ -19,7 +19,9 @@ export class ClassifierService {
   async createClassifier(data: CreateClassifierDto) {
     const modelInput = data.modelInput ?? undefined;
     const model = this.aiPluginService.getModelOrThrow(data.modelId);
-    const processedModelInput = model.processInboundClassifierInput(modelInput);
+    const processedModelInput = await model.processInboundClassifierInput(
+      modelInput
+    );
 
     const classifier = await this.prismaService.classifier.create({
       data: {

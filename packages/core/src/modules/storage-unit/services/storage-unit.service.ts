@@ -1,28 +1,14 @@
-import { ConfigValues } from '@longpoint/devkit';
-import {
-  NativeStorageProvider,
-  STORAGE_PROVIDER_CONFIG_SCHEMAS,
-} from '@longpoint/types';
+import { Prisma } from '@/database';
+import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
-import type { SelectedStorageUnit } from '../../shared/selectors/storage-unit.selectors';
-import { selectStorageUnit } from '../../shared/selectors/storage-unit.selectors';
-import { ConfigService } from '../common/services/config/config.service';
-import { EncryptionService } from '../common/services/encryption/encryption.service';
-import { PrismaService } from '../common/services/prisma/prisma.service';
-import { CreateStorageUnitDto } from './dtos/create-storage-unit.dto';
-import { StorageUnitEntity } from './entities/storage-unit.entity';
-import {
-  isCoreProvider,
-  type CoreStorageProvider,
-} from './providers/constants/storage-provider.constants';
-import { LocalStorageProvider } from './providers/local.storage-provider';
-import { StorageUnitNotFound } from './storage-unit.errors';
-import {
-  isLocalStorageConfig,
-  type BaseStorageProviderConfig,
-  type LocalStorageProviderConfig,
-} from './types/storage-provider-config.types';
-import { StorageProvider } from './types/storage-provider.types';
+import LocalStorageConfig from 'longpoint-storage-local';
+import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
+import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
+import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { CreateStorageUnitDto } from '../dtos/create-storage-unit.dto';
+import { StorageUnitEntity } from '../entities/storage-unit.entity';
+import { StorageUnitNotFound } from '../storage-unit.errors';
+import { StorageProviderService } from './storage-provider.service';
 
 /**
  * StorageUnitService handles instantiation and caching of storage unit entities
@@ -36,8 +22,7 @@ export class StorageUnitService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly encryptionService: EncryptionService,
-    private readonly configService: ConfigService
+    private readonly storageProviderService: StorageProviderService
   ) {}
 
   /**
@@ -129,166 +114,61 @@ export class StorageUnitService {
   }
 
   /**
-   * Get a storage unit entity for a storage unit.
-   * Caches the entity (which includes the provider) for performance.
+   * Get a storage unit entity
+   * @returns The storage unit entity
    */
   private async getEntityByStorageUnit(
     storageUnit: SelectedStorageUnit
   ): Promise<StorageUnitEntity> {
     const cachedEntity = this.entityCache.get(storageUnit.id);
+
     if (cachedEntity) {
       return cachedEntity;
     }
 
-    const provider = await this.instantiateProvider(storageUnit);
     const entity = new StorageUnitEntity({
-      storageUnit,
-      provider,
+      id: storageUnit.id,
+      name: storageUnit.name,
+      isDefault: storageUnit.isDefault,
+      createdAt: storageUnit.createdAt,
+      updatedAt: storageUnit.updatedAt,
+      providerId: storageUnit.provider,
+      configFromDb: storageUnit.config as ConfigValues,
+      storageProviderService: this.storageProviderService,
       prismaService: this.prismaService,
-      encryptionService: this.encryptionService,
       storageUnitService: this,
     });
+
     this.entityCache.set(storageUnit.id, entity);
+
     return entity;
-  }
-
-  /**
-   * Instantiate a storage provider based on the storage unit's provider type.
-   * Supports core providers and is designed to support plugin providers in the future.
-   */
-  private async instantiateProvider(
-    storageUnit: SelectedStorageUnit
-  ): Promise<StorageProvider> {
-    const { provider } = storageUnit;
-
-    if (isCoreProvider(provider)) {
-      return this.instantiateCoreProvider(storageUnit);
-    }
-
-    // Future plugin support:
-    // const pluginProvider = this.pluginRegistry.get(provider);
-    // if (pluginProvider) {
-    //   return pluginProvider.instantiate(storageUnit);
-    // }
-
-    throw new Error(`Unsupported storage provider: ${provider}`);
-  }
-
-  /**
-   * Instantiate a core storage provider.
-   */
-  private async instantiateCoreProvider(
-    storageUnit: SelectedStorageUnit
-  ): Promise<StorageProvider> {
-    switch (storageUnit.provider as CoreStorageProvider) {
-      case 'local':
-        return this.instantiateLocalProvider(storageUnit);
-      case 's3':
-        // TODO: Implement S3StorageProvider
-        throw new Error('S3 storage provider not yet implemented');
-      case 'gcs':
-        // TODO: Implement GcsStorageProvider
-        throw new Error('GCS storage provider not yet implemented');
-      case 'azure-blob':
-        // TODO: Implement AzureBlobStorageProvider
-        throw new Error('Azure Blob storage provider not yet implemented');
-      default:
-        throw new Error(
-          `Unknown core storage provider: ${storageUnit.provider}`
-        );
-    }
-  }
-
-  /**
-   * Instantiate a local storage provider.
-   */
-  private async instantiateLocalProvider(
-    storageUnit: SelectedStorageUnit
-  ): Promise<StorageProvider> {
-    const config = this.getDecryptedConfig<LocalStorageProviderConfig>(
-      storageUnit,
-      'local'
-    );
-
-    if (!isLocalStorageConfig(config)) {
-      throw new Error(
-        `Invalid local storage config for storage unit ${storageUnit.id}`
-      );
-    }
-
-    const basePath = this.configService.get('storage.localBasePath');
-    const baseUrl = this.configService.get('server.origin');
-
-    // Use storage unit's basePath as subdirectory, or use storage unit ID
-    const unitBasePath = config.basePath || storageUnit.id;
-
-    return new LocalStorageProvider({
-      basePath: basePath,
-      baseUrl: baseUrl,
-      storageUnitId: storageUnit.id,
-      unitBasePath: unitBasePath,
-    });
   }
 
   /**
    * Create a default local storage unit if none exists.
    */
   private async createDefaultStorageUnit(): Promise<SelectedStorageUnit> {
-    const config: LocalStorageProviderConfig = {
+    const providerId = LocalStorageConfig.manifest.id;
+    const config: ConfigValues<
+      typeof LocalStorageConfig.manifest.configSchema
+    > = {
       basePath: 'default',
     };
 
-    // Encrypt config (though local has no secrets, keeping consistent pattern)
-    const encryptedConfig = this.encryptionService.encryptConfigValues(
-      config,
-      STORAGE_PROVIDER_CONFIG_SCHEMAS.local
-    );
-
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
-        name: 'Local Default',
-        provider: 'local',
+        name: 'Default',
+        provider: providerId,
         isDefault: true,
-        config: encryptedConfig,
+        config: await this.storageProviderService.processConfigForDb(
+          providerId,
+          config
+        ),
       },
       select: selectStorageUnit(),
     });
 
     return storageUnit;
-  }
-
-  /**
-   * Get and decrypt configuration for a storage unit.
-   */
-  private getDecryptedConfig<T extends BaseStorageProviderConfig>(
-    storageUnit: SelectedStorageUnit,
-    provider: string
-  ): T {
-    if (!storageUnit.config) {
-      throw new Error(`Storage unit ${storageUnit.id} has no configuration`);
-    }
-
-    const schema =
-      STORAGE_PROVIDER_CONFIG_SCHEMAS[provider as NativeStorageProvider];
-    if (!schema) {
-      throw new Error(`Unsupported storage provider: ${provider}`);
-    }
-
-    try {
-      return this.encryptionService.decryptConfigValues(
-        storageUnit.config as ConfigValues,
-        schema
-      ) as T;
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.includes('Failed to decrypt data')
-      ) {
-        // If decryption fails, return config as-is (might be unencrypted or from plugin)
-        return storageUnit.config as T;
-      }
-      throw error;
-    }
   }
 
   /**
@@ -299,24 +179,16 @@ export class StorageUnitService {
   async createStorageUnit(
     data: CreateStorageUnitDto
   ): Promise<StorageUnitEntity> {
-    // If isDefault is being set to true, ensure no other storage unit is default
     if (data.isDefault === true) {
       await this.ensureSingleDefault();
     }
 
-    // Encrypt config if provided
-    let encryptedConfig: any = null;
+    let inboundConfig: ConfigValues | null = null;
     if (data.config !== undefined) {
-      const schema =
-        STORAGE_PROVIDER_CONFIG_SCHEMAS[data.provider as NativeStorageProvider];
-      if (schema) {
-        encryptedConfig = this.encryptionService.encryptConfigValues(
-          data.config,
-          schema
-        );
-      } else {
-        encryptedConfig = data.config;
-      }
+      inboundConfig = await this.storageProviderService.processConfigForDb(
+        data.provider,
+        data.config
+      );
     }
 
     const storageUnit = await this.prismaService.storageUnit.create({
@@ -324,7 +196,7 @@ export class StorageUnitService {
         name: data.name,
         provider: data.provider,
         isDefault: data.isDefault ?? false,
-        config: encryptedConfig,
+        config: inboundConfig ?? Prisma.JsonNull,
       },
       select: selectStorageUnit(),
     });
@@ -391,12 +263,16 @@ export class StorageUnitService {
         whereClause.id = { not: defaultUnit.id };
       }
 
-      await this.prismaService.storageUnit.updateMany({
+      const updated = await this.prismaService.storageUnit.updateManyAndReturn({
         where: whereClause,
         data: {
           isDefault: false,
         },
       });
+
+      for (const unit of updated) {
+        this.evictCache(unit.id);
+      }
     }
   }
 }

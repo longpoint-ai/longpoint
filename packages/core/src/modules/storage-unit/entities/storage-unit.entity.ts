@@ -1,118 +1,60 @@
-import { ConfigValues } from '@longpoint/devkit';
-import {
-  NativeStorageProvider,
-  STORAGE_PROVIDER_CONFIG_SCHEMAS,
-} from '@longpoint/types';
-import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
+import { ConfigValues } from '@longpoint/config-schema';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
-import { EncryptionService } from '../../common/services/encryption/encryption.service';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { StorageUnitSummaryDto } from '../dtos/storage-unit-summary.dto';
 import { StorageUnitDto } from '../dtos/storage-unit.dto';
 import { UpdateStorageUnitDto } from '../dtos/update-storage-unit.dto';
+import { StorageProviderService } from '../services/storage-provider.service';
+import { StorageUnitService } from '../services/storage-unit.service';
 import {
   CannotDeleteDefaultStorageUnit,
   StorageUnitInUse,
   StorageUnitNotFound,
 } from '../storage-unit.errors';
-import { StorageUnitService } from '../storage-unit.service';
-import { StorageProvider } from '../types/storage-provider.types';
+import { StorageProviderEntity } from './storage-provider.entity';
 
 export interface StorageUnitEntityArgs {
-  storageUnit: SelectedStorageUnit;
-  provider: StorageProvider;
+  id: string;
+  name: string | null;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  configFromDb: ConfigValues | null;
+  providerId: string;
   prismaService: PrismaService;
-  encryptionService: EncryptionService;
   storageUnitService: StorageUnitService;
+  storageProviderService: StorageProviderService;
 }
 
 /**
  * Entity representing a storage unit with its instantiated provider.
  * Encapsulates the storage unit data and its provider instance.
- *
- * Note: The config stored in this entity is ENCRYPTED. Use toDto() to get
- * the decrypted version for API responses.
  */
 export class StorageUnitEntity {
   readonly id: string;
-  readonly providerType: string;
-  readonly provider: StorageProvider;
+  readonly createdAt: Date;
   private _name: string;
   private _isDefault: boolean;
-  /**
-   * Encrypted configuration (as stored in database)
-   * Use getDecryptedConfig() or toDto() to access decrypted values
-   */
-  private readonly encryptedConfig: unknown;
+  private _updatedAt: Date;
+  private provider: StorageProviderEntity | null = null;
+  private configFromDb: ConfigValues | null;
+  private readonly providerId: string;
+
   private readonly prismaService: PrismaService;
-  private readonly encryptionService: EncryptionService;
   private readonly storageUnitService: StorageUnitService;
+  private readonly storageProviderService: StorageProviderService;
 
   constructor(args: StorageUnitEntityArgs) {
-    this.id = args.storageUnit.id;
-    this._name = args.storageUnit.name;
-    this.providerType = args.storageUnit.provider;
-    this._isDefault = args.storageUnit.isDefault;
-    this.encryptedConfig = args.storageUnit.config;
-    this.provider = args.provider;
+    this.id = args.id;
+    this._name = args.name ?? args.id;
+    this.createdAt = args.createdAt;
+    this._updatedAt = args.updatedAt;
+    this.configFromDb = args.configFromDb;
+    this.providerId = args.providerId;
+    this._isDefault = args.isDefault;
     this.prismaService = args.prismaService;
-    this.encryptionService = args.encryptionService;
     this.storageUnitService = args.storageUnitService;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  get isDefault(): boolean {
-    return this._isDefault;
-  }
-
-  /**
-   * Gets the encrypted configuration (as stored in database).
-   * For decrypted config, use getDecryptedConfig() or toDto().
-   */
-  get config(): unknown {
-    return this.encryptedConfig;
-  }
-
-  /**
-   * Evicts this entity from the cache.
-   * Called internally after updates/deletes.
-   */
-  private evictFromCache(): void {
-    this.storageUnitService.evictCache(this.id);
-  }
-
-  /**
-   * Test the connection to the storage provider.
-   * This is a placeholder for future implementation - providers may implement testConnection()
-   */
-  async testConnection(): Promise<{
-    canRead: boolean;
-    canWrite: boolean;
-    canDelete: boolean;
-    healthy: boolean;
-  }> {
-    // TODO: Implement testConnection for providers
-    // For now, try to read a test path to verify connection
-    try {
-      const testPath = `/.test-${Date.now()}`;
-      await this.provider.exists(testPath);
-      return {
-        canRead: true,
-        canWrite: true,
-        canDelete: true,
-        healthy: true,
-      };
-    } catch {
-      return {
-        canRead: false,
-        canWrite: false,
-        canDelete: false,
-        healthy: false,
-      };
-    }
+    this.storageProviderService = args.storageProviderService;
   }
 
   /**
@@ -121,32 +63,20 @@ export class StorageUnitEntity {
    */
   async update(data: UpdateStorageUnitDto): Promise<void> {
     try {
-      // If isDefault is being set to true, ensure no other storage unit is default
       if (data.isDefault === true) {
         await this.storageUnitService.ensureSingleDefault(this.id);
       }
 
-      // Encrypt config if provided (data.config is expected to be decrypted)
-      let encryptedConfig: unknown = undefined;
+      let configForDb: ConfigValues | null = null;
       if (data.config !== undefined) {
-        const schema =
-          STORAGE_PROVIDER_CONFIG_SCHEMAS[
-            this.providerType as NativeStorageProvider
-          ];
-        if (schema) {
-          encryptedConfig = this.encryptionService.encryptConfigValues(
-            data.config,
-            schema
-          );
-        } else {
-          encryptedConfig = data.config;
-        }
+        const provider = await this.getProvider();
+        configForDb = await provider.processConfig(data.config);
       }
 
       const updateData: {
         name?: string;
         isDefault?: boolean;
-        config?: any;
+        config?: ConfigValues;
       } = {};
 
       if (data.name !== undefined) {
@@ -155,8 +85,8 @@ export class StorageUnitEntity {
       if (data.isDefault !== undefined) {
         updateData.isDefault = data.isDefault;
       }
-      if (data.config !== undefined) {
-        updateData.config = encryptedConfig as any;
+      if (configForDb) {
+        updateData.config = configForDb;
       }
 
       const updated = await this.prismaService.storageUnit.update({
@@ -167,7 +97,8 @@ export class StorageUnitEntity {
 
       this._name = updated.name;
       this._isDefault = updated.isDefault;
-      // Note: updated.config is encrypted
+      this.configFromDb = updateData.config ?? null;
+      this._updatedAt = updated.updatedAt;
 
       // Evict from cache so the entity is recreated with updated data
       this.evictFromCache();
@@ -222,82 +153,64 @@ export class StorageUnitEntity {
   }
 
   /**
-   * Converts the entity to a DTO.
+   * Get the underlying storage provider for this storage unit.
+   * @returns The storage provider entity.
    */
+  async getProvider(): Promise<StorageProviderEntity> {
+    if (this.provider) {
+      return this.provider;
+    }
+
+    this.provider = await this.storageProviderService.getProviderByIdOrThrow(
+      this.providerId,
+      this.configFromDb ?? {}
+    );
+
+    return this.provider;
+  }
+
   async toDto(): Promise<StorageUnitDto> {
-    const storageUnit = await this.prismaService.storageUnit.findUnique({
-      where: { id: this.id },
-      select: {
-        ...selectStorageUnit(),
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!storageUnit) {
-      throw new StorageUnitNotFound(this.id);
-    }
-
-    // Decrypt config
-    let decryptedConfig: ConfigValues | null = null;
-    if (storageUnit.config) {
-      const schema =
-        STORAGE_PROVIDER_CONFIG_SCHEMAS[
-          this.providerType as NativeStorageProvider
-        ];
-      if (schema) {
-        try {
-          decryptedConfig = this.encryptionService.decryptConfigValues(
-            storageUnit.config as ConfigValues,
-            schema
-          );
-        } catch (error) {
-          // If decryption fails, return config as-is (might be unencrypted or from plugin)
-          decryptedConfig = storageUnit.config as ConfigValues;
-        }
-      } else {
-        decryptedConfig = storageUnit.config as ConfigValues;
-      }
-    }
-
+    const provider = await this.getProvider();
     return new StorageUnitDto({
-      id: storageUnit.id,
-      name: storageUnit.name,
-      provider: storageUnit.provider,
-      isDefault: storageUnit.isDefault,
-      config: decryptedConfig,
-      createdAt: storageUnit.createdAt,
-      updatedAt: storageUnit.updatedAt,
+      id: this.id,
+      name: this._name,
+      provider: provider.toDto(),
+      isDefault: this._isDefault,
+      config: await provider.processConfigFromDb(this.configFromDb ?? {}),
+      createdAt: this.createdAt,
+      updatedAt: this._updatedAt,
+    });
+  }
+
+  async toSummaryDto(): Promise<StorageUnitSummaryDto> {
+    const provider = await this.getProvider();
+    return new StorageUnitSummaryDto({
+      id: this.id,
+      name: this._name,
+      provider: provider.toShortDto(),
+      isDefault: this._isDefault,
+      createdAt: this.createdAt,
+      updatedAt: this._updatedAt,
     });
   }
 
   /**
-   * Converts the entity to a summary DTO.
+   * Evicts this entity from the cache.
+   * Called internally after updates/deletes.
    */
-  async toSummaryDto(): Promise<StorageUnitSummaryDto> {
-    const storageUnit = await this.prismaService.storageUnit.findUnique({
-      where: { id: this.id },
-      select: {
-        id: true,
-        name: true,
-        provider: true,
-        isDefault: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  private evictFromCache(): void {
+    this.storageUnitService.evictCache(this.id);
+  }
 
-    if (!storageUnit) {
-      throw new StorageUnitNotFound(this.id);
-    }
+  get name(): string {
+    return this._name;
+  }
 
-    return new StorageUnitSummaryDto({
-      id: storageUnit.id,
-      name: storageUnit.name,
-      provider: storageUnit.provider,
-      isDefault: storageUnit.isDefault,
-      createdAt: storageUnit.createdAt,
-      updatedAt: storageUnit.updatedAt,
-    });
+  get isDefault(): boolean {
+    return this._isDefault;
+  }
+
+  get updatedAt(): Date {
+    return this._updatedAt;
   }
 }

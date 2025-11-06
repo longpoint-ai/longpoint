@@ -203,6 +203,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/storage-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List installed storage providers */
+        get: operations["listStorageProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/storage-units": {
         parameters: {
             query?: never;
@@ -221,7 +238,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/storage-units/{id}": {
+    "/storage-units/{storageUnitId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -659,7 +676,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-05T16:57:18.528Z
+             * @example 2025-11-06T18:30:33.849Z
              */
             expiresAt: string;
             /**
@@ -835,7 +852,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-05T15:57:18.528Z
+             * @example 2025-11-06T17:30:33.849Z
              */
             createdAt: string;
             /**
@@ -889,7 +906,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-05T15:57:18.528Z
+             * @example 2025-11-06T17:30:33.849Z
              */
             createdAt: string;
             /**
@@ -929,6 +946,47 @@ export interface components {
              */
             isFirstTimeSetup: boolean;
         };
+        StorageProvider: {
+            /**
+             * @description The schema for the storage provider config
+             * @example {
+             *       "folderName": {
+             *         "label": "Folder Name",
+             *         "type": "string",
+             *         "required": true
+             *       }
+             *     }
+             */
+            configSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description The ID of the storage provider
+             * @example local
+             */
+            id: string;
+            /** @description An icon image of the storage provider */
+            image: string | null;
+            /**
+             * @description The display name of the storage provider
+             * @example Local
+             */
+            name: string;
+        };
+        StorageProviderShort: {
+            /**
+             * @description The ID of the storage provider
+             * @example local
+             */
+            id: string;
+            /** @description An icon image of the storage provider */
+            image: string | null;
+            /**
+             * @description The display name of the storage provider
+             * @example Local
+             */
+            name: string;
+        };
         StorageUnit: {
             /**
              * @description Provider-specific configuration (decrypted)
@@ -958,12 +1016,8 @@ export interface components {
              * @example Local Default
              */
             name: string;
-            /**
-             * @description The storage provider type
-             * @example local
-             * @enum {string}
-             */
-            provider: "local" | "s3" | "gcs" | "azure-blob";
+            /** @description The storage provider */
+            provider: components["schemas"]["StorageProvider"];
             /**
              * Format: date-time
              * @description When the storage unit was last updated
@@ -993,12 +1047,8 @@ export interface components {
              * @example Local Default
              */
             name: string;
-            /**
-             * @description The storage provider type
-             * @example local
-             * @enum {string}
-             */
-            provider: "local" | "s3" | "gcs" | "azure-blob";
+            /** @description The storage provider */
+            provider: components["schemas"]["StorageProviderShort"];
             /**
              * Format: date-time
              * @description When the storage unit was last updated
@@ -1602,6 +1652,25 @@ export interface operations {
             };
         };
     };
+    listStorageProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageProvider"][];
+                };
+            };
+        };
+    };
     listStorageUnits: {
         parameters: {
             query?: never;
@@ -1649,7 +1718,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                storageUnitId: string;
             };
             cookie?: never;
         };
@@ -1688,7 +1757,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                storageUnitId: string;
             };
             cookie?: never;
         };
@@ -1744,7 +1813,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                storageUnitId: string;
             };
             cookie?: never;
         };

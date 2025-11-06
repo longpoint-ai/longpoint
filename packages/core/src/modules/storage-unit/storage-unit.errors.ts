@@ -61,3 +61,20 @@ export const ApiCannotDeleteDefaultStorageUnitResponse = () => {
     })
   );
 };
+
+export class StorageProviderNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Storage provider', id, 'id');
+  }
+}
+export const storageProviderNotFoundDoc = apiErrorDoc(
+  new StorageProviderNotFound('mbjq36xe6397dsi6x9nq4ghc')
+);
+export const ApiStorageProviderNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Storage provider not found',
+      ...storageProviderNotFoundDoc,
+    })
+  );
+};

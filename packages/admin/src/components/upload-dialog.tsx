@@ -58,7 +58,7 @@ export function UploadDialog() {
 
   const { data: storageUnits } = useQuery({
     queryKey: ['storage-units'],
-    queryFn: () => client.media.listStorageUnits(),
+    queryFn: () => client.storage.listStorageUnits(),
   });
 
   const defaultStorageUnit = storageUnits?.find((unit) => unit.isDefault);

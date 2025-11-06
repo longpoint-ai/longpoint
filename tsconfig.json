@@ -41,6 +41,12 @@
     },
     {
       "path": "./packages/plugins/ai-anthropic"
+    },
+    {
+      "path": "./packages/plugins/storage-local"
+    },
+    {
+      "path": "./packages/config-schema"
     }
   ]
 }

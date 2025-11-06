@@ -1,4 +1,4 @@
-import { ConfigSchema } from './config-schema.js';
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 
 export interface AiPluginManifest {
   provider: AiProviderManifest;
@@ -8,7 +8,7 @@ export interface AiPluginManifest {
 export interface AiProviderManifest {
   id: string;
   name?: string;
-  config?: ConfigSchema;
+  config?: ConfigSchemaDefinition;
   image?: string;
 }
 
@@ -19,6 +19,6 @@ export interface AiModelManifest {
   supportedMimeTypes?: string[];
   maxFileSize?: string;
   classifier?: {
-    input?: ConfigSchema;
+    input?: ConfigSchemaDefinition;
   };
 }

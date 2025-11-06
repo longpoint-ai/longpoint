@@ -21,16 +21,16 @@ import {
   StorageUnitDto,
   StorageUnitSummaryDto,
   UpdateStorageUnitDto,
-} from './dtos';
+} from '../dtos';
+import { StorageUnitService } from '../services/storage-unit.service';
 import {
   ApiCannotDeleteDefaultStorageUnitResponse,
   ApiStorageUnitInUseResponse,
   ApiStorageUnitNotFoundResponse,
-} from './storage-unit.errors';
-import { StorageUnitService } from './storage-unit.service';
+} from '../storage-unit.errors';
 
 @Controller('storage-units')
-@ApiSdkTag(SdkTag.Media)
+@ApiSdkTag(SdkTag.Storage)
 @ApiBearerAuth()
 export class StorageUnitController {
   constructor(private readonly storageUnitService: StorageUnitService) {}
@@ -67,7 +67,7 @@ export class StorageUnitController {
   })
   @ApiOkResponse({ type: StorageUnitDto })
   @ApiStorageUnitNotFoundResponse()
-  async getStorageUnit(@Param('id') id: string) {
+  async getStorageUnit(@Param('storageUnitId') id: string) {
     const storageUnit = await this.storageUnitService.getStorageUnitByIdOrThrow(
       id
     );
@@ -83,7 +83,7 @@ export class StorageUnitController {
   @ApiOkResponse({ type: StorageUnitDto })
   @ApiStorageUnitNotFoundResponse()
   async updateStorageUnit(
-    @Param('id') id: string,
+    @Param('storageUnitId') id: string,
     @Body() body: UpdateStorageUnitDto
   ) {
     const storageUnit = await this.storageUnitService.getStorageUnitByIdOrThrow(

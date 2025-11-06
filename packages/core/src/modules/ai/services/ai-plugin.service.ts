@@ -1,20 +1,18 @@
+import { ConfigSchemaService } from '@/modules/common/services';
 import { InvalidInput } from '@/shared/errors';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import {
   AiModelManifest,
   AiPluginManifest,
   AiProviderPlugin,
   AiProviderPluginArgs,
-  ConfigSchema,
-  ConfigValues,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
-import { validateConfigSchema } from '@longpoint/validations';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { join } from 'path';
 import { AiModelEntity } from '../../common/entities';
-import { EncryptionService } from '../../common/services/encryption/encryption.service';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { AiProviderNotFound, ModelNotFound } from '../ai.errors';
 import { AiProviderEntity } from '../entities/ai-provider.entity';
@@ -37,7 +35,7 @@ export class AiPluginService implements OnModuleInit {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly encryptionService: EncryptionService
+    private readonly configSchemaService: ConfigSchemaService
   ) {}
 
   async onModuleInit() {
@@ -75,7 +73,10 @@ export class AiPluginService implements OnModuleInit {
    */
   listProviders() {
     return Array.from(this.providerPluginRegistry.values()).map((regEntry) => {
-      return new AiProviderEntity({ pluginInstance: regEntry.instance });
+      return new AiProviderEntity({
+        pluginInstance: regEntry.instance,
+        configSchemaService: this.configSchemaService,
+      });
     });
   }
 
@@ -108,7 +109,7 @@ export class AiPluginService implements OnModuleInit {
       manifest: modelManifest,
       providerPluginInstance,
       providerEntity,
-      encryptionService: this.encryptionService,
+      configSchemaService: this.configSchemaService,
     });
   }
 
@@ -136,7 +137,10 @@ export class AiPluginService implements OnModuleInit {
     if (!pluginInstance) {
       return null;
     }
-    return new AiProviderEntity({ pluginInstance });
+    return new AiProviderEntity({
+      pluginInstance,
+      configSchemaService: this.configSchemaService,
+    });
   }
 
   /**
@@ -165,28 +169,24 @@ export class AiPluginService implements OnModuleInit {
       throw new AiProviderNotFound(providerId);
     }
 
-    const configSchema = pluginInstance.manifest.provider.config;
-    if (!configSchema) {
+    const schemaObj = pluginInstance.manifest.provider.config;
+    if (!schemaObj) {
       throw new InvalidInput('Provider does not support configuration');
     }
 
-    const validationResult = validateConfigSchema(configSchema, configValues);
-    if (!validationResult.valid) {
-      throw new InvalidInput(validationResult.errors);
-    }
+    const inboundConfig = await this.configSchemaService
+      .get(schemaObj)
+      .processInboundValues(configValues);
 
-    const encryptedConfig = this.encryptionService.encryptConfigValues(
-      configValues,
-      configSchema
-    );
     await this.prismaService.aiProviderConfig.upsert({
       where: { providerId },
-      update: { config: encryptedConfig },
-      create: { providerId, config: encryptedConfig },
+      update: { config: inboundConfig },
+      create: { providerId, config: inboundConfig },
     });
 
     return new AiProviderEntity({
       pluginInstance: this.updatePluginInstance(providerId, configValues),
+      configSchemaService: this.configSchemaService,
     });
   }
 
@@ -259,7 +259,7 @@ export class AiPluginService implements OnModuleInit {
 
   private async getProviderConfigFromDb(
     providerId: string,
-    configSchema: ConfigSchema
+    schemaObj: ConfigSchemaDefinition
   ) {
     const aiProviderConfig =
       await this.prismaService.aiProviderConfig.findUnique({
@@ -273,18 +273,20 @@ export class AiPluginService implements OnModuleInit {
     }
 
     try {
-      return this.encryptionService.decryptConfigValues(
-        aiProviderConfig?.config as ConfigValues,
-        configSchema
-      );
-    } catch (e) {
-      if (e instanceof Error && e.message.includes('Failed to decrypt data')) {
+      return await this.configSchemaService
+        .get(schemaObj)
+        .processOutboundValues(aiProviderConfig?.config as ConfigValues);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes('Failed to decrypt data')
+      ) {
         this.logger.warn(
           `Failed to decrypt config for AI provider "${providerId}", returning as is!`
         );
         return aiProviderConfig?.config as ConfigValues;
       }
-      throw e;
+      throw error;
     }
   }
 }

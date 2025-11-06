@@ -1,20 +1,28 @@
-import { ApiSchema, PickType } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema, PickType } from '@nestjs/swagger';
+import { StorageProviderShortDto } from './storage-provider-short.dto';
 import { StorageUnitDto, StorageUnitParams } from './storage-unit.dto';
 
 export type StorageUnitSummaryParams = Pick<
   StorageUnitParams,
-  'id' | 'name' | 'provider' | 'isDefault' | 'createdAt' | 'updatedAt'
->;
+  'id' | 'name' | 'isDefault' | 'createdAt' | 'updatedAt'
+> & {
+  provider: StorageProviderShortDto;
+};
 
 @ApiSchema({ name: 'StorageUnitSummary' })
 export class StorageUnitSummaryDto extends PickType(StorageUnitDto, [
   'id',
   'name',
-  'provider',
   'isDefault',
   'createdAt',
   'updatedAt',
 ] as const) {
+  @ApiProperty({
+    description: 'The storage provider',
+    type: StorageProviderShortDto,
+  })
+  provider: StorageProviderShortDto;
+
   constructor(data: StorageUnitSummaryParams) {
     super();
     this.id = data.id;

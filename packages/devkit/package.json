@@ -12,7 +12,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    }
+    },
+    "./types": "./src/lib/types/index.js",
+    "./storage": "./src/lib/storage/index.js",
+    "./ai": "./src/lib/ai/index.js"
   },
   "files": [
     "dist",

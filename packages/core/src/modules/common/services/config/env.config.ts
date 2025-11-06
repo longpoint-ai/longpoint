@@ -26,7 +26,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().optional(),
 
   // Storage
-  STORAGE_LOCAL_BASE_PATH: z.string().default(path.join('data', 'storage')),
+  LOCAL_STORAGE_ROOT: z.string().default(path.join('data', 'storage')),
 
   // Encryption
   ENCRYPTION_SECRET: z.string(),
@@ -92,7 +92,7 @@ export const createConfig = (env: Env) =>
       port: env.PORT,
     },
     storage: {
-      localBasePath: env.STORAGE_LOCAL_BASE_PATH,
+      localRoot: env.LOCAL_STORAGE_ROOT,
     },
   } as const);
 
