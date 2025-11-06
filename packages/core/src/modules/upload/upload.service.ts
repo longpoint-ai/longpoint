@@ -72,12 +72,9 @@ export class UploadService {
     });
 
     try {
-      await storageUnit.provider.upload(fullPath, req);
-      await this.finalize(
-        fullPath,
-        storageUnit.provider,
-        uploadToken.mediaAsset
-      );
+      const provider = await storageUnit.getProvider();
+      await provider.upload(fullPath, req);
+      await this.finalize(fullPath, provider, uploadToken.mediaAsset);
     } catch (error) {
       await this.updateAsset(uploadToken.mediaAsset.id, {
         status: 'FAILED',

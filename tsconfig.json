@@ -47,6 +47,9 @@
     },
     {
       "path": "./packages/config-schema"
+    },
+    {
+      "path": "./packages/plugins/storage-s3"
     }
   ]
 }
