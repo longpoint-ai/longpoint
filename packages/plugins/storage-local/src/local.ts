@@ -1,48 +1,27 @@
+import {
+  CreateSignedUrlOptions,
+  SignedUrlResponse,
+  StorageProviderPlugin,
+} from '@longpoint/devkit';
 import { addSeconds } from 'date-fns';
 import fs from 'fs';
 import { dirname, join } from 'path';
 import { Readable } from 'stream';
-import {
-  CreateSignedUrlOptions,
-  SignedUrlResponse,
-  StorageProvider,
-} from '../types/storage-provider.types';
+import { LocalStoragePluginManifest } from './manifest.js';
 
-export interface LocalStorageProviderConfig {
-  /**
-   * The base path to the storage directory
-   */
-  basePath: string;
-  /**
-   * The base URL of the server
-   */
-  baseUrl: string;
-  /**
-   * The storage unit ID
-   */
-  storageUnitId: string;
-  /**
-   * The base path for this storage unit (subdirectory within basePath)
-   */
-  unitBasePath: string;
-}
-
-export class LocalStorageProvider implements StorageProvider {
-  constructor(private readonly config: LocalStorageProviderConfig) {}
-
+export class LocalStorageProvider extends StorageProviderPlugin<LocalStoragePluginManifest> {
   /**
    * Construct the full path for a file.
    * The path parameter should be in format: {storageUnitId}/{containerId}/...
    * We prepend the basePath and use unitBasePath as the subdirectory for this storage unit.
    */
   private getFullPath(path: string): string {
-    // Path format from getMediaContainerPath: {storageUnitId}/{containerId}/...
-    // For local storage, we use unitBasePath as the subdirectory instead of storageUnitId
-    // This allows multiple local storage units to have separate directories
+    const localStorageRoot =
+      process.env['LOCAL_STORAGE_ROOT'] ?? 'data/storage';
     const pathWithoutStorageUnitId = path.split('/').slice(1).join('/');
     return join(
-      this.config.basePath,
-      this.config.unitBasePath,
+      localStorageRoot,
+      this.configValues.basePath ?? '',
       pathWithoutStorageUnitId
     );
   }
@@ -82,8 +61,7 @@ export class LocalStorageProvider implements StorageProvider {
     options: CreateSignedUrlOptions
   ): Promise<SignedUrlResponse> {
     const strippedLeadingSlash = options.path.replace(/^\/+/, '');
-    const url = new URL(`/storage/${strippedLeadingSlash}`, this.config.baseUrl)
-      .href;
+    const url = new URL(`/storage/${strippedLeadingSlash}`, this.baseUrl).href;
     return {
       url,
       expiresAt: addSeconds(new Date(), options.expiresInSeconds ?? 3600),

@@ -1,4 +1,5 @@
-import { ConfigValues, JsonObject } from './config-schema.js';
+import { ConfigValues } from '@longpoint/config-schema';
+import { JsonObject } from '@longpoint/types';
 
 export interface ClassifyArgs<T extends ConfigValues = ConfigValues> {
   url: string;

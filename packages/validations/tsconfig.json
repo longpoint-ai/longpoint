@@ -7,9 +7,6 @@
       "path": "../types"
     },
     {
-      "path": "../devkit"
-    },
-    {
       "path": "./tsconfig.lib.json"
     },
     {

@@ -1,10 +1,11 @@
-import { ConfigSchema } from '@longpoint/devkit';
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 import { ConfigSchemaItemsDto } from './config-schema-item.dto';
 import { type ConfigSchemaForDto } from './config-schema.types';
 import { toConfigSchemaForDto } from './config-schema.utils';
 
-type ConfigSchemaValueParams = ConfigSchema[keyof ConfigSchema];
+type ConfigSchemaValueParams =
+  ConfigSchemaDefinition[keyof ConfigSchemaDefinition];
 
 @ApiSchema({ name: 'ConfigSchemaValue' })
 export class ConfigSchemaValueDto {
@@ -52,6 +53,13 @@ export class ConfigSchemaValueDto {
   maxLength: number | null;
 
   @ApiProperty({
+    description: 'Whether the field is immutable',
+    example: true,
+    nullable: true,
+  })
+  immutable: boolean | null;
+
+  @ApiProperty({
     description: 'The item schema, if the field type is an array',
     type: () => ConfigSchemaItemsDto,
     nullable: true,
@@ -78,5 +86,6 @@ export class ConfigSchemaValueDto {
     this.properties = data.properties
       ? toConfigSchemaForDto(data.properties)
       : {};
+    this.immutable = data.immutable ?? null;
   }
 }

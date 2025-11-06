@@ -4,7 +4,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@longpoint/ui/components/tabs';
-import { BotIcon, SettingsIcon } from 'lucide-react';
+import { BotIcon, BoxIcon, SettingsIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { GeneralSettings } from './general-settings';
@@ -57,10 +57,10 @@ export function Settings() {
             <SettingsIcon className="h-4 w-4" />
             General
           </TabsTrigger>
-          {/* <TabsTrigger value="storage">
+          <TabsTrigger value="storage">
             <BoxIcon className="h-4 w-4" />
             Storage
-          </TabsTrigger> */}
+          </TabsTrigger>
           <TabsTrigger value="models">
             <BotIcon className="h-4 w-4" />
             Models

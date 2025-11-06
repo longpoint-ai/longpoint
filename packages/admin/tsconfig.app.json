@@ -45,6 +45,9 @@
       "path": "../devkit/tsconfig.lib.json"
     },
     {
+      "path": "../config-schema/tsconfig.lib.json"
+    },
+    {
       "path": "../utils/tsconfig.lib.json"
     },
     {

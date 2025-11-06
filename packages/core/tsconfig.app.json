@@ -14,7 +14,10 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../devkit/src/lib/storage/storage-provider-plugin.ts"
+  ],
   "exclude": [
     "out-tsc",
     "dist",
@@ -27,13 +30,19 @@
   ],
   "references": [
     {
-      "path": "../devkit/tsconfig.lib.json"
+      "path": "../plugins/storage-local/tsconfig.lib.json"
     },
     {
       "path": "../validations/tsconfig.lib.json"
     },
     {
       "path": "../utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../config-schema/tsconfig.lib.json"
+    },
+    {
+      "path": "../devkit/tsconfig.lib.json"
     },
     {
       "path": "../types/tsconfig.lib.json"

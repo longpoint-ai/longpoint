@@ -7,3 +7,6 @@ alwaysApply: true
 * If the `@longpoint/ui` package does not contain a component you think could be a generic reusable one, check the shadcn component registry. If it exists, you can install it by running `npm run shad [some-component-1] [some-component-2]` from the root project workspace.
 * Use kebab-case for react component file names. E.g. "my-component.tsx"
 * Use the cn utility to join classes together (import { cn } from "@longpoint/ui/utils")
+
+## Fullstack considerations
+* When creating/updating API endpoints, run `npx nx build @longpoint/sdk` to regenerate the typescript client. You may then use the regenerated client when building Admin UI.

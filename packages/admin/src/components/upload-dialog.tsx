@@ -1,4 +1,5 @@
 import { useUploadContext } from '@/contexts/upload-context';
+import { useClient } from '@/hooks/common/use-client';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,
@@ -7,9 +8,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@longpoint/ui/components/dialog';
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from '@longpoint/ui/components/field';
 import { Progress } from '@longpoint/ui/components/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@longpoint/ui/components/select';
 import { cn } from '@longpoint/ui/utils';
 import { formatBytes } from '@longpoint/utils/format';
+import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircleIcon,
   CheckIcon,
@@ -33,9 +48,20 @@ export function UploadDialog() {
     hasFiles,
   } = useUploadContext();
 
+  const client = useClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedClassifiers, setSelectedClassifiers] = useState<string[]>([]);
+  const [selectedStorageUnitId, setSelectedStorageUnitId] = useState<
+    string | undefined
+  >(undefined);
+
+  const { data: storageUnits } = useQuery({
+    queryKey: ['storage-units'],
+    queryFn: () => client.storage.listStorageUnits(),
+  });
+
+  const defaultStorageUnit = storageUnits?.find((unit) => unit.isDefault);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -55,20 +81,20 @@ export function UploadDialog() {
 
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         const newFiles = Array.from(e.dataTransfer.files);
-        addFiles(newFiles);
+        addFiles(newFiles, selectedClassifiers, selectedStorageUnitId);
       }
     },
-    [addFiles, selectedClassifiers]
+    [addFiles, selectedClassifiers, selectedStorageUnitId]
   );
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
         const newFiles = Array.from(e.target.files);
-        addFiles(newFiles, selectedClassifiers);
+        addFiles(newFiles, selectedClassifiers, selectedStorageUnitId);
       }
     },
-    [addFiles, selectedClassifiers]
+    [addFiles, selectedClassifiers, selectedStorageUnitId]
   );
 
   const handleClose = useCallback(() => {
@@ -164,10 +190,39 @@ export function UploadDialog() {
               />
             </div>
           </div>
-          <ClassifierCombobox
-            value={selectedClassifiers}
-            onChange={setSelectedClassifiers}
-          />
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="storage-unit-select">
+                Storage Unit (Optional)
+              </FieldLabel>
+              <Select
+                value={selectedStorageUnitId || defaultStorageUnit?.id || ''}
+                onValueChange={(value) =>
+                  setSelectedStorageUnitId(value || undefined)
+                }
+              >
+                <SelectTrigger id="storage-unit-select">
+                  <SelectValue placeholder="Use default storage unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {storageUnits?.map((unit) => (
+                    <SelectItem key={unit.id} value={unit.id}>
+                      {unit.name}
+                      {unit.isDefault && ' (Default)'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldDescription>
+                Select a storage unit for these uploads. If not specified, the
+                default storage unit will be used.
+              </FieldDescription>
+            </Field>
+            <ClassifierCombobox
+              value={selectedClassifiers}
+              onChange={setSelectedClassifiers}
+            />
+          </FieldGroup>
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">

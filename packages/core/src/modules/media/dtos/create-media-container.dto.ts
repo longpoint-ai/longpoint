@@ -28,6 +28,15 @@ export class CreateMediaContainerDto extends PartialType(
   })
   mimeType!: SupportedMimeType;
 
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description:
+      'The ID of the storage unit to use. If not provided, the default storage unit will be used.',
+    example: 'mbjq36xe6397dsi6x9nq4ghc',
+  })
+  storageUnitId?: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

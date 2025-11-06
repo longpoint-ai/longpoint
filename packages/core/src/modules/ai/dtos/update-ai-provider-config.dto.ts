@@ -1,4 +1,4 @@
-import { type ConfigValues } from '@longpoint/devkit';
+import { type ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsObject } from 'class-validator';
 

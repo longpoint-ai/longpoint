@@ -268,10 +268,14 @@ export type * from './types';
   private generateMethodParams(operation: ParsedOperation): string {
     const params: string[] = [];
 
-    // Path parameters
-    const pathParams = operation.parameters.filter((p) => p.in === 'path');
-    pathParams.forEach((param) => {
-      params.push(`${param.name}: string`);
+    // Extract path parameter names from the path template itself
+    // This ensures we use the correct names even if there's a mismatch
+    // between the path template and operation parameters
+    const pathParamNames = this.extractPathParamNames(operation.path);
+
+    // Use path template names to ensure they match the URL replacement
+    pathParamNames.forEach((paramName) => {
+      params.push(`${paramName}: string`);
     });
 
     // Request body
@@ -294,14 +298,16 @@ export type * from './types';
   }
 
   private generateMethodBody(operation: ParsedOperation): string {
-    const pathParams = operation.parameters.filter((p) => p.in === 'path');
+    // Extract path parameter names from the path template itself
+    const pathParamNames = this.extractPathParamNames(operation.path);
     const queryParams = operation.parameters.filter((p) => p.in === 'query');
 
     let path = operation.path;
-    pathParams.forEach((param) => {
+    // Replace path parameters using the names from the path template
+    pathParamNames.forEach((paramName) => {
       path = path.replace(
-        `{${param.name}}`,
-        `\${encodeURIComponent(String(${param.name}))}`
+        `{${paramName}}`,
+        `\${encodeURIComponent(String(${paramName}))}`
       );
     });
 
@@ -355,5 +361,15 @@ export type * from './types';
 
   private capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  /**
+   * Extract parameter names from a path template
+   * e.g., "storage-units/{storageUnitId}" -> ["storageUnitId"]
+   */
+  private extractPathParamNames(path: string): string[] {
+    const matches = path.match(/\{([^}]+)\}/g);
+    if (!matches) return [];
+    return matches.map((match) => match.slice(1, -1)); // Remove { and }
   }
 }

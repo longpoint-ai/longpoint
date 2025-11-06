@@ -3,7 +3,7 @@ import { AiModelEntity, AiPluginService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { selectClassifier } from '@/shared/selectors/classifier.selectors';
-import { ConfigValues } from '@longpoint/devkit';
+import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
 import { ClassifierNotFound } from '../classifier.errors';
 import {
@@ -134,12 +134,18 @@ export class ClassifierEntity {
 
     if (newModelId && !newModelInput) {
       model = this.aiPluginService.getModelOrThrow(newModelId);
-      modelInputToUpdate = model.processInboundClassifierInput(oldModelInput);
+      modelInputToUpdate = await model.processInboundClassifierInput(
+        oldModelInput
+      );
     } else if (newModelInput && !newModelId) {
-      modelInputToUpdate = model.processInboundClassifierInput(newModelInput);
+      modelInputToUpdate = await model.processInboundClassifierInput(
+        newModelInput
+      );
     } else if (newModelInput && newModelId) {
       model = this.aiPluginService.getModelOrThrow(newModelId);
-      modelInputToUpdate = model.processInboundClassifierInput(newModelInput);
+      modelInputToUpdate = await model.processInboundClassifierInput(
+        newModelInput
+      );
     }
 
     const updatedClassifier = await this.prismaService.classifier.update({

@@ -13,6 +13,9 @@
       "path": "../devkit"
     },
     {
+      "path": "../config-schema"
+    },
+    {
       "path": "../utils"
     },
     {

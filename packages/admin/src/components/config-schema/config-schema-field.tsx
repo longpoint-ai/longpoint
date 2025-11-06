@@ -17,6 +17,8 @@ interface ConfigSchemaFieldProps {
   label: string;
   description?: string | null;
   required: boolean;
+  immutable?: boolean;
+  allowImmutableFields?: boolean;
   control: Control<any>;
   namePrefix: string;
 }
@@ -27,6 +29,8 @@ export function ConfigSchemaField({
   label,
   description,
   required,
+  immutable = false,
+  allowImmutableFields = false,
   control,
   namePrefix,
 }: ConfigSchemaFieldProps) {
@@ -41,6 +45,8 @@ export function ConfigSchemaField({
         label={label}
         description={description}
         required={required}
+        immutable={immutable}
+        allowImmutableFields={allowImmutableFields}
         control={control}
         namePrefix={namePrefix}
       />
@@ -55,6 +61,8 @@ export function ConfigSchemaField({
         label={label}
         description={description}
         required={required}
+        immutable={immutable}
+        allowImmutableFields={allowImmutableFields}
         control={control}
         fieldNamePrefix={namePrefix}
       />
@@ -79,6 +87,7 @@ export function ConfigSchemaField({
                 checked={Boolean(field.value)}
                 onCheckedChange={(v) => field.onChange(Boolean(v))}
                 aria-invalid={fieldState.invalid}
+                disabled={immutable}
               />
             </div>
             {description && (
@@ -112,6 +121,7 @@ export function ConfigSchemaField({
               }}
               aria-invalid={fieldState.invalid}
               placeholder={label}
+              disabled={immutable}
             />
             {description && (
               <FieldDescription>{String(description)}</FieldDescription>
@@ -139,6 +149,7 @@ export function ConfigSchemaField({
               id={fieldId}
               aria-invalid={fieldState.invalid}
               placeholder={label}
+              disabled={immutable}
             />
             {description && (
               <FieldDescription>{String(description)}</FieldDescription>
@@ -166,6 +177,7 @@ export function ConfigSchemaField({
             id={fieldId}
             aria-invalid={fieldState.invalid}
             placeholder={label}
+            disabled={immutable}
           />
           {description && (
             <FieldDescription>{String(description)}</FieldDescription>

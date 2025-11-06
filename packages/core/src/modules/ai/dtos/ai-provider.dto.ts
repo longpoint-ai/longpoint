@@ -2,7 +2,7 @@ import {
   ConfigSchemaForDto,
   toConfigSchemaForDto,
 } from '@/shared/dtos/config-schema';
-import { ConfigSchema, ConfigValues } from '@longpoint/devkit';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 import { AiModelShortDto } from './ai-model-short.dto';
 
@@ -12,7 +12,7 @@ export interface AiProviderParams {
   image: string | null;
   needsConfig?: boolean;
   config?: ConfigValues;
-  configSchema?: ConfigSchema;
+  configSchema?: ConfigSchemaDefinition;
   models: AiModelShortDto[];
 }
 

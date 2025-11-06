@@ -14,6 +14,8 @@ interface ObjectFieldProps {
   label: string;
   description?: string | null;
   required: boolean;
+  immutable?: boolean;
+  allowImmutableFields?: boolean;
   control: Control<any>;
   fieldNamePrefix: string;
 }
@@ -24,6 +26,8 @@ export function ObjectField({
   label,
   description,
   required,
+  immutable = false,
+  allowImmutableFields = false,
   control,
   fieldNamePrefix,
 }: ObjectFieldProps) {
@@ -34,6 +38,11 @@ export function ObjectField({
         <FieldLabel>
           {label}
           {required && <span className="ml-1 text-destructive">*</span>}
+          {immutable && (
+            <span className="ml-1 text-muted-foreground text-xs">
+              (immutable)
+            </span>
+          )}
         </FieldLabel>
         {description && (
           <FieldDescription>{String(description)}</FieldDescription>
@@ -45,6 +54,10 @@ export function ObjectField({
             const propLabel = propSchema?.label ?? propKey;
             const propDesc = (propSchema?.description as any) ?? null;
             const propReq = Boolean(propSchema?.required);
+            // Only disable immutable fields if we're not allowing them (i.e., in edit mode)
+            const propImmutable = allowImmutableFields
+              ? false
+              : Boolean(propSchema?.immutable);
             const fieldName = `${namePrefix}.${propKey}`;
             return (
               <ConfigSchemaField
@@ -54,6 +67,8 @@ export function ObjectField({
                 label={propLabel}
                 description={propDesc}
                 required={propReq}
+                immutable={propImmutable}
+                allowImmutableFields={allowImmutableFields}
                 control={control}
                 namePrefix={fieldNamePrefix}
               />

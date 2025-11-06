@@ -9,6 +9,10 @@ export const Permission = {
   CLASSIFIER_READ: 'classifier:read',
   CLASSIFIER_UPDATE: 'classifier:update',
   CLASSIFIER_DELETE: 'classifier:delete',
+  STORAGE_UNIT_CREATE: 'storage-unit:create',
+  STORAGE_UNIT_READ: 'storage-unit:read',
+  STORAGE_UNIT_UPDATE: 'storage-unit:update',
+  STORAGE_UNIT_DELETE: 'storage-unit:delete',
   SETTINGS_PAGE_READ: 'settings-page:read',
   SUPER: 'super',
 } as const;
