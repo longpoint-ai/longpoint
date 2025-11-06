@@ -3,6 +3,7 @@ export interface ConfigSchemaValue {
   type: string;
   required?: boolean;
   description?: string;
+  immutable?: boolean;
   minLength?: number;
   maxLength?: number;
   items?: {
@@ -10,6 +11,7 @@ export interface ConfigSchemaValue {
     properties?: ConfigSchemaDefinition;
     minLength?: number;
     maxLength?: number;
+    immutable?: boolean;
   };
   properties?: ConfigSchemaDefinition;
 }

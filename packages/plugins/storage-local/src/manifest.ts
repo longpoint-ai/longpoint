@@ -6,7 +6,10 @@ export const manifest = {
   configSchema: {
     basePath: {
       label: 'Base Path',
+      description: 'The relative folder path for this storage unit.',
       type: 'string',
+      immutable: true,
+      required: true,
     },
   },
   image: 'https://via.placeholder.com/150',

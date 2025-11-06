@@ -1105,4 +1105,690 @@ describe('ConfigSchema', () => {
       expect(result.credentials).toEqual([]);
     });
   });
+
+  describe('validateImmutableFields', () => {
+    describe('basic immutable field validation', () => {
+      it('should pass when immutable field values are the same', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+          name: {
+            label: 'Name',
+            type: 'string',
+          },
+        });
+
+        const oldValues = { id: '123', name: 'old' };
+        const newValues = { id: '123', name: 'new' };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should fail when immutable field value is changed', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+          name: {
+            label: 'Name',
+            type: 'string',
+          },
+        });
+
+        const oldValues = { id: '123', name: 'old' };
+        const newValues = { id: '456', name: 'new' };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'id is immutable and cannot be changed'
+        );
+      });
+
+      it('should fail when immutable field is removed', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+          name: {
+            label: 'Name',
+            type: 'string',
+          },
+        });
+
+        const oldValues = { id: '123', name: 'old' };
+        const newValues = { name: 'new' };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'id is immutable and cannot be removed'
+        );
+      });
+
+      it('should allow setting immutable field when old value is undefined', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+        });
+
+        const oldValues = {};
+        const newValues = { id: '123' };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should allow setting immutable field when old value is null', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+        });
+
+        const oldValues = { id: null };
+        const newValues = { id: '123' };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+    });
+
+    describe('nested object immutable field validation', () => {
+      it('should validate immutable fields in nested objects', () => {
+        const schema = new ConfigSchema({
+          user: {
+            label: 'User',
+            type: 'object',
+            properties: {
+              id: {
+                label: 'ID',
+                type: 'string',
+                immutable: true,
+              },
+              name: {
+                label: 'Name',
+                type: 'string',
+              },
+            },
+          },
+        });
+
+        const oldValues = {
+          user: {
+            id: '123',
+            name: 'old',
+          },
+        };
+        const newValues = {
+          user: {
+            id: '456',
+            name: 'new',
+          },
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'user.id is immutable and cannot be changed'
+        );
+      });
+
+      it('should pass when nested immutable fields are unchanged', () => {
+        const schema = new ConfigSchema({
+          user: {
+            label: 'User',
+            type: 'object',
+            properties: {
+              id: {
+                label: 'ID',
+                type: 'string',
+                immutable: true,
+              },
+              name: {
+                label: 'Name',
+                type: 'string',
+              },
+            },
+          },
+        });
+
+        const oldValues = {
+          user: {
+            id: '123',
+            name: 'old',
+          },
+        };
+        const newValues = {
+          user: {
+            id: '123',
+            name: 'new',
+          },
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should validate deeply nested immutable fields', () => {
+        const schema = new ConfigSchema({
+          config: {
+            label: 'Config',
+            type: 'object',
+            properties: {
+              database: {
+                label: 'Database',
+                type: 'object',
+                properties: {
+                  connectionId: {
+                    label: 'Connection ID',
+                    type: 'string',
+                    immutable: true,
+                  },
+                  host: {
+                    label: 'Host',
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        const oldValues = {
+          config: {
+            database: {
+              connectionId: 'conn-123',
+              host: 'localhost',
+            },
+          },
+        };
+        const newValues = {
+          config: {
+            database: {
+              connectionId: 'conn-456',
+              host: 'example.com',
+            },
+          },
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'config.database.connectionId is immutable and cannot be changed'
+        );
+      });
+    });
+
+    describe('array immutable field validation', () => {
+      it('should validate immutable array fields', () => {
+        const schema = new ConfigSchema({
+          tags: {
+            label: 'Tags',
+            type: 'array',
+            immutable: true,
+            items: {
+              type: 'string',
+            },
+          },
+        });
+
+        const oldValues = { tags: ['tag1', 'tag2'] };
+        const newValues = { tags: ['tag1', 'tag3'] };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'tags is immutable and cannot be changed'
+        );
+      });
+
+      it('should pass when immutable array is unchanged', () => {
+        const schema = new ConfigSchema({
+          tags: {
+            label: 'Tags',
+            type: 'array',
+            immutable: true,
+            items: {
+              type: 'string',
+            },
+          },
+        });
+
+        const oldValues = { tags: ['tag1', 'tag2'] };
+        const newValues = { tags: ['tag1', 'tag2'] };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should validate immutable array items', () => {
+        const schema = new ConfigSchema({
+          items: {
+            label: 'Items',
+            type: 'array',
+            items: {
+              type: 'string',
+              immutable: true,
+            },
+          },
+        });
+
+        const oldValues = { items: ['item1', 'item2'] };
+        const newValues = { items: ['item1', 'item3'] };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'items[1] is immutable and cannot be changed'
+        );
+      });
+
+      it('should pass when immutable array items are unchanged', () => {
+        const schema = new ConfigSchema({
+          items: {
+            label: 'Items',
+            type: 'array',
+            items: {
+              type: 'string',
+              immutable: true,
+            },
+          },
+        });
+
+        const oldValues = { items: ['item1', 'item2'] };
+        const newValues = { items: ['item1', 'item2'] };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should validate immutable fields in array of objects', () => {
+        const schema = new ConfigSchema({
+          users: {
+            label: 'Users',
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  label: 'ID',
+                  type: 'string',
+                  immutable: true,
+                },
+                name: {
+                  label: 'Name',
+                  type: 'string',
+                },
+              },
+            },
+          },
+        });
+
+        const oldValues = {
+          users: [
+            { id: '1', name: 'Alice' },
+            { id: '2', name: 'Bob' },
+          ],
+        };
+        const newValues = {
+          users: [
+            { id: '1', name: 'Alice Updated' },
+            { id: '3', name: 'Bob' },
+          ],
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'users[1].id is immutable and cannot be changed'
+        );
+      });
+
+      it('should pass when immutable fields in array of objects are unchanged', () => {
+        const schema = new ConfigSchema({
+          users: {
+            label: 'Users',
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  label: 'ID',
+                  type: 'string',
+                  immutable: true,
+                },
+                name: {
+                  label: 'Name',
+                  type: 'string',
+                },
+              },
+            },
+          },
+        });
+
+        const oldValues = {
+          users: [
+            { id: '1', name: 'Alice' },
+            { id: '2', name: 'Bob' },
+          ],
+        };
+        const newValues = {
+          users: [
+            { id: '1', name: 'Alice Updated' },
+            { id: '2', name: 'Bob Updated' },
+          ],
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+    });
+
+    describe('complex immutable field scenarios', () => {
+      it('should validate multiple immutable fields', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+          createdAt: {
+            label: 'Created At',
+            type: 'string',
+            immutable: true,
+          },
+          name: {
+            label: 'Name',
+            type: 'string',
+          },
+        });
+
+        const oldValues = {
+          id: '123',
+          createdAt: '2024-01-01',
+          name: 'old',
+        };
+        const newValues = {
+          id: '456',
+          createdAt: '2024-01-02',
+          name: 'new',
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'id is immutable and cannot be changed'
+        );
+        expect(result.errors).toContain(
+          'createdAt is immutable and cannot be changed'
+        );
+      });
+
+      it('should handle mixed mutable and immutable fields', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+          name: {
+            label: 'Name',
+            type: 'string',
+          },
+          description: {
+            label: 'Description',
+            type: 'string',
+          },
+        });
+
+        const oldValues = {
+          id: '123',
+          name: 'old',
+          description: 'old desc',
+        };
+        const newValues = {
+          id: '123',
+          name: 'new',
+          description: 'new desc',
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should validate immutable fields with different types', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+          count: {
+            label: 'Count',
+            type: 'number',
+            immutable: true,
+          },
+          enabled: {
+            label: 'Enabled',
+            type: 'boolean',
+            immutable: true,
+          },
+        });
+
+        const oldValues = {
+          id: '123',
+          count: 42,
+          enabled: true,
+        };
+        const newValues = {
+          id: '456',
+          count: 43,
+          enabled: false,
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'id is immutable and cannot be changed'
+        );
+        expect(result.errors).toContain(
+          'count is immutable and cannot be changed'
+        );
+        expect(result.errors).toContain(
+          'enabled is immutable and cannot be changed'
+        );
+      });
+
+      it('should handle empty arrays with immutable items', () => {
+        const schema = new ConfigSchema({
+          items: {
+            label: 'Items',
+            type: 'array',
+            items: {
+              type: 'string',
+              immutable: true,
+            },
+          },
+        });
+
+        const oldValues = { items: [] };
+        const newValues = { items: [] };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should handle arrays with different lengths when items are immutable', () => {
+        const schema = new ConfigSchema({
+          items: {
+            label: 'Items',
+            type: 'array',
+            items: {
+              type: 'string',
+              immutable: true,
+            },
+          },
+        });
+
+        const oldValues = { items: ['item1', 'item2'] };
+        const newValues = { items: ['item1'] };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'items[1] is immutable and cannot be changed'
+        );
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should handle undefined values in oldValues', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+        });
+
+        const oldValues = { id: undefined };
+        const newValues = { id: '123' };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should handle null values correctly', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+        });
+
+        const oldValues = { id: null };
+        const newValues = { id: null };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('should handle missing fields in newValues', () => {
+        const schema = new ConfigSchema({
+          id: {
+            label: 'ID',
+            type: 'string',
+            immutable: true,
+          },
+        });
+
+        const oldValues = { id: '123' };
+        const newValues = {};
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'id is immutable and cannot be removed'
+        );
+      });
+
+      it('should handle complex nested structures with immutable fields', () => {
+        const schema = new ConfigSchema({
+          config: {
+            label: 'Config',
+            type: 'object',
+            properties: {
+              database: {
+                label: 'Database',
+                type: 'object',
+                properties: {
+                  connectionId: {
+                    label: 'Connection ID',
+                    type: 'string',
+                    immutable: true,
+                  },
+                  credentials: {
+                    label: 'Credentials',
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          label: 'ID',
+                          type: 'string',
+                          immutable: true,
+                        },
+                        username: {
+                          label: 'Username',
+                          type: 'string',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        const oldValues = {
+          config: {
+            database: {
+              connectionId: 'conn-123',
+              credentials: [
+                { id: 'cred-1', username: 'user1' },
+                { id: 'cred-2', username: 'user2' },
+              ],
+            },
+          },
+        };
+        const newValues = {
+          config: {
+            database: {
+              connectionId: 'conn-456', // Changed
+              credentials: [
+                { id: 'cred-1', username: 'user1-updated' },
+                { id: 'cred-3', username: 'user2' }, // Changed id
+              ],
+            },
+          },
+        };
+
+        const result = schema.validateImmutableFields(oldValues, newValues);
+        expect(result.valid).toBe(false);
+        expect(result.errors).toContain(
+          'config.database.connectionId is immutable and cannot be changed'
+        );
+        expect(result.errors).toContain(
+          'config.database.credentials[1].id is immutable and cannot be changed'
+        );
+      });
+    });
+  });
 });

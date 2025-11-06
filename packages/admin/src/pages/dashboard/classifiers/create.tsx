@@ -104,7 +104,6 @@ export function CreateClassifier() {
       if (values?.modelInput) {
         payload.modelInput = values.modelInput;
       }
-      console.log('payload', payload);
       const result = await client.ai.createClassifier(payload);
 
       toast.success('Classifier created successfully');
@@ -262,6 +261,7 @@ export function CreateClassifier() {
                       control={form.control}
                       namePrefix="modelInput"
                       setError={form.setError}
+                      allowImmutableFields={true}
                     />
                   )
                 )}

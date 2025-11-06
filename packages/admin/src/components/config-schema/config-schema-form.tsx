@@ -1,4 +1,4 @@
-import { ConfigSchema } from '@longpoint/devkit';
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { FieldGroup } from '@longpoint/ui/components/field';
 import { Control, UseFormSetError } from 'react-hook-form';
 import { ConfigSchemaField } from './config-schema-field';
@@ -11,11 +11,13 @@ type FlexibleConfigSchema = {
     type: string;
     required?: boolean;
     description?: string | null;
+    immutable?: boolean | null;
     minLength?: number | null;
     maxLength?: number | null;
     items?: {
       type: string;
       properties?: FlexibleConfigSchema;
+      immutable?: boolean | null;
       minLength?: number | null;
       maxLength?: number | null;
     } | null;
@@ -24,10 +26,16 @@ type FlexibleConfigSchema = {
 };
 
 export interface ConfigSchemaFormProps {
-  schema: ConfigSchema | FlexibleConfigSchema;
+  schema: ConfigSchemaDefinition | FlexibleConfigSchema;
   control: Control<any>;
   namePrefix?: string;
   setError?: UseFormSetError<any>;
+  /**
+   * If true, allows immutable fields to be set (for create operations).
+   * If false, immutable fields are disabled (for edit operations).
+   * @default false
+   */
+  allowImmutableFields?: boolean;
 }
 
 /**
@@ -35,13 +43,13 @@ export interface ConfigSchemaFormProps {
  * This should be called before form submission
  */
 export function validateConfigSchemaForm(
-  schema: ConfigSchema | FlexibleConfigSchema | undefined,
+  schema: ConfigSchemaDefinition | FlexibleConfigSchema | undefined,
   values: any,
   namePrefix: string,
   setError: UseFormSetError<any>
 ): boolean {
   return validateConfigSchema(
-    schema as ConfigSchema,
+    schema as ConfigSchemaDefinition,
     values,
     namePrefix,
     setError
@@ -53,6 +61,7 @@ export function ConfigSchemaForm({
   control,
   namePrefix = '',
   setError,
+  allowImmutableFields = false,
 }: ConfigSchemaFormProps) {
   return (
     <FieldGroup>
@@ -60,6 +69,10 @@ export function ConfigSchemaForm({
         const label = value?.label ?? key;
         const description = (value?.description as any) ?? null;
         const required = Boolean(value?.required);
+        // Only disable immutable fields if we're not allowing them (i.e., in edit mode)
+        const immutable = allowImmutableFields
+          ? false
+          : Boolean(value?.immutable);
         const fieldName = namePrefix ? `${namePrefix}.${key}` : key;
         const fieldNamePrefix = namePrefix || 'config';
 
@@ -71,6 +84,8 @@ export function ConfigSchemaForm({
             label={label}
             description={description}
             required={required}
+            immutable={immutable}
+            allowImmutableFields={allowImmutableFields}
             control={control}
             namePrefix={fieldNamePrefix}
           />

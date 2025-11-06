@@ -108,6 +108,39 @@ export class ConfigSchema {
     return decryptedValues;
   }
 
+  /**
+   * Validates that immutable fields have not been changed.
+   * @param oldValues - The existing configuration values (should be decrypted).
+   * @param newValues - The new configuration values to validate against.
+   * @returns ValidationResult with valid boolean and detailed error messages.
+   * @example
+   * const configSchema = new ConfigSchema({
+   *   id: {
+   *     type: 'string',
+   *     required: true,
+   *     immutable: true,
+   *   },
+   *   name: {
+   *     type: 'string',
+   *     required: false,
+   *   },
+   * });
+   * const oldValues = { id: '123', name: 'old' };
+   * const newValues = { id: '456', name: 'new' };
+   * const result = configSchema.validateImmutableFields(oldValues, newValues);
+   * // result.valid = false, result.errors = ['id is immutable and cannot be changed']
+   */
+  validateImmutableFields(
+    oldValues: ConfigValues,
+    newValues: ConfigValues
+  ): ValidationResult {
+    return this.validateImmutableFieldsInternal(
+      this.schema,
+      oldValues,
+      newValues
+    );
+  }
+
   private validateInternal(
     schema: ConfigSchemaDefinition,
     values: ConfigValues,
@@ -213,6 +246,175 @@ export class ConfigSchema {
       valid: errors.length === 0,
       errors,
     };
+  }
+
+  /**
+   * Internal method to validate immutable fields recursively
+   */
+  private validateImmutableFieldsInternal(
+    schema: ConfigSchemaDefinition,
+    oldValues: ConfigValues,
+    newValues: ConfigValues,
+    path = ''
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    for (const [fieldName, fieldSchema] of Object.entries(schema)) {
+      const fieldPath = path ? `${path}.${fieldName}` : fieldName;
+      const oldValue = oldValues[fieldName];
+      const newValue = newValues[fieldName];
+
+      // Check if field is immutable
+      if (fieldSchema.immutable) {
+        // If old value exists, it cannot be changed or removed
+        if (oldValue !== undefined && oldValue !== null) {
+          if (newValue === undefined || newValue === null) {
+            errors.push(`${fieldPath} is immutable and cannot be removed`);
+          } else if (!this.valuesEqual(oldValue, newValue)) {
+            errors.push(`${fieldPath} is immutable and cannot be changed`);
+          }
+        }
+      }
+
+      // Validate nested objects
+      if (
+        fieldSchema.type === 'object' &&
+        fieldSchema.properties &&
+        typeof oldValue === 'object' &&
+        oldValue !== null &&
+        !Array.isArray(oldValue) &&
+        typeof newValue === 'object' &&
+        newValue !== null &&
+        !Array.isArray(newValue)
+      ) {
+        const nestedResult = this.validateImmutableFieldsInternal(
+          fieldSchema.properties,
+          oldValue as ConfigValues,
+          newValue as ConfigValues,
+          fieldPath
+        );
+        errors.push(...nestedResult.errors);
+      }
+
+      // Validate array items
+      if (
+        fieldSchema.type === 'array' &&
+        fieldSchema.items &&
+        Array.isArray(oldValue) &&
+        Array.isArray(newValue)
+      ) {
+        // Check if the array itself is immutable
+        if (fieldSchema.immutable) {
+          if (!this.valuesEqual(oldValue, newValue)) {
+            errors.push(`${fieldPath} is immutable and cannot be changed`);
+          }
+        }
+
+        // Check if array items are immutable
+        if (fieldSchema.items.immutable) {
+          const maxLength = Math.max(oldValue.length, newValue.length);
+          for (let i = 0; i < maxLength; i++) {
+            const itemPath = `${fieldPath}[${i}]`;
+            const oldItem = oldValue[i];
+            const newItem = newValue[i];
+
+            if (oldItem !== undefined && oldItem !== null) {
+              if (!this.valuesEqual(oldItem, newItem)) {
+                errors.push(`${itemPath} is immutable and cannot be changed`);
+              }
+            }
+          }
+        }
+
+        // Validate nested objects in array items
+        if (
+          fieldSchema.items.type === 'object' &&
+          fieldSchema.items.properties
+        ) {
+          const maxLength = Math.max(oldValue.length, newValue.length);
+          for (let i = 0; i < maxLength; i++) {
+            const itemPath = `${fieldPath}[${i}]`;
+            const oldItem = oldValue[i];
+            const newItem = newValue[i];
+
+            if (
+              typeof oldItem === 'object' &&
+              oldItem !== null &&
+              !Array.isArray(oldItem) &&
+              typeof newItem === 'object' &&
+              newItem !== null &&
+              !Array.isArray(newItem)
+            ) {
+              const itemResult = this.validateImmutableFieldsInternal(
+                fieldSchema.items.properties,
+                oldItem as ConfigValues,
+                newItem as ConfigValues,
+                itemPath
+              );
+              errors.push(...itemResult.errors);
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Deep equality check for values
+   */
+  private valuesEqual(oldValue: unknown, newValue: unknown): boolean {
+    // Handle null/undefined
+    if (oldValue === newValue) {
+      return true;
+    }
+
+    if (oldValue === null || oldValue === undefined) {
+      return newValue === null || newValue === undefined;
+    }
+
+    if (newValue === null || newValue === undefined) {
+      return false;
+    }
+
+    // Handle arrays
+    if (Array.isArray(oldValue) && Array.isArray(newValue)) {
+      if (oldValue.length !== newValue.length) {
+        return false;
+      }
+      return oldValue.every((item, index) =>
+        this.valuesEqual(item, newValue[index])
+      );
+    }
+
+    // Handle objects
+    if (
+      typeof oldValue === 'object' &&
+      typeof newValue === 'object' &&
+      !Array.isArray(oldValue) &&
+      !Array.isArray(newValue)
+    ) {
+      const oldKeys = Object.keys(oldValue);
+      const newKeys = Object.keys(newValue);
+
+      if (oldKeys.length !== newKeys.length) {
+        return false;
+      }
+
+      return oldKeys.every((key) =>
+        this.valuesEqual(
+          (oldValue as Record<string, unknown>)[key],
+          (newValue as Record<string, unknown>)[key]
+        )
+      );
+    }
+
+    // Primitive comparison
+    return oldValue === newValue;
   }
 
   /**

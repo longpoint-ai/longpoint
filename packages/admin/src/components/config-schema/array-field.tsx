@@ -18,6 +18,8 @@ interface ArrayFieldProps {
   label: string;
   description?: string | null;
   required: boolean;
+  immutable?: boolean;
+  allowImmutableFields?: boolean;
   control: Control<any>;
   namePrefix: string;
 }
@@ -28,6 +30,8 @@ export function ArrayField({
   label,
   description,
   required,
+  immutable = false,
+  allowImmutableFields = false,
   control,
   namePrefix,
 }: ArrayFieldProps) {
@@ -40,6 +44,10 @@ export function ArrayField({
 
   const itemSchema = schemaValue?.items || {};
   const itemType = itemSchema?.type;
+  // Only disable immutable items if we're not allowing them (i.e., in edit mode)
+  const itemImmutable = allowImmutableFields
+    ? false
+    : Boolean(itemSchema?.immutable);
 
   return (
     <Field>
@@ -47,12 +55,18 @@ export function ArrayField({
         <FieldLabel>
           {label}
           {required && <span className="ml-1 text-destructive">*</span>}
+          {immutable && (
+            <span className="ml-1 text-muted-foreground text-xs">
+              (immutable)
+            </span>
+          )}
         </FieldLabel>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => append(getDefaultValueForType(itemSchema))}
+          disabled={immutable}
         >
           <Plus className="h-4 w-4 mr-1" /> Add
         </Button>
@@ -90,6 +104,7 @@ export function ArrayField({
                     size="icon"
                     aria-label="Remove item"
                     onClick={() => remove(index)}
+                    disabled={immutable}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -100,6 +115,10 @@ export function ArrayField({
                     const propDesc = (propSchema?.description as any) ?? null;
                     const propRequired = Boolean(propSchema?.required);
                     const fieldName = `${baseName}.${propKey}`;
+                    // Only disable immutable fields if we're not allowing them (i.e., in edit mode)
+                    const propImmutable = allowImmutableFields
+                      ? false
+                      : Boolean(propSchema?.immutable);
                     return (
                       <ConfigSchemaField
                         key={propKey}
@@ -108,6 +127,8 @@ export function ArrayField({
                         label={propLabel}
                         description={propDesc}
                         required={propRequired}
+                        immutable={propImmutable}
+                        allowImmutableFields={allowImmutableFields}
                         control={control}
                         namePrefix={namePrefix}
                       />
@@ -137,6 +158,7 @@ export function ArrayField({
                             checked={Boolean(field.value)}
                             onCheckedChange={(v) => field.onChange(Boolean(v))}
                             aria-invalid={fieldState.invalid}
+                            disabled={itemImmutable}
                           />
                         </div>
                       ) : itemType === 'number' ? (
@@ -154,6 +176,7 @@ export function ArrayField({
                             }}
                             aria-invalid={fieldState.invalid}
                             placeholder={label}
+                            disabled={itemImmutable}
                           />
                         </>
                       ) : (
@@ -166,6 +189,7 @@ export function ArrayField({
                             id={fieldId}
                             aria-invalid={fieldState.invalid}
                             placeholder={label}
+                            disabled={itemImmutable}
                           />
                         </>
                       )}
@@ -182,6 +206,7 @@ export function ArrayField({
                 size="icon"
                 aria-label="Remove item"
                 onClick={() => remove(index)}
+                disabled={immutable}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

@@ -200,6 +200,7 @@ export function CreateStorageUnitDialog({
                 control={form.control}
                 namePrefix="config"
                 setError={form.setError}
+                allowImmutableFields={true}
               />
             )}
 
