@@ -30,23 +30,40 @@ export class FileDeliveryService {
     const requestPath = req.path.replace(/^\/storage\/?/, '');
     const pathPrefix = this.configService.get('storage.pathPrefix');
 
-    const pathParts = requestPath.split('/');
-    // Path format: {prefix}/{storageUnitId}/{containerId}/{filename}
-    if (pathParts.length < 4 || pathParts[0] !== pathPrefix) {
+    const pathParts = requestPath.split('/').filter(Boolean);
+
+    // Path format: /storage/{mediaContainerId}/{filename}
+    if (pathParts.length !== 2) {
       throw new InvalidFilePath(requestPath);
     }
 
-    const storageUnitId = pathParts[1];
-    const containerId = pathParts[2];
-    const filename = pathParts.slice(3).join('/');
+    const containerId = pathParts[0];
+    const filename = pathParts[1];
+
+    const container = await this.prismaService.mediaContainer.findUnique({
+      where: {
+        id: containerId,
+      },
+      select: {
+        storageUnitId: true,
+      },
+    });
+
+    if (!container) {
+      throw new MediaContainerNotFound(containerId);
+    }
 
     const storageUnit = await this.storageUnitService.getStorageUnitById(
-      storageUnitId
+      container.storageUnitId
     );
 
     const provider = await storageUnit.getProvider();
 
-    const originalPath = requestPath;
+    const originalPath = getMediaContainerPath(containerId, {
+      storageUnitId: container.storageUnitId,
+      prefix: pathPrefix,
+      suffix: filename,
+    });
 
     const hasTransformParams = query.w !== undefined || query.h !== undefined;
 
@@ -70,21 +87,6 @@ export class FileDeliveryService {
         h: query.h,
       });
       const outputExt = 'webp';
-
-      // Get storage unit ID from container
-      // Note: Using findUnique with raw query since Prisma types need regeneration
-      const container = await this.prismaService.mediaContainer.findUnique({
-        where: {
-          id: containerId,
-        },
-        select: {
-          storageUnitId: true,
-        },
-      });
-
-      if (!container) {
-        throw new MediaContainerNotFound(containerId);
-      }
 
       const cachePath = await this.getCachePath(
         containerId,
