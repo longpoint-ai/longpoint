@@ -11,6 +11,7 @@ import {
 import { MediaContainerEntity } from '../../common/entities';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { StorageUnitService } from '../../storage-unit/services/storage-unit.service';
+import { UrlSigningService } from '../../storage/services/url-signing.service';
 import { CreateMediaContainerDto } from '../dtos';
 import {
   MediaAssetNotFound,
@@ -41,7 +42,8 @@ export class MediaContainerService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly urlSigningService: UrlSigningService
   ) {}
 
   /**
@@ -104,6 +106,8 @@ export class MediaContainerService {
         ...container,
         storageUnit,
         prismaService: this.prismaService,
+        pathPrefix: this.configService.get('storage.pathPrefix'),
+        urlSigningService: this.urlSigningService,
       }),
     };
   }
@@ -135,6 +139,8 @@ export class MediaContainerService {
         id
       ),
       prismaService: this.prismaService,
+      pathPrefix: this.configService.get('storage.pathPrefix'),
+      urlSigningService: this.urlSigningService,
     });
   }
 
@@ -191,6 +197,8 @@ export class MediaContainerService {
         container.id
       ),
       prismaService: this.prismaService,
+      pathPrefix: this.configService.get('storage.pathPrefix'),
+      urlSigningService: this.urlSigningService,
     });
   }
 
@@ -250,6 +258,8 @@ export class MediaContainerService {
                 container.id
               ),
             prismaService: this.prismaService,
+            pathPrefix: this.configService.get('storage.pathPrefix'),
+            urlSigningService: this.urlSigningService,
           })
       )
     );

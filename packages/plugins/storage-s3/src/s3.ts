@@ -6,14 +6,10 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
-  CreateSignedUrlOptions,
-  SignedUrlResponse,
   StorageProviderPlugin,
   StorageProviderPluginArgs,
 } from '@longpoint/devkit';
-import { addSeconds } from 'date-fns';
 import { Readable } from 'stream';
 import { S3StoragePluginManifest } from './manifest.js';
 
@@ -37,7 +33,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     path: string,
     body: Readable | Buffer | string
   ): Promise<boolean> {
-    const key = this.getS3Key(path);
+    const key = this.normalizeS3Key(path);
     const bodyData = await this.bodyToUint8Array(body);
 
     await this.s3Client.send(
@@ -51,8 +47,8 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     return true;
   }
 
-  async getFileContents(path: string): Promise<Buffer> {
-    const key = this.getS3Key(path);
+  async getFileStream(path: string): Promise<Readable> {
+    const key = this.normalizeS3Key(path);
 
     const response = await this.s3Client.send(
       new GetObjectCommand({
@@ -65,25 +61,11 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
       throw new Error(`Object not found: ${key}`);
     }
 
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of response.Body as Readable) {
-      chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
-    }
-
-    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-
-    for (const chunk of chunks) {
-      result.set(chunk, offset);
-      offset += chunk.length;
-    }
-
-    return Buffer.from(result);
+    return response.Body as Readable;
   }
 
   async exists(path: string): Promise<boolean> {
-    const key = this.getS3Key(path);
+    const key = this.normalizeS3Key(path);
 
     try {
       await this.s3Client.send(
@@ -105,7 +87,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
   }
 
   async deleteDirectory(path: string): Promise<void> {
-    const prefix = this.getS3Key(path);
+    const prefix = this.normalizeS3Key(path);
 
     // If prefix is empty, we can't safely delete (would delete everything)
     // This shouldn't happen in normal operation, but handle it gracefully
@@ -159,54 +141,14 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     }
   }
 
-  async createSignedUrl(
-    options: CreateSignedUrlOptions
-  ): Promise<SignedUrlResponse> {
-    const key = this.getS3Key(options.path);
-    const expiresInSeconds = options.expiresInSeconds ?? 3600;
-
-    let command;
-    if (options.action === 'write') {
-      command = new PutObjectCommand({
-        Bucket: this.configValues.bucket,
-        Key: key,
-      });
-    } else {
-      // Default to 'read'
-      command = new GetObjectCommand({
-        Bucket: this.configValues.bucket,
-        Key: key,
-      });
-    }
-
-    const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: expiresInSeconds,
-    });
-
-    return {
-      url,
-      expiresAt: addSeconds(new Date(), expiresInSeconds),
-    };
-  }
-
   /**
-   * Convert a path to an S3 object key.
-   * The path parameter should be in format: {storageUnitId}/{containerId}/...
-   * We remove the storageUnitId prefix to get the actual object key.
-   * Handles edge cases like '/' which becomes empty string.
+   * Normalize a path to an S3 object key.
+   * The path parameter should be in format: {prefix}/{storageUnitId}/{containerId}/...
+   * We normalize leading slashes and use the full path as the S3 key.
    */
-  private getS3Key(path: string): string {
-    const normalizedPath = path.replace(/^\/+/, '');
-    if (!normalizedPath) {
-      return '';
-    }
-
-    const parts = normalizedPath.split('/');
-    if (parts.length > 1) {
-      return parts.slice(1).join('/');
-    }
-
-    return normalizedPath;
+  private normalizeS3Key(path: string): string {
+    // Remove leading slashes for S3 key format
+    return path.replace(/^\/+/, '');
   }
 
   /**

@@ -151,9 +151,7 @@ export class StorageUnitService {
     const providerId = LocalStorageConfig.manifest.id;
     const config: ConfigValues<
       typeof LocalStorageConfig.manifest.configSchema
-    > = {
-      basePath: 'default',
-    };
+    > = {};
 
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
@@ -186,7 +184,7 @@ export class StorageUnitService {
     let inboundConfig: ConfigValues | null = null;
     if (data.config !== undefined) {
       inboundConfig = await this.storageProviderService.processConfigForDb(
-        data.provider,
+        data.providerId,
         data.config
       );
     }
@@ -194,7 +192,7 @@ export class StorageUnitService {
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
         name: data.name,
-        provider: data.provider,
+        provider: data.providerId,
         isDefault: data.isDefault ?? false,
         config: inboundConfig ?? Prisma.JsonNull,
       },

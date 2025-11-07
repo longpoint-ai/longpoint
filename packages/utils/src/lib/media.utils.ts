@@ -22,11 +22,12 @@ export interface GetMediaContainerPathOptions {
    */
   storageUnitId: string;
   /**
-   * The prefix to add to the path
+   * The prefix to add to the path (e.g., "units")
+   * @default "units"
    * @example
    * ```
-   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', prefix: 'public' });
-   * // returns 'public/unit-abc/123'
+   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', prefix: 'units' });
+   * // returns 'units/unit-abc/123'
    * ```
    */
   prefix?: string;
@@ -34,8 +35,8 @@ export interface GetMediaContainerPathOptions {
    * The suffix to add to the path
    * @example
    * ```
-   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', suffix: 'original.mp4' });
-   * // returns 'unit-abc/123/original.mp4'
+   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', suffix: 'primary.jpg' });
+   * // returns 'units/unit-abc/123/primary.jpg'
    * ```
    */
   suffix?: string;
@@ -45,13 +46,13 @@ export interface GetMediaContainerPathOptions {
  * Gets the storage path for a media container
  * @param containerId The id of the media container
  * @param options The options for the path, including storageUnitId
- * @returns
+ * @returns The path in format: {prefix}/{storageUnitId}/{containerId}/{suffix}
  */
 export function getMediaContainerPath(
   containerId: string,
   options: GetMediaContainerPathOptions
 ) {
-  const { storageUnitId, prefix = '', suffix = '' } = options;
+  const { storageUnitId, prefix = 'units', suffix = '' } = options;
   return join(prefix, storageUnitId, containerId, suffix);
 }
 

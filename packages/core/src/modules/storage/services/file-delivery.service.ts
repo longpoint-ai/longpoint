@@ -1,6 +1,7 @@
-import { PrismaService } from '@/modules/common/services';
+import { ConfigService, PrismaService } from '@/modules/common/services';
 import { MediaContainerNotFound } from '@/modules/media';
-import { StorageProvider, StorageUnitService } from '@/modules/storage-unit';
+import { StorageUnitService } from '@/modules/storage-unit';
+import type { StorageProvider } from '@longpoint/devkit';
 import {
   getContentType,
   getMediaContainerPath,
@@ -15,44 +16,75 @@ import type {
 } from '../dtos/transform-params.dto';
 import { FileNotFound, InvalidFilePath } from '../storage.errors';
 import { ImageTransformService } from './image-transform.service';
+import { UrlSigningService } from './url-signing.service';
 
 @Injectable()
 export class FileDeliveryService {
   constructor(
     private readonly storageUnitService: StorageUnitService,
     private readonly imageTransformService: ImageTransformService,
-    private readonly prismaService: PrismaService
+    private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService,
+    private readonly urlSigningService: UrlSigningService
   ) {}
 
   async serveFile(req: Request, res: Response, query: TransformParamsDto) {
     const requestPath = req.path.replace(/^\/storage\/?/, '');
+    const pathPrefix = this.configService.get('storage.pathPrefix');
 
-    const pathParts = requestPath.split('/');
-    // Path format: {storageUnitId}/{containerId}/{filename}
-    if (pathParts.length < 3) {
+    const pathParts = requestPath.split('/').filter(Boolean);
+
+    // Path format: /storage/{mediaContainerId}/{filename}
+    if (pathParts.length !== 2) {
       throw new InvalidFilePath(requestPath);
     }
 
-    const storageUnitId = pathParts[0];
-    const containerId = pathParts[1];
-    const filename = pathParts.slice(2).join('/');
+    const containerId = pathParts[0];
+    const filename = pathParts[1];
+
+    const pathForSignature = `${containerId}/${filename}`;
+    this.urlSigningService.verifySignature(pathForSignature, {
+      sig: query.sig,
+      expires: query.expires,
+      w: query.w,
+      h: query.h,
+    });
+
+    const container = await this.prismaService.mediaContainer.findUnique({
+      where: {
+        id: containerId,
+      },
+      select: {
+        storageUnitId: true,
+      },
+    });
+
+    if (!container) {
+      throw new MediaContainerNotFound(containerId);
+    }
 
     const storageUnit = await this.storageUnitService.getStorageUnitById(
-      storageUnitId
+      container.storageUnitId
     );
 
-    const originalPath = requestPath;
+    const provider = await storageUnit.getProvider();
+
+    const originalPath = getMediaContainerPath(containerId, {
+      storageUnitId: container.storageUnitId,
+      prefix: pathPrefix,
+      suffix: filename,
+    });
 
     const hasTransformParams = query.w !== undefined || query.h !== undefined;
 
     if (!hasTransformParams) {
       try {
-        const buffer = await storageUnit.provider.getFileContents(originalPath);
+        const stream = await provider.getFileStream(originalPath);
 
         const contentType = getContentType(filename);
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.send(buffer);
+        stream.pipe(res);
         return;
       } catch (error) {
         throw new FileNotFound(originalPath);
@@ -66,21 +98,6 @@ export class FileDeliveryService {
       });
       const outputExt = 'webp';
 
-      // Get storage unit ID from container
-      // Note: Using findUnique with raw query since Prisma types need regeneration
-      const container = await this.prismaService.mediaContainer.findUnique({
-        where: {
-          id: containerId,
-        },
-        select: {
-          storageUnitId: true,
-        },
-      });
-
-      if (!container) {
-        throw new MediaContainerNotFound(containerId);
-      }
-
       const cachePath = await this.getCachePath(
         containerId,
         container.storageUnitId,
@@ -88,25 +105,17 @@ export class FileDeliveryService {
         outputExt
       );
 
-      const cacheExists = await this.checkCacheExists(
-        storageUnit.provider,
-        cachePath
-      );
+      const cacheExists = await this.checkCacheExists(provider, cachePath);
 
       if (cacheExists) {
-        const cachedBuffer = await this.readCache(
-          storageUnit.provider,
-          cachePath
-        );
+        const cachedStream = await provider.getFileStream(cachePath);
         res.setHeader('Content-Type', getMimeType(outputExt));
         res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.send(cachedBuffer);
+        cachedStream.pipe(res);
         return;
       }
 
-      const originalBuffer = await storageUnit.provider.getFileContents(
-        originalPath
-      );
+      const originalBuffer = await provider.getFileContents(originalPath);
       const transformResult = await this.imageTransformService.transform(
         originalBuffer,
         {
@@ -115,11 +124,7 @@ export class FileDeliveryService {
         }
       );
 
-      await this.writeCache(
-        storageUnit.provider,
-        cachePath,
-        transformResult.buffer
-      );
+      await this.writeCache(provider, cachePath, transformResult.buffer);
 
       res.setHeader('Content-Type', transformResult.mimeType);
       res.setHeader('Cache-Control', 'public, max-age=31536000');
@@ -130,11 +135,11 @@ export class FileDeliveryService {
       }
       // If transformation fails, try to serve original
       try {
-        const buffer = await storageUnit.provider.getFileContents(originalPath);
+        const stream = await provider.getFileStream(originalPath);
         const contentType = getContentType(filename);
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.send(buffer);
+        stream.pipe(res);
       } catch {
         throw new FileNotFound(originalPath);
       }
@@ -173,16 +178,13 @@ export class FileDeliveryService {
   ) {
     return getMediaContainerPath(containerId, {
       storageUnitId,
+      prefix: this.configService.get('storage.pathPrefix'),
       suffix: `.cache/${recipeHash}.${ext}`,
     });
   }
 
   private checkCacheExists(provider: StorageProvider, cachePath: string) {
     return provider.exists(cachePath);
-  }
-
-  private readCache(provider: StorageProvider, cachePath: string) {
-    return provider.getFileContents(cachePath);
   }
 
   private writeCache(
