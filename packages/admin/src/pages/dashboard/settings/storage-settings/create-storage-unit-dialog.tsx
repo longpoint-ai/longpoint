@@ -64,7 +64,7 @@ export function CreateStorageUnitDialog({
   const form = useForm<FormData>({
     defaultValues: {
       name: '',
-      provider: '',
+      provider: undefined as any,
       isDefault: false,
       config: {},
     },
@@ -80,6 +80,18 @@ export function CreateStorageUnitDialog({
       form.setValue('provider', providers[0].id);
     }
   }, [providers, selectedProviderId, form]);
+
+  // Reset form when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      form.reset({
+        name: '',
+        provider: undefined as any,
+        isDefault: false,
+        config: {},
+      });
+    }
+  }, [open, form]);
 
   // Initialize config defaults when provider changes
   React.useEffect(() => {
@@ -159,7 +171,7 @@ export function CreateStorageUnitDialog({
                     Provider
                   </FieldLabel>
                   <Select
-                    value={field.value}
+                    value={field.value || undefined}
                     onValueChange={field.onChange}
                     disabled={isLoadingProviders}
                   >
@@ -168,9 +180,9 @@ export function CreateStorageUnitDialog({
                     </SelectTrigger>
                     <SelectContent>
                       {isLoadingProviders ? (
-                        <SelectItem value="" disabled>
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
                           Loading providers...
-                        </SelectItem>
+                        </div>
                       ) : providers && providers.length > 0 ? (
                         providers.map((provider) => (
                           <SelectItem key={provider.id} value={provider.id}>
@@ -178,9 +190,9 @@ export function CreateStorageUnitDialog({
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="" disabled>
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
                           No providers available
-                        </SelectItem>
+                        </div>
                       )}
                     </SelectContent>
                   </Select>

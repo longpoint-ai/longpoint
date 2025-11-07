@@ -21,14 +21,14 @@ export const manifest = {
     accessKeyId: {
       label: 'Access Key ID',
       description: 'AWS access key ID for authentication.',
-      type: 'string',
+      type: 'secret',
       immutable: false,
       required: true,
     },
     secretAccessKey: {
       label: 'Secret Access Key',
       description: 'AWS secret access key for authentication.',
-      type: 'string',
+      type: 'secret',
       immutable: false,
       required: true,
     },
