@@ -584,6 +584,11 @@ export interface components {
              * @example The name of the user
              */
             description: Record<string, never> | null;
+            /**
+             * @description Whether the field is immutable
+             * @example true
+             */
+            immutable: Record<string, never> | null;
             /** @description The item schema, if the field type is an array */
             items: components["schemas"]["ConfigSchemaItems"] | null;
             /**
@@ -676,7 +681,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-06T18:30:33.849Z
+             * @example 2025-11-07T23:10:20.911Z
              */
             expiresAt: string;
             /**
@@ -709,9 +714,7 @@ export interface components {
         CreateStorageUnit: {
             /**
              * @description Provider-specific configuration
-             * @example {
-             *       "basePath": "default"
-             *     }
+             * @example {}
              */
             config?: Record<string, never>;
             /**
@@ -726,11 +729,10 @@ export interface components {
              */
             name: string;
             /**
-             * @description The storage provider type
+             * @description The storage provider ID
              * @example local
-             * @enum {string}
              */
-            provider: "local" | "s3" | "gcs" | "azure-blob";
+            providerId: string;
         };
         DeleteMediaContainer: {
             /**
@@ -852,7 +854,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-06T17:30:33.849Z
+             * @example 2025-11-07T22:10:20.911Z
              */
             createdAt: string;
             /**
@@ -906,7 +908,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-06T17:30:33.849Z
+             * @example 2025-11-07T22:10:20.911Z
              */
             createdAt: string;
             /**
@@ -990,9 +992,7 @@ export interface components {
         StorageUnit: {
             /**
              * @description Provider-specific configuration (decrypted)
-             * @example {
-             *       "basePath": "default"
-             *     }
+             * @example {}
              */
             config: Record<string, never> | null;
             /**
@@ -1104,9 +1104,7 @@ export interface components {
         UpdateStorageUnit: {
             /**
              * @description Provider-specific configuration
-             * @example {
-             *       "basePath": "default"
-             *     }
+             * @example {}
              */
             config?: Record<string, never>;
             /**
@@ -1121,11 +1119,10 @@ export interface components {
              */
             name?: string;
             /**
-             * @description The storage provider type
+             * @description The storage provider ID
              * @example local
-             * @enum {string}
              */
-            provider?: "local" | "s3" | "gcs" | "azure-blob";
+            providerId?: string;
         };
     };
     responses: never;

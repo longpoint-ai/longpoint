@@ -34,13 +34,12 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     body: Readable | Buffer | string
   ): Promise<boolean> {
     const key = this.normalizeS3Key(path);
-    const bodyData = await this.bodyToUint8Array(body);
 
     await this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.configValues.bucket,
         Key: key,
-        Body: bodyData,
+        Body: body,
       })
     );
 
@@ -149,31 +148,5 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
   private normalizeS3Key(path: string): string {
     // Remove leading slashes for S3 key format
     return path.replace(/^\/+/, '');
-  }
-
-  /**
-   * Convert a Readable stream, Buffer, or string to a Uint8Array for S3 uploads.
-   */
-  private async bodyToUint8Array(
-    body: Readable | Buffer | string
-  ): Promise<Uint8Array> {
-    if (Buffer.isBuffer(body)) {
-      return new Uint8Array(body);
-    }
-    if (typeof body === 'string') {
-      return new TextEncoder().encode(body);
-    }
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of body) {
-      chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
-    }
-    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const chunk of chunks) {
-      result.set(chunk, offset);
-      offset += chunk.length;
-    }
-    return result;
   }
 }
