@@ -103,13 +103,6 @@ export class MediaProbeService {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const contentType = response.headers.get('content-type');
-    if (!contentType?.startsWith('image/')) {
-      throw new Error(
-        `Invalid content type: ${contentType}. Expected an image.`
-      );
-    }
-
     // Get file size from Content-Length header (if available)
     let size = response.headers.get('content-length')
       ? parseInt(response.headers.get('content-length') ?? '0', 10)

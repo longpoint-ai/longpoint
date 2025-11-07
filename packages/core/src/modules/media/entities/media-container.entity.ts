@@ -111,7 +111,11 @@ export class MediaContainerEntity {
           where: { id: this.id },
         });
         const provider = await this.storageUnit.getProvider();
-        await provider.deleteDirectory(this.path);
+        await provider.deleteDirectory(
+          getMediaContainerPath(this.id, {
+            storageUnitId: this.storageUnit.id,
+          })
+        );
         return;
       }
 
