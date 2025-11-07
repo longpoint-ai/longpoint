@@ -47,7 +47,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     return true;
   }
 
-  async getFileContents(path: string): Promise<Buffer> {
+  async getFileStream(path: string): Promise<Readable> {
     const key = this.normalizeS3Key(path);
 
     const response = await this.s3Client.send(
@@ -61,21 +61,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
       throw new Error(`Object not found: ${key}`);
     }
 
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of response.Body as Readable) {
-      chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
-    }
-
-    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-
-    for (const chunk of chunks) {
-      result.set(chunk, offset);
-      offset += chunk.length;
-    }
-
-    return Buffer.from(result);
+    return response.Body as Readable;
   }
 
   async exists(path: string): Promise<boolean> {

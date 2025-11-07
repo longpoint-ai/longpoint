@@ -21,9 +21,9 @@ export class LocalStorageProvider extends StorageProviderPlugin<LocalStoragePlug
     await fs.promises.rm(fullPath, { recursive: true, force: true });
   }
 
-  async getFileContents(path: string): Promise<Buffer> {
+  async getFileStream(path: string): Promise<Readable> {
     const fullPath = this.getFullPath(path);
-    return fs.promises.readFile(fullPath);
+    return fs.createReadStream(fullPath);
   }
 
   async exists(path: string): Promise<boolean> {

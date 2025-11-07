@@ -79,12 +79,12 @@ export class FileDeliveryService {
 
     if (!hasTransformParams) {
       try {
-        const buffer = await provider.getFileContents(originalPath);
+        const stream = await provider.getFileStream(originalPath);
 
         const contentType = getContentType(filename);
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.send(buffer);
+        stream.pipe(res);
         return;
       } catch (error) {
         throw new FileNotFound(originalPath);
@@ -108,10 +108,10 @@ export class FileDeliveryService {
       const cacheExists = await this.checkCacheExists(provider, cachePath);
 
       if (cacheExists) {
-        const cachedBuffer = await this.readCache(provider, cachePath);
+        const cachedStream = await provider.getFileStream(cachePath);
         res.setHeader('Content-Type', getMimeType(outputExt));
         res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.send(cachedBuffer);
+        cachedStream.pipe(res);
         return;
       }
 
@@ -135,11 +135,11 @@ export class FileDeliveryService {
       }
       // If transformation fails, try to serve original
       try {
-        const buffer = await provider.getFileContents(originalPath);
+        const stream = await provider.getFileStream(originalPath);
         const contentType = getContentType(filename);
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.send(buffer);
+        stream.pipe(res);
       } catch {
         throw new FileNotFound(originalPath);
       }
@@ -185,10 +185,6 @@ export class FileDeliveryService {
 
   private checkCacheExists(provider: StorageProvider, cachePath: string) {
     return provider.exists(cachePath);
-  }
-
-  private readCache(provider: StorageProvider, cachePath: string) {
-    return provider.getFileContents(cachePath);
   }
 
   private writeCache(

@@ -29,6 +29,10 @@ export class StorageProviderEntity
     return this.plugin.upload(path, body);
   }
 
+  getFileStream(path: string): Promise<Readable> {
+    return this.plugin.getFileStream(path);
+  }
+
   getFileContents(path: string): Promise<Buffer> {
     return this.plugin.getFileContents(path);
   }
