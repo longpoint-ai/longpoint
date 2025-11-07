@@ -45,9 +45,7 @@ export class StorageUnitDto {
   @ApiProperty({
     description: 'Provider-specific configuration (decrypted)',
     nullable: true,
-    example: {
-      basePath: 'default',
-    },
+    example: {},
   })
   config: ConfigValues | null;
 

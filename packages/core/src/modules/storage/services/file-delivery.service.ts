@@ -1,6 +1,7 @@
-import { PrismaService } from '@/modules/common/services';
+import { ConfigService, PrismaService } from '@/modules/common/services';
 import { MediaContainerNotFound } from '@/modules/media';
-import { StorageProvider, StorageUnitService } from '@/modules/storage-unit';
+import { StorageUnitService } from '@/modules/storage-unit';
+import type { StorageProvider } from '@longpoint/devkit';
 import {
   getContentType,
   getMediaContainerPath,
@@ -21,25 +22,29 @@ export class FileDeliveryService {
   constructor(
     private readonly storageUnitService: StorageUnitService,
     private readonly imageTransformService: ImageTransformService,
-    private readonly prismaService: PrismaService
+    private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService
   ) {}
 
   async serveFile(req: Request, res: Response, query: TransformParamsDto) {
     const requestPath = req.path.replace(/^\/storage\/?/, '');
+    const pathPrefix = this.configService.get('storage.pathPrefix');
 
     const pathParts = requestPath.split('/');
-    // Path format: {storageUnitId}/{containerId}/{filename}
-    if (pathParts.length < 3) {
+    // Path format: {prefix}/{storageUnitId}/{containerId}/{filename}
+    if (pathParts.length < 4 || pathParts[0] !== pathPrefix) {
       throw new InvalidFilePath(requestPath);
     }
 
-    const storageUnitId = pathParts[0];
-    const containerId = pathParts[1];
-    const filename = pathParts.slice(2).join('/');
+    const storageUnitId = pathParts[1];
+    const containerId = pathParts[2];
+    const filename = pathParts.slice(3).join('/');
 
     const storageUnit = await this.storageUnitService.getStorageUnitById(
       storageUnitId
     );
+
+    const provider = await storageUnit.getProvider();
 
     const originalPath = requestPath;
 
@@ -47,7 +52,7 @@ export class FileDeliveryService {
 
     if (!hasTransformParams) {
       try {
-        const buffer = await storageUnit.provider.getFileContents(originalPath);
+        const buffer = await provider.getFileContents(originalPath);
 
         const contentType = getContentType(filename);
         res.setHeader('Content-Type', contentType);
@@ -88,25 +93,17 @@ export class FileDeliveryService {
         outputExt
       );
 
-      const cacheExists = await this.checkCacheExists(
-        storageUnit.provider,
-        cachePath
-      );
+      const cacheExists = await this.checkCacheExists(provider, cachePath);
 
       if (cacheExists) {
-        const cachedBuffer = await this.readCache(
-          storageUnit.provider,
-          cachePath
-        );
+        const cachedBuffer = await this.readCache(provider, cachePath);
         res.setHeader('Content-Type', getMimeType(outputExt));
         res.setHeader('Cache-Control', 'public, max-age=31536000');
         res.send(cachedBuffer);
         return;
       }
 
-      const originalBuffer = await storageUnit.provider.getFileContents(
-        originalPath
-      );
+      const originalBuffer = await provider.getFileContents(originalPath);
       const transformResult = await this.imageTransformService.transform(
         originalBuffer,
         {
@@ -115,11 +112,7 @@ export class FileDeliveryService {
         }
       );
 
-      await this.writeCache(
-        storageUnit.provider,
-        cachePath,
-        transformResult.buffer
-      );
+      await this.writeCache(provider, cachePath, transformResult.buffer);
 
       res.setHeader('Content-Type', transformResult.mimeType);
       res.setHeader('Cache-Control', 'public, max-age=31536000');
@@ -130,7 +123,7 @@ export class FileDeliveryService {
       }
       // If transformation fails, try to serve original
       try {
-        const buffer = await storageUnit.provider.getFileContents(originalPath);
+        const buffer = await provider.getFileContents(originalPath);
         const contentType = getContentType(filename);
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
@@ -173,6 +166,7 @@ export class FileDeliveryService {
   ) {
     return getMediaContainerPath(containerId, {
       storageUnitId,
+      prefix: this.configService.get('storage.pathPrefix'),
       suffix: `.cache/${recipeHash}.${ext}`,
     });
   }

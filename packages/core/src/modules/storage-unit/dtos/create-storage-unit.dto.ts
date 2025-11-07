@@ -1,4 +1,4 @@
-import type { ConfigValues } from '@longpoint/devkit';
+import type { ConfigValues } from '@longpoint/config-schema';
 import {
   ApiProperty,
   ApiPropertyOptional,
@@ -7,18 +7,12 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsEnum,
-  IsObject,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
 import { StorageUnitDto } from './storage-unit.dto';
 
 @ApiSchema({ name: 'CreateStorageUnit' })
 export class CreateStorageUnitDto extends IntersectionType(
-  PickType(StorageUnitDto, ['name', 'provider'] as const),
+  PickType(StorageUnitDto, ['name'] as const),
   PartialType(PickType(StorageUnitDto, ['isDefault'] as const))
 ) {
   @IsString()
@@ -28,21 +22,19 @@ export class CreateStorageUnitDto extends IntersectionType(
   })
   override name!: string;
 
-  @IsEnum(['local', 's3', 'gcs', 'azure-blob'])
+  @IsString()
   @ApiProperty({
-    description: 'The storage provider type',
+    description: 'The storage provider ID',
     example: 'local',
     enum: ['local', 's3', 'gcs', 'azure-blob'],
   })
-  override provider!: string;
+  providerId!: string;
 
   @IsObject()
   @IsOptional()
   @ApiPropertyOptional({
     description: 'Provider-specific configuration',
-    example: {
-      basePath: 'default',
-    },
+    example: {},
   })
   config?: ConfigValues;
 

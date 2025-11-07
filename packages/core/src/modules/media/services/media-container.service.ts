@@ -104,6 +104,7 @@ export class MediaContainerService {
         ...container,
         storageUnit,
         prismaService: this.prismaService,
+        pathPrefix: this.configService.get('storage.pathPrefix'),
       }),
     };
   }
@@ -135,6 +136,7 @@ export class MediaContainerService {
         id
       ),
       prismaService: this.prismaService,
+      pathPrefix: this.configService.get('storage.pathPrefix'),
     });
   }
 
@@ -191,6 +193,7 @@ export class MediaContainerService {
         container.id
       ),
       prismaService: this.prismaService,
+      pathPrefix: this.configService.get('storage.pathPrefix'),
     });
   }
 
@@ -250,6 +253,7 @@ export class MediaContainerService {
                 container.id
               ),
             prismaService: this.prismaService,
+            pathPrefix: this.configService.get('storage.pathPrefix'),
           })
       )
     );

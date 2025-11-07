@@ -10,22 +10,6 @@ import { Readable } from 'stream';
 import { LocalStoragePluginManifest } from './manifest.js';
 
 export class LocalStorageProvider extends StorageProviderPlugin<LocalStoragePluginManifest> {
-  /**
-   * Construct the full path for a file.
-   * The path parameter should be in format: {storageUnitId}/{containerId}/...
-   * We prepend the basePath and use unitBasePath as the subdirectory for this storage unit.
-   */
-  private getFullPath(path: string): string {
-    const localStorageRoot =
-      process.env['LOCAL_STORAGE_ROOT'] ?? 'data/storage';
-    const pathWithoutStorageUnitId = path.split('/').slice(1).join('/');
-    return join(
-      localStorageRoot,
-      this.configValues.basePath ?? '',
-      pathWithoutStorageUnitId
-    );
-  }
-
   async upload(
     path: string,
     body: Readable | Buffer | string
@@ -66,5 +50,16 @@ export class LocalStorageProvider extends StorageProviderPlugin<LocalStoragePlug
       url,
       expiresAt: addSeconds(new Date(), options.expiresInSeconds ?? 3600),
     };
+  }
+
+  /**
+   * Construct the full path for a file.
+   * The path parameter should be in format: {prefix}/{storageUnitId}/{containerId}/...
+   * We prepend LOCAL_STORAGE_ROOT to the full path.
+   */
+  private getFullPath(path: string): string {
+    const localStorageRoot =
+      process.env['LOCAL_STORAGE_ROOT'] ?? 'data/storage';
+    return join(localStorageRoot, path);
   }
 }

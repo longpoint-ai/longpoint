@@ -5,8 +5,9 @@ import {
   Prisma,
 } from '@/database';
 import { ClassifierService } from '@/modules/classifier/classifier.service';
-import { PrismaService } from '@/modules/common/services';
-import { StorageProvider, StorageUnitService } from '@/modules/storage-unit';
+import { ConfigService, PrismaService } from '@/modules/common/services';
+import { StorageUnitService } from '@/modules/storage-unit';
+import type { StorageProvider } from '@longpoint/devkit';
 import { SupportedMimeType } from '@longpoint/types';
 import {
   getMediaContainerPath,
@@ -26,7 +27,8 @@ export class UploadService {
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
     private readonly probeService: MediaProbeService,
-    private readonly classifierService: ClassifierService
+    private readonly classifierService: ClassifierService,
+    private readonly configService: ConfigService
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
@@ -68,6 +70,7 @@ export class UploadService {
     );
     const fullPath = getMediaContainerPath(containerId, {
       storageUnitId: uploadToken.mediaAsset.container.storageUnitId,
+      prefix: this.configService.get('storage.pathPrefix'),
       suffix: `primary.${extension}`,
     });
 

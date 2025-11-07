@@ -29,6 +29,7 @@ import {
 export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   storageUnit: StorageUnitEntity;
   prismaService: PrismaService;
+  pathPrefix: string;
 }
 
 export class MediaContainerEntity {
@@ -40,6 +41,7 @@ export class MediaContainerEntity {
   private _createdAt: Date;
   private readonly storageUnit: StorageUnitEntity;
   private readonly prismaService: PrismaService;
+  private readonly pathPrefix: string;
   private assets: SelectedMediaContainer['assets'];
 
   constructor(args: MediaContainerEntityArgs) {
@@ -51,6 +53,7 @@ export class MediaContainerEntity {
     this._createdAt = args.createdAt;
     this.storageUnit = args.storageUnit;
     this.prismaService = args.prismaService;
+    this.pathPrefix = args.pathPrefix;
     this.assets = args.assets;
   }
 
@@ -114,6 +117,7 @@ export class MediaContainerEntity {
         await provider.deleteDirectory(
           getMediaContainerPath(this.id, {
             storageUnitId: this.storageUnit.id,
+            prefix: this.pathPrefix,
           })
         );
         return;
@@ -181,6 +185,7 @@ export class MediaContainerEntity {
     // Assumes primary as the only variant for now
     const assetPath = getMediaContainerPath(this.id, {
       storageUnitId: this.storageUnit.id,
+      prefix: this.pathPrefix,
       suffix: `primary.${mimeTypeToExtension(
         asset.mimeType as SupportedMimeType
       )}`,

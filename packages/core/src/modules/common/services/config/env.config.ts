@@ -1,4 +1,3 @@
-import path from 'path';
 import { z } from 'zod';
 import { loadEnvFiles } from './env.loader';
 
@@ -26,7 +25,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().optional(),
 
   // Storage
-  LOCAL_STORAGE_ROOT: z.string().default(path.join('data', 'storage')),
+  STORAGE_PATH_PREFIX: z.string().default('units'),
 
   // Encryption
   ENCRYPTION_SECRET: z.string(),
@@ -92,7 +91,7 @@ export const createConfig = (env: Env) =>
       port: env.PORT,
     },
     storage: {
-      localRoot: env.LOCAL_STORAGE_ROOT,
+      pathPrefix: env.STORAGE_PATH_PREFIX,
     },
   } as const);
 
