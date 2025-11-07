@@ -8,7 +8,6 @@ export interface StorageProvider {
   // deleteFile(path: string): Promise<void>;
   // deleteDirectory(path: string): Promise<void>;
   deleteDirectory(path: string): Promise<void>;
-  createSignedUrl(options: CreateSignedUrlOptions): Promise<SignedUrlResponse>;
   // testConnection(): Promise<StorageProviderTestConnectionResult>;
 }
 

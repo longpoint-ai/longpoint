@@ -14,6 +14,7 @@ import {
 } from '../../../shared/selectors/media.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { StorageUnitEntity } from '../../storage-unit/entities/storage-unit.entity';
+import { UrlSigningService } from '../../storage/services/url-signing.service';
 import {
   MediaAssetDto,
   MediaAssetVariantsDto,
@@ -30,6 +31,7 @@ export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   storageUnit: StorageUnitEntity;
   prismaService: PrismaService;
   pathPrefix: string;
+  urlSigningService: UrlSigningService;
 }
 
 export class MediaContainerEntity {
@@ -42,6 +44,7 @@ export class MediaContainerEntity {
   private readonly storageUnit: StorageUnitEntity;
   private readonly prismaService: PrismaService;
   private readonly pathPrefix: string;
+  private readonly urlSigningService: UrlSigningService;
   private assets: SelectedMediaContainer['assets'];
 
   constructor(args: MediaContainerEntityArgs) {
@@ -54,6 +57,7 @@ export class MediaContainerEntity {
     this.storageUnit = args.storageUnit;
     this.prismaService = args.prismaService;
     this.pathPrefix = args.pathPrefix;
+    this.urlSigningService = args.urlSigningService;
     this.assets = args.assets;
   }
 
@@ -183,20 +187,11 @@ export class MediaContainerEntity {
 
   private async hydrateAsset(asset: SelectedMediaContainer['assets'][number]) {
     // Assumes primary as the only variant for now
-    const assetPath = getMediaContainerPath(this.id, {
-      storageUnitId: this.storageUnit.id,
-      prefix: this.pathPrefix,
-      suffix: `primary.${mimeTypeToExtension(
-        asset.mimeType as SupportedMimeType
-      )}`,
-    });
+    const filename = `primary.${mimeTypeToExtension(
+      asset.mimeType as SupportedMimeType
+    )}`;
 
-    const provider = await this.storageUnit.getProvider();
-
-    const { url } = await provider.createSignedUrl({
-      path: assetPath,
-      action: 'read',
-    });
+    const url = this.urlSigningService.generateSignedUrl(this.id, filename);
 
     return {
       ...asset,

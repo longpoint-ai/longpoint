@@ -26,6 +26,7 @@ const envSchema = z.object({
 
   // Storage
   STORAGE_PATH_PREFIX: z.string().default('units'),
+  STORAGE_URL_SECRET: z.string().default('storage-secret'),
 
   // Encryption
   ENCRYPTION_SECRET: z.string(),
@@ -92,6 +93,7 @@ export const createConfig = (env: Env) =>
     },
     storage: {
       pathPrefix: env.STORAGE_PATH_PREFIX,
+      storageUrlSecret: env.STORAGE_URL_SECRET,
     },
   } as const);
 

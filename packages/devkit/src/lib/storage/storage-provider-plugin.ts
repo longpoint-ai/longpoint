@@ -1,11 +1,6 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { Readable } from 'stream';
-import {
-  CreateSignedUrlOptions,
-  SignedUrlResponse,
-  StoragePluginManifest,
-  StorageProvider,
-} from './types.js';
+import { StoragePluginManifest, StorageProvider } from './types.js';
 
 export interface StorageProviderPluginArgs<
   T extends StoragePluginManifest = StoragePluginManifest
@@ -40,9 +35,6 @@ export abstract class StorageProviderPlugin<
   abstract getFileContents(path: string): Promise<Buffer>;
   abstract exists(path: string): Promise<boolean>;
   abstract deleteDirectory(path: string): Promise<void>;
-  abstract createSignedUrl(
-    options: CreateSignedUrlOptions
-  ): Promise<SignedUrlResponse>;
 
   get manifest(): T {
     return JSON.parse(JSON.stringify(this._manifest)) as T;

@@ -1,10 +1,5 @@
 import { ConfigSchemaService } from '@/modules/common/services';
-import {
-  CreateSignedUrlOptions,
-  SignedUrlResponse,
-  StorageProvider,
-  StorageProviderPlugin,
-} from '@longpoint/devkit';
+import { StorageProvider, StorageProviderPlugin } from '@longpoint/devkit';
 import { Readable } from 'stream';
 import { BaseStorageProviderEntity } from './base-storage-provider.entity';
 
@@ -44,9 +39,5 @@ export class StorageProviderEntity
 
   deleteDirectory(path: string): Promise<void> {
     return this.plugin.deleteDirectory(path);
-  }
-
-  createSignedUrl(options: CreateSignedUrlOptions): Promise<SignedUrlResponse> {
-    return this.plugin.createSignedUrl(options);
   }
 }

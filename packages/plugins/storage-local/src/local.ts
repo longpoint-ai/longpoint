@@ -1,9 +1,4 @@
-import {
-  CreateSignedUrlOptions,
-  SignedUrlResponse,
-  StorageProviderPlugin,
-} from '@longpoint/devkit';
-import { addSeconds } from 'date-fns';
+import { StorageProviderPlugin } from '@longpoint/devkit';
 import fs from 'fs';
 import { dirname, join } from 'path';
 import { Readable } from 'stream';
@@ -39,17 +34,6 @@ export class LocalStorageProvider extends StorageProviderPlugin<LocalStoragePlug
     } catch {
       return false;
     }
-  }
-
-  async createSignedUrl(
-    options: CreateSignedUrlOptions
-  ): Promise<SignedUrlResponse> {
-    const strippedLeadingSlash = options.path.replace(/^\/+/, '');
-    const url = new URL(`/storage/${strippedLeadingSlash}`, this.baseUrl).href;
-    return {
-      url,
-      expiresAt: addSeconds(new Date(), options.expiresInSeconds ?? 3600),
-    };
   }
 
   /**

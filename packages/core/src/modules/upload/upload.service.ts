@@ -18,6 +18,7 @@ import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
 import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
+import { UrlSigningService } from '../storage/services/url-signing.service';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { TokenExpired } from './upload.errors';
 
@@ -28,7 +29,8 @@ export class UploadService {
     private readonly storageUnitService: StorageUnitService,
     private readonly probeService: MediaProbeService,
     private readonly classifierService: ClassifierService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly urlSigningService: UrlSigningService
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
@@ -94,16 +96,21 @@ export class UploadService {
     asset: Pick<MediaAsset, 'id' | 'containerId' | 'mimeType'>
   ) {
     try {
-      const { url } = await provider.createSignedUrl({
-        path: fullPath,
-        action: 'read',
-      });
+      // Extract filename from fullPath (format: {prefix}/{storageUnitId}/{containerId}/primary.{extension})
+      const pathParts = fullPath.split('/');
+      const filename = pathParts[pathParts.length - 1];
+      const url = this.urlSigningService.generateSignedUrl(
+        asset.containerId,
+        filename
+      );
+      const baseUrl = this.configService.get('server.baseUrl');
+      const fullUrl = new URL(url, baseUrl).href;
 
       const mediaType = mimeTypeToMediaType(asset.mimeType);
       let assetUpdateData: Prisma.MediaAssetUpdateInput = {};
 
       if (mediaType === 'IMAGE') {
-        const imageProbe = await this.probeService.probeImage(url);
+        const imageProbe = await this.probeService.probeImage(fullUrl);
         assetUpdateData = {
           width: imageProbe.width,
           height: imageProbe.height,

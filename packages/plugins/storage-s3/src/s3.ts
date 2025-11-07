@@ -6,14 +6,10 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
-  CreateSignedUrlOptions,
-  SignedUrlResponse,
   StorageProviderPlugin,
   StorageProviderPluginArgs,
 } from '@longpoint/devkit';
-import { addSeconds } from 'date-fns';
 import { Readable } from 'stream';
 import { S3StoragePluginManifest } from './manifest.js';
 
@@ -157,36 +153,6 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
         })
       );
     }
-  }
-
-  async createSignedUrl(
-    options: CreateSignedUrlOptions
-  ): Promise<SignedUrlResponse> {
-    const key = this.normalizeS3Key(options.path);
-    const expiresInSeconds = options.expiresInSeconds ?? 3600;
-
-    let command;
-    if (options.action === 'write') {
-      command = new PutObjectCommand({
-        Bucket: this.configValues.bucket,
-        Key: key,
-      });
-    } else {
-      // Default to 'read'
-      command = new GetObjectCommand({
-        Bucket: this.configValues.bucket,
-        Key: key,
-      });
-    }
-
-    const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: expiresInSeconds,
-    });
-
-    return {
-      url,
-      expiresAt: addSeconds(new Date(), expiresInSeconds),
-    };
   }
 
   /**

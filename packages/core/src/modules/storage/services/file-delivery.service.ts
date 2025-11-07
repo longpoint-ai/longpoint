@@ -16,6 +16,7 @@ import type {
 } from '../dtos/transform-params.dto';
 import { FileNotFound, InvalidFilePath } from '../storage.errors';
 import { ImageTransformService } from './image-transform.service';
+import { UrlSigningService } from './url-signing.service';
 
 @Injectable()
 export class FileDeliveryService {
@@ -23,7 +24,8 @@ export class FileDeliveryService {
     private readonly storageUnitService: StorageUnitService,
     private readonly imageTransformService: ImageTransformService,
     private readonly prismaService: PrismaService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly urlSigningService: UrlSigningService
   ) {}
 
   async serveFile(req: Request, res: Response, query: TransformParamsDto) {
@@ -39,6 +41,14 @@ export class FileDeliveryService {
 
     const containerId = pathParts[0];
     const filename = pathParts[1];
+
+    const pathForSignature = `${containerId}/${filename}`;
+    this.urlSigningService.verifySignature(pathForSignature, {
+      sig: query.sig,
+      expires: query.expires,
+      w: query.w,
+      h: query.h,
+    });
 
     const container = await this.prismaService.mediaContainer.findUnique({
       where: {

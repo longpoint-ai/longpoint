@@ -1,6 +1,7 @@
 import { ErrorCode } from '@longpoint/types';
 import { HttpStatus } from '@nestjs/common';
 import { BaseError } from '../../shared/errors';
+import { InvalidAuthorization } from '../app/app.errors';
 
 export class FileNotFound extends BaseError {
   constructor(path: string) {
@@ -19,5 +20,11 @@ export class InvalidFilePath extends BaseError {
       `Invalid file path: ${path}`,
       HttpStatus.BAD_REQUEST
     );
+  }
+}
+
+export class InvalidSignature extends InvalidAuthorization {
+  constructor() {
+    super('Invalid signature');
   }
 }
