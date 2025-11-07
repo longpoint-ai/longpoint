@@ -65,14 +65,15 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
       throw new Error(`Object not found: ${key}`);
     }
 
-    // Convert the stream to a Buffer
     const chunks: Uint8Array[] = [];
     for await (const chunk of response.Body as Readable) {
       chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
     }
+
     const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
     const result = new Uint8Array(totalLength);
     let offset = 0;
+
     for (const chunk of chunks) {
       result.set(chunk, offset);
       offset += chunk.length;
@@ -195,17 +196,16 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
    * Handles edge cases like '/' which becomes empty string.
    */
   private getS3Key(path: string): string {
-    // Remove leading slashes and split
     const normalizedPath = path.replace(/^\/+/, '');
     if (!normalizedPath) {
       return '';
     }
-    // Remove the first segment (storageUnitId) if path has multiple segments
+
     const parts = normalizedPath.split('/');
     if (parts.length > 1) {
       return parts.slice(1).join('/');
     }
-    // If only one segment or empty, return as-is (this handles edge cases)
+
     return normalizedPath;
   }
 
