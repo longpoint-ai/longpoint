@@ -50,6 +50,9 @@
     },
     {
       "path": "./packages/plugins/storage-s3"
+    },
+    {
+      "path": "./packages/plugins/storage-gcp"
     }
   ]
 }

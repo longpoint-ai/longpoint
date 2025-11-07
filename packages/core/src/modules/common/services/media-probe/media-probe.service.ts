@@ -107,12 +107,16 @@ export class MediaProbeService {
     let size = response.headers.get('content-length')
       ? parseInt(response.headers.get('content-length') ?? '0', 10)
       : null;
-    if (size === null) {
-      const buffer = await response.arrayBuffer();
+
+    // If Content-Length is missing, we need to clone the response to get size
+    // without locking the original response body
+    if (size === null && response.body) {
+      const clonedResponse = response.clone();
+      const buffer = await clonedResponse.arrayBuffer();
       size = buffer.byteLength;
     }
 
-    if (!response.body) {
+    if (size === null) {
       throw new Error('Response body is null');
     }
 

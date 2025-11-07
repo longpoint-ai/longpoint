@@ -145,7 +145,8 @@
       "create-longpoint",
       "longpoint-ai-claude",
       "longpoint-storage-local",
-      "longpoint-storage-s3"
+      "longpoint-storage-s3",
+      "longpoint-storage-gcp"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"

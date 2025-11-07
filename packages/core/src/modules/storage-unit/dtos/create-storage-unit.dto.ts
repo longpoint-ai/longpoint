@@ -26,7 +26,6 @@ export class CreateStorageUnitDto extends IntersectionType(
   @ApiProperty({
     description: 'The storage provider ID',
     example: 'local',
-    enum: ['local', 's3', 'gcs', 'azure-blob'],
   })
   providerId!: string;
 

@@ -108,7 +108,7 @@ export function CreateStorageUnitDialog({
     mutationFn: async (data: FormData) => {
       return client.storage.createStorageUnit({
         name: data.name,
-        provider: data.provider as 'local' | 's3' | 'gcs' | 'azure-blob',
+        providerId: data.provider,
         isDefault: data.isDefault ?? false,
         config: data.config as any,
       });
