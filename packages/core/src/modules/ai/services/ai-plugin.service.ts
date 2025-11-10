@@ -6,10 +6,11 @@ import {
   AiPluginManifest,
   AiProviderPlugin,
   AiProviderPluginArgs,
+  PluginConfig,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { readdir, readFile } from 'fs/promises';
+import { readdir } from 'fs/promises';
 import { createRequire } from 'module';
 import { join } from 'path';
 import { AiModelEntity } from '../../common/entities';
@@ -201,16 +202,27 @@ export class AiPluginService implements OnModuleInit {
 
     for (const packageName of packageNames) {
       const packagePath = join(modulesPath, packageName);
-      const manifestFile = await readFile(
-        join(packagePath, 'ai-manifest.json')
-      );
-      const manifest = JSON.parse(manifestFile.toString());
-      const providerId =
-        manifest.provider?.id ?? packageName.replace('longpoint-ai-', '');
-
       const require = createRequire(__filename);
-      const providerModule = require(join(packagePath, 'dist', 'index.js'));
-      const ProviderClass = providerModule.default;
+      const pluginConfig: PluginConfig = require(join(
+        packagePath,
+        'dist',
+        'index.js'
+      )).default;
+
+      if (pluginConfig.type !== 'ai') continue;
+      if (!pluginConfig.provider) {
+        this.logger.error(
+          `AI plugin ${packageName} has an invalid provider class`
+        );
+        continue;
+      }
+      if (!pluginConfig.manifest) {
+        this.logger.error(`AI plugin ${packageName} has an invalid manifest`);
+        continue;
+      }
+
+      const manifest = pluginConfig.manifest;
+      const providerId = manifest.provider.id;
 
       for (const modelManifest of Object.values(
         manifest.models ?? {}
@@ -221,19 +233,17 @@ export class AiPluginService implements OnModuleInit {
         );
       }
 
-      if (ProviderClass) {
-        const config = await this.getProviderConfigFromDb(
-          providerId,
-          manifest.provider?.config
-        );
-        this.providerPluginRegistry.set(providerId, {
-          instance: new ProviderClass({
-            manifest: manifest,
-            configValues: config ?? {},
-          }),
-          ProviderClass,
-        });
-      }
+      const config = await this.getProviderConfigFromDb(
+        providerId,
+        manifest.provider?.config
+      );
+      this.providerPluginRegistry.set(providerId, {
+        instance: new pluginConfig.provider({
+          manifest: manifest,
+          configValues: config ?? {},
+        }),
+        ProviderClass: pluginConfig.provider,
+      });
     }
   }
 
@@ -259,7 +269,7 @@ export class AiPluginService implements OnModuleInit {
 
   private async getProviderConfigFromDb(
     providerId: string,
-    schemaObj: ConfigSchemaDefinition
+    schemaObj?: ConfigSchemaDefinition
   ) {
     const aiProviderConfig =
       await this.prismaService.aiProviderConfig.findUnique({
