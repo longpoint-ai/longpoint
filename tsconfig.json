@@ -53,6 +53,9 @@
     },
     {
       "path": "./packages/plugins/storage-gcp"
+    },
+    {
+      "path": "./packages/plugins/ai-openai"
     }
   ]
 }
