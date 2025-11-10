@@ -3,6 +3,7 @@ import {
   AiModelManifest,
   AiModelPlugin,
   AiProviderPlugin,
+  AssetSource,
   ClassifyArgs,
 } from '@longpoint/devkit';
 import { manifest } from './manifest.js';
@@ -72,7 +73,7 @@ export class ClaudeModel extends AiModelPlugin {
           content: [
             {
               type: 'image',
-              source: await this.getSource(args.url),
+              source: this.getSource(args.source),
             },
           ],
         },
@@ -89,27 +90,23 @@ export class ClaudeModel extends AiModelPlugin {
     return JSON.parse(fullOutput);
   }
 
-  private async getSource(
-    urlString: string
-  ): Promise<Anthropic.ImageBlockParam['source']> {
-    const url = new URL(urlString);
-
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
-      const imageData = await fetch(urlString);
-      const imageBuffer = await imageData.arrayBuffer();
-      const base64 = Buffer.from(imageBuffer).toString('base64');
-      const media_type = imageData.headers.get('content-type') as
-        | 'image/jpeg'
-        | 'image/png'
-        | 'image/gif'
-        | 'image/webp';
+  private getSource(source: AssetSource): Anthropic.ImageBlockParam['source'] {
+    if (source.base64) {
       return {
         type: 'base64',
-        data: base64,
-        media_type,
+        data: source.base64,
+        media_type: source.mimeType as
+          | 'image/jpeg'
+          | 'image/png'
+          | 'image/gif'
+          | 'image/webp',
       };
     }
 
-    return { type: 'url', url: urlString };
+    if (source.url) {
+      return { type: 'url', url: source.url };
+    }
+
+    throw new Error('Source is required');
   }
 }

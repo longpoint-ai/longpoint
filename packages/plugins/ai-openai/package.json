@@ -21,6 +21,8 @@
   ],
   "dependencies": {
     "@longpoint/devkit": "*",
-    "tslib": "^2.3.0"
+    "openai": "^6.8.1",
+    "tslib": "^2.3.0",
+    "zod": "^4.1.12"
   }
 }

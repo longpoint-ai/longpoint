@@ -1,9 +1,11 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
 import { AiModelEntity, AiPluginService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
-import { MediaContainerService } from '@/modules/media';
+import { MediaAssetDto, MediaContainerService } from '@/modules/media';
+import { Unexpected } from '@/shared/errors';
 import { selectClassifier } from '@/shared/selectors/classifier.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
+import { toBase64DataUri } from '@longpoint/utils/string';
 import { Logger } from '@nestjs/common';
 import { ClassifierNotFound } from '../classifier.errors';
 import {
@@ -94,8 +96,9 @@ export class ClassifierEntity {
     });
 
     try {
+      const source = await this.getAssetSource(asset);
       const result = await this.model.classify({
-        url: asset.url,
+        source,
         modelConfig: this.modelInput as ConfigValues,
       });
       return await this.prismaService.classifierRun.update({
@@ -207,6 +210,32 @@ export class ClassifierEntity {
       updatedAt: this.updatedAt,
       model: this.model.toSummaryDto(),
     });
+  }
+
+  private async getAssetSource(asset: MediaAssetDto) {
+    if (!asset.url) {
+      throw new Unexpected('Asset URL is required');
+    }
+
+    const url = new URL(asset.url);
+
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      const imageData = await fetch(url.href);
+      const imageBuffer = await imageData.arrayBuffer();
+      const base64 = Buffer.from(imageBuffer).toString('base64');
+      return {
+        base64,
+        mimeType: asset.mimeType,
+        base64DataUri: toBase64DataUri(asset.mimeType, base64),
+        url: undefined,
+      };
+    }
+
+    return {
+      base64: undefined,
+      mimeType: asset.mimeType,
+      url: asset.url,
+    };
   }
 
   get id(): string {

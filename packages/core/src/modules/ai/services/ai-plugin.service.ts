@@ -9,6 +9,7 @@ import {
   PluginConfig,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
+import { toBase64DataUri } from '@longpoint/utils/string';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { existsSync } from 'fs';
 import { readdir, readFile } from 'fs/promises';
@@ -344,7 +345,7 @@ export class AiPluginService implements OnModuleInit {
 
       // Convert to base64 data URI
       const base64 = imageBuffer.toString('base64');
-      return `data:${mimeType};base64,${base64}`;
+      return toBase64DataUri(mimeType, base64);
     } catch (error) {
       this.logger.error(
         `Failed to read image file ${imagePath}: ${
