@@ -144,6 +144,7 @@
       "cli",
       "create-longpoint",
       "longpoint-ai-claude",
+      "longpoint-ai-openai",
       "longpoint-storage-local",
       "longpoint-storage-s3",
       "longpoint-storage-gcp"

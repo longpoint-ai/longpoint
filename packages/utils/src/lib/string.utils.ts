@@ -82,3 +82,15 @@ export function base64Encode(str: string) {
 export function base64Decode(str: string) {
   return Buffer.from(str, 'base64').toString('utf-8');
 }
+
+/**
+ * Convert a base64 encoded string to a data URI
+ * @param mimeType - The MIME type of the data
+ * @param base64 - The base64 encoded string
+ * @returns The data URI
+ * @example
+ * toBase64DataUri('image/png', 'aGVsbG8td29ybGQ=') // 'data:image/png;base64,aGVsbG8td29ybGQ='
+ */
+export function toBase64DataUri(mimeType: string, base64: string) {
+  return `data:${mimeType};base64,${base64}`;
+}

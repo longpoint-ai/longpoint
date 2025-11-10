@@ -28,10 +28,11 @@ export interface StoragePluginConfig<
   ) => StorageProviderPlugin<T>;
 }
 
-export interface AiPluginConfig extends BasePluginConfig {
+export interface AiPluginConfig<T extends AiPluginManifest = AiPluginManifest>
+  extends BasePluginConfig {
   type: 'ai';
-  manifest: AiPluginManifest;
-  provider: new (args: AiProviderPluginArgs) => AiProviderPlugin;
+  manifest: T;
+  provider: new (args: AiProviderPluginArgs<T>) => AiProviderPlugin<T>;
 }
 
-export type PluginConfig = StoragePluginConfig<any> | AiPluginConfig;
+export type PluginConfig = StoragePluginConfig<any> | AiPluginConfig<any>;

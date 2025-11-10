@@ -214,19 +214,21 @@ export function CreateClassifier() {
                       <SelectValue placeholder="Select a model" />
                     </SelectTrigger>
                     <SelectContent>
-                      {models?.map((model) => (
-                        <SelectItem
-                          key={model.id}
-                          value={model.fullyQualifiedId}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span>{model.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              ({model.provider.name})
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {models
+                        ?.filter((model) => !model.provider.needsConfig)
+                        .map((model) => (
+                          <SelectItem
+                            key={model.id}
+                            value={model.fullyQualifiedId}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>{model.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                ({model.provider.name})
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FieldDescription>

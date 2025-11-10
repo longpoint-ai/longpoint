@@ -3,11 +3,12 @@ import {
   AiModelManifest,
   AiModelPlugin,
   AiProviderPlugin,
-  ClassifyArgs
+  AssetSource,
+  ClassifyArgs,
 } from '@longpoint/devkit';
-import AnthropicManifest from '../ai-manifest.json' with { type: 'json' };
+import { manifest } from './manifest.js';
 
-export class AnthropicProvider extends AiProviderPlugin<typeof AnthropicManifest> {
+export class AnthropicProvider extends AiProviderPlugin<typeof manifest> {
   protected override getModelInstance(manifest: AiModelManifest) {
     const apiKey = this.configValues.apiKey;
 
@@ -31,7 +32,7 @@ export interface ClaudeModelConfig {
   fieldCapture: Array<{
     name: string;
     instructions?: string;
-  }>
+  }>;
 }
 
 export class ClaudeModel extends AiModelPlugin {
@@ -52,7 +53,14 @@ export class ClaudeModel extends AiModelPlugin {
       DO NOT wrap the JSON in a code block like \`\`\`json {} \`\`\`.
       e.g. For the field "type", with instructions "Choose the type of fruit", the response might be: {"type": "apple"}
       The fields to capture, along with their instructions, are:
-      ${args.modelConfig.fieldCapture.map(field => `- ${field.name}${field.instructions ? `: ${field.instructions}` : ''}`).join('\n')}
+      ${args.modelConfig.fieldCapture
+        .map(
+          (field) =>
+            `- ${field.name}${
+              field.instructions ? `: ${field.instructions}` : ''
+            }`
+        )
+        .join('\n')}
     `;
 
     const result = await this.client.messages.create({
@@ -65,10 +73,10 @@ export class ClaudeModel extends AiModelPlugin {
           content: [
             {
               type: 'image',
-              source: await this.getSource(args.url)
-            }
-          ]
-        }
+              source: this.getSource(args.source),
+            },
+          ],
+        },
       ],
     });
 
@@ -77,26 +85,28 @@ export class ClaudeModel extends AiModelPlugin {
         acc += curr.text;
       }
       return acc;
-    }, '')
+    }, '');
 
     return JSON.parse(fullOutput);
   }
 
-  private async getSource(urlString: string): Promise<Anthropic.ImageBlockParam['source']> {
-    const url = new URL(urlString);
-
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
-      const imageData = await fetch(urlString);
-      const imageBuffer = await imageData.arrayBuffer();
-      const base64 = Buffer.from(imageBuffer).toString('base64');
-      const media_type = imageData.headers.get('content-type') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  private getSource(source: AssetSource): Anthropic.ImageBlockParam['source'] {
+    if (source.base64) {
       return {
         type: 'base64',
-        data: base64,
-        media_type,
-      }
+        data: source.base64,
+        media_type: source.mimeType as
+          | 'image/jpeg'
+          | 'image/png'
+          | 'image/gif'
+          | 'image/webp',
+      };
     }
 
-    return { type: 'url', url: urlString }
+    if (source.url) {
+      return { type: 'url', url: source.url };
+    }
+
+    throw new Error('Source is required');
   }
 }

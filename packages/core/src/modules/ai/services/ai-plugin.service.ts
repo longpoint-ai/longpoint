@@ -6,12 +6,15 @@ import {
   AiPluginManifest,
   AiProviderPlugin,
   AiProviderPluginArgs,
+  PluginConfig,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
+import { toBase64DataUri } from '@longpoint/utils/string';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { existsSync } from 'fs';
 import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
-import { join } from 'path';
+import { extname, join } from 'path';
 import { AiModelEntity } from '../../common/entities';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { AiProviderNotFound, ModelNotFound } from '../ai.errors';
@@ -201,16 +204,44 @@ export class AiPluginService implements OnModuleInit {
 
     for (const packageName of packageNames) {
       const packagePath = join(modulesPath, packageName);
-      const manifestFile = await readFile(
-        join(packagePath, 'ai-manifest.json')
-      );
-      const manifest = JSON.parse(manifestFile.toString());
-      const providerId =
-        manifest.provider?.id ?? packageName.replace('longpoint-ai-', '');
-
       const require = createRequire(__filename);
-      const providerModule = require(join(packagePath, 'dist', 'index.js'));
-      const ProviderClass = providerModule.default;
+      const pluginConfig: PluginConfig = require(join(
+        packagePath,
+        'dist',
+        'index.js'
+      )).default;
+
+      if (pluginConfig.type !== 'ai') continue;
+      if (!pluginConfig.provider) {
+        this.logger.error(
+          `AI plugin ${packageName} has an invalid provider class`
+        );
+        continue;
+      }
+      if (!pluginConfig.manifest) {
+        this.logger.error(`AI plugin ${packageName} has an invalid manifest`);
+        continue;
+      }
+
+      let manifest = pluginConfig.manifest;
+      const providerId = manifest.provider.id;
+
+      // Process the image: convert local files to base64 data URIs
+      if (manifest.provider.image) {
+        const processedImage = await this.processImage(
+          manifest.provider.image,
+          packagePath
+        );
+        if (processedImage) {
+          manifest = {
+            ...manifest,
+            provider: {
+              ...manifest.provider,
+              image: processedImage,
+            },
+          };
+        }
+      }
 
       for (const modelManifest of Object.values(
         manifest.models ?? {}
@@ -221,19 +252,17 @@ export class AiPluginService implements OnModuleInit {
         );
       }
 
-      if (ProviderClass) {
-        const config = await this.getProviderConfigFromDb(
-          providerId,
-          manifest.provider?.config
-        );
-        this.providerPluginRegistry.set(providerId, {
-          instance: new ProviderClass({
-            manifest: manifest,
-            configValues: config ?? {},
-          }),
-          ProviderClass,
-        });
-      }
+      const config = await this.getProviderConfigFromDb(
+        providerId,
+        manifest.provider?.config
+      );
+      this.providerPluginRegistry.set(providerId, {
+        instance: new pluginConfig.provider({
+          manifest: manifest,
+          configValues: config ?? {},
+        }),
+        ProviderClass: pluginConfig.provider,
+      });
     }
   }
 
@@ -257,9 +286,79 @@ export class AiPluginService implements OnModuleInit {
     return regEntry.instance;
   }
 
+  /**
+   * Process an image value from the manifest.
+   * If it's a URL (starts with http:// or https://), return it as is.
+   * If it's a local file path, read it and convert to a base64 data URI.
+   * @param imageValue - The image value from the manifest (URL or local file path)
+   * @param packagePath - The path to the plugin package
+   * @returns The processed image value (URL or base64 data URI)
+   */
+  private async processImage(
+    imageValue: string,
+    packagePath: string
+  ): Promise<string | undefined> {
+    // If it's already a URL, return it as is
+    if (imageValue.startsWith('http://') || imageValue.startsWith('https://')) {
+      return imageValue;
+    }
+
+    // Try to find the image file in the package
+    // Check common locations: assets/, dist/assets/, or root
+    const possiblePaths = [
+      join(packagePath, 'assets', imageValue),
+      join(packagePath, 'dist', 'assets', imageValue),
+      join(packagePath, imageValue),
+    ];
+
+    let imagePath: string | null = null;
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        imagePath = path;
+        break;
+      }
+    }
+
+    if (!imagePath) {
+      this.logger.warn(
+        `Image file not found for plugin at ${packagePath}: ${imageValue}`
+      );
+      return undefined;
+    }
+
+    try {
+      // Read the image file
+      const imageBuffer = await readFile(imagePath);
+
+      // Determine MIME type from file extension
+      const ext = extname(imagePath).toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+      };
+
+      const mimeType = mimeTypes[ext] || 'image/png';
+
+      // Convert to base64 data URI
+      const base64 = imageBuffer.toString('base64');
+      return toBase64DataUri(mimeType, base64);
+    } catch (error) {
+      this.logger.error(
+        `Failed to read image file ${imagePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      return undefined;
+    }
+  }
+
   private async getProviderConfigFromDb(
     providerId: string,
-    schemaObj: ConfigSchemaDefinition
+    schemaObj?: ConfigSchemaDefinition
   ) {
     const aiProviderConfig =
       await this.prismaService.aiProviderConfig.findUnique({

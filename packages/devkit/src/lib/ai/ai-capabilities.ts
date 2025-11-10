@@ -1,8 +1,9 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { JsonObject } from '@longpoint/types';
+import { AssetSource } from '../types/asset.js';
 
 export interface ClassifyArgs<T extends ConfigValues = ConfigValues> {
-  url: string;
+  source: AssetSource;
   modelConfig: T;
 }
 
