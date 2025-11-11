@@ -1,11 +1,11 @@
 # Longpoint
 
-**Open source media asset management that understands your content**
+**Open source digital asset management that understands your content**
 
-Self-hosted media library that's API-first with semantic search and intelligent organization. Build media-rich applications, or just have a home-base for your content.
+An extensible, self-hosted media library that's API-first with semantic search and intelligent organization. Build media-rich applications, or just have a home-base for your content.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Status: Alpha](https://img.shields.io/badge/Status-Early%20Alpha-yellow.svg)]()
+[![Status: Proof of Concept](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow.svg)]()
 
 ## Key Features
 
