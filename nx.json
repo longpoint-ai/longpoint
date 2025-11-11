@@ -147,7 +147,8 @@
       "longpoint-ai-openai",
       "longpoint-storage-local",
       "longpoint-storage-s3",
-      "longpoint-storage-gcp"
+      "longpoint-storage-gcp",
+      "longpoint-vector-pinecone"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"

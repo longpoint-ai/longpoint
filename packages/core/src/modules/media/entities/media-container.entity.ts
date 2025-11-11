@@ -1,9 +1,11 @@
 import {
+  MediaAssetStatus,
   MediaAssetVariant,
   MediaContainerStatus,
   MediaType,
 } from '@/database/generated/prisma';
-import { SupportedMimeType } from '@longpoint/types';
+import { JsonObject, SupportedMimeType } from '@longpoint/types';
+import { formatBytes } from '@longpoint/utils/format';
 import {
   getMediaContainerPath,
   mimeTypeToExtension,
@@ -162,6 +164,64 @@ export class MediaContainerEntity {
     });
   }
 
+  /**
+   * Builds an embedding-friendly document from this media container.
+   * Aggregates container metadata, asset information, and classifier results
+   * into a format suitable for generating vector embeddings.
+   *
+   * @returns The embedding document, or null if the container has no primary asset
+   */
+  toEmbeddingDocument() {
+    const primaryAsset = this.assets.find(
+      (asset) => asset.variant === MediaAssetVariant.PRIMARY
+    );
+
+    if (primaryAsset?.status !== MediaAssetStatus.READY) {
+      return null;
+    }
+
+    const classifierResults = primaryAsset.classifierRuns.reduce((acc, run) => {
+      acc[run.classifier.name] = run.result as JsonObject;
+      return acc;
+    }, {} as Record<string, JsonObject>);
+
+    const dimensions =
+      primaryAsset.width && primaryAsset.height
+        ? `${primaryAsset.width}x${primaryAsset.height}`
+        : undefined;
+
+    const textParts: string[] = [
+      `Name: ${this.name}`,
+      `Path: ${this.path}`,
+      `MIME Type: ${primaryAsset.mimeType}`,
+      dimensions ? `Dimensions: ${dimensions}` : '',
+      primaryAsset.size ? `Size: ${formatBytes(primaryAsset.size)}` : '',
+      primaryAsset.aspectRatio
+        ? `Aspect Ratio: ${primaryAsset.aspectRatio.toFixed(2)}`
+        : '',
+    ];
+
+    for (const [classifierName, result] of Object.entries(classifierResults)) {
+      const resultText = this.formatClassifierResult(result);
+      textParts.push(`${classifierName}: ${resultText}`);
+    }
+
+    const text = textParts.filter(Boolean).join(', ');
+
+    return {
+      mediaContainerId: this.id,
+      name: this.name,
+      path: this.path,
+      type: this.type,
+      mimeType: primaryAsset.mimeType,
+      dimensions,
+      size: primaryAsset.size ?? undefined,
+      aspectRatio: primaryAsset.aspectRatio ?? undefined,
+      text,
+      classifierResults,
+    };
+  }
+
   private async getVariants() {
     return new MediaAssetVariantsDto(
       await Promise.all(
@@ -197,6 +257,32 @@ export class MediaContainerEntity {
       ...asset,
       url,
     };
+  }
+
+  /**
+   * Formats classifier result JSON into a readable string for embedding.
+   */
+  private formatClassifierResult(result: JsonObject): string {
+    if (typeof result === 'string') {
+      return result;
+    }
+    if (Array.isArray(result)) {
+      return result.map((item) => String(item)).join(', ');
+    }
+    if (typeof result === 'object' && result !== null) {
+      return Object.entries(result)
+        .map(([key, value]) => {
+          if (typeof value === 'string' || typeof value === 'number') {
+            return `${key}: ${value}`;
+          }
+          if (typeof value === 'boolean') {
+            return `${key}: ${value ? 'yes' : 'no'}`;
+          }
+          return `${key}: ${JSON.stringify(value)}`;
+        })
+        .join(', ');
+    }
+    return String(result);
   }
 
   get name() {

@@ -56,6 +56,9 @@
     },
     {
       "path": "./packages/plugins/ai-openai"
+    },
+    {
+      "path": "./packages/plugins/vector-pinecone"
     }
   ]
 }
