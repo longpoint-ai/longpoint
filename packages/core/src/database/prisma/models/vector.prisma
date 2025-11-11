@@ -7,14 +7,17 @@ model VectorProviderConfig {
 }
 
 model VectorIndex {
-  id               String   @id @default(cuid(2))
-  name             String   @unique
+  id               String    @id @default(cuid(2))
+  name             String    @unique
+  active           Boolean   @default(true)
+  indexing         Boolean   @default(false)
   /// Fully qualified model ID of the embedding model to use for this index. `null` implies the vector provider is capable of embedding documents without an external model.
   embeddingModelId String?
   /// Vector database provider ID
   vectorProviderId String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  lastIndexedAt    DateTime?
 
   documents VectorDocument[]
 
