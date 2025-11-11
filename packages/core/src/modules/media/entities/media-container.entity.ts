@@ -26,6 +26,7 @@ import { MediaContainerDto } from '../dtos/media-container.dto';
 import {
   MediaContainerAlreadyDeleted,
   MediaContainerAlreadyExists,
+  MediaContainerNotEmbeddable,
   MediaContainerNotFound,
 } from '../media.errors';
 
@@ -171,13 +172,13 @@ export class MediaContainerEntity {
    *
    * @returns The embedding document, or null if the container has no primary asset
    */
-  toEmbeddingDocument() {
+  toEmbeddingText(): string {
     const primaryAsset = this.assets.find(
       (asset) => asset.variant === MediaAssetVariant.PRIMARY
     );
 
     if (primaryAsset?.status !== MediaAssetStatus.READY) {
-      return null;
+      throw new MediaContainerNotEmbeddable(this.id);
     }
 
     const classifierResults = primaryAsset.classifierRuns.reduce((acc, run) => {
@@ -208,18 +209,7 @@ export class MediaContainerEntity {
 
     const text = textParts.filter(Boolean).join(', ');
 
-    return {
-      mediaContainerId: this.id,
-      name: this.name,
-      path: this.path,
-      type: this.type,
-      mimeType: primaryAsset.mimeType,
-      dimensions,
-      size: primaryAsset.size ?? undefined,
-      aspectRatio: primaryAsset.aspectRatio ?? undefined,
-      text,
-      classifierResults,
-    };
+    return text;
   }
 
   private async getVariants() {

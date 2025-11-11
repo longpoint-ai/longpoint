@@ -1,25 +1,31 @@
+model VectorProviderConfig {
+  id         String   @id @default(cuid(2))
+  providerId String   @unique
+  config     Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model VectorIndex {
   id               String   @id @default(cuid(2))
   name             String   @unique
-  /// Fully qualified model ID of the embedding model to use for this index
-  embeddingModelId String
-  /// Vector storage provider ID
-  vectorStorageId  String
+  /// Fully qualified model ID of the embedding model to use for this index. `null` implies the vector provider is capable of embedding documents without an external model.
+  embeddingModelId String?
+  /// Vector database provider ID
+  vectorProviderId String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   documents VectorDocument[]
 
   @@index([embeddingModelId])
-  @@index([vectorStorageId])
+  @@index([vectorProviderId])
 }
 
 model VectorDocument {
   id           String               @id @default(cuid(2))
   /// Direct storage of the embedding vector
   // embedding    Unsupported("vector")?
-  /// External ID of the document if using external vector storage
-  externalId   String               @unique
   /// Original document metadata
   metadata     Json?
   status       VectorDocumentStatus @default(PENDING)
