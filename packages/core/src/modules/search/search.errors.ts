@@ -2,19 +2,19 @@ import { apiErrorDoc, ResourceNotFound } from '@/shared/errors';
 import { applyDecorators } from '@nestjs/common';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 
-export class VectorIndexNotFound extends ResourceNotFound {
+export class SearchIndexNotFound extends ResourceNotFound {
   constructor(id: string) {
-    super('Vector index', id, 'id');
+    super('Search index', id, 'id');
   }
 }
-export const vectorIndexNotFoundDoc = apiErrorDoc(
-  new VectorIndexNotFound('r2qwyd76nvd98cu6ewg8ync2')
+export const searchIndexNotFoundDoc = apiErrorDoc(
+  new SearchIndexNotFound('r2qwyd76nvd98cu6ewg8ync2')
 );
-export const ApiVectorIndexNotFoundResponse = () => {
+export const ApiSearchIndexNotFoundResponse = () => {
   return applyDecorators(
     ApiNotFoundResponse({
-      description: 'Vector index not found',
-      ...vectorIndexNotFoundDoc,
+      description: 'Search index not found',
+      ...searchIndexNotFoundDoc,
     })
   );
 };

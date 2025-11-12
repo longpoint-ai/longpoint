@@ -13,7 +13,7 @@ import { createRequire } from 'module';
 import { join } from 'path';
 import { BaseVectorProviderEntity } from '../entities/base-vector-provider.entity';
 import { VectorProviderEntity } from '../entities/vector-provider.entity';
-import { VectorProviderNotFound } from '../vector.errors';
+import { VectorProviderNotFound } from '../search.errors';
 
 interface ProviderPluginRegistryEntry {
   VectorProviderClass: new (

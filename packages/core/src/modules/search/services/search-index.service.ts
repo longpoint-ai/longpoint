@@ -1,13 +1,13 @@
-import { VectorDocumentStatus } from '@/database';
+import { SearchIndexItemStatus } from '@/database';
 import { PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { Injectable, Logger } from '@nestjs/common';
-import { VectorIndexNotFound } from '../vector.errors';
+import { SearchIndexNotFound } from '../search.errors';
 import { VectorProviderService } from './vector-provider.service';
 
 @Injectable()
-export class VectorIndexService {
-  private readonly logger = new Logger(VectorIndexService.name);
+export class SearchIndexService {
+  private readonly logger = new Logger(SearchIndexService.name);
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -15,15 +15,17 @@ export class VectorIndexService {
     private readonly mediaContainerService: MediaContainerService // private readonly aiPluginService: AiPluginService
   ) {}
 
+  async createIndex() {}
+
   async indexMediaContainer(indexId: string, mediaContainerId: string) {
-    const index = await this.prismaService.vectorIndex.findUnique({
+    const index = await this.prismaService.searchIndex.findUnique({
       where: {
         id: indexId,
       },
     });
 
     if (!index) {
-      throw new VectorIndexNotFound(indexId);
+      throw new SearchIndexNotFound(indexId);
     }
 
     const mediaContainer =
@@ -35,17 +37,20 @@ export class VectorIndexService {
         index.vectorProviderId
       );
 
-    await this.prismaService.vectorDocument.upsert({
+    await this.prismaService.searchIndexItem.upsert({
       where: {
-        mediaContainerId,
+        indexId_mediaContainerId: {
+          indexId,
+          mediaContainerId,
+        },
       },
       create: {
-        mediaContainerId,
         indexId,
-        status: VectorDocumentStatus.INDEXING,
+        mediaContainerId,
+        status: SearchIndexItemStatus.INDEXING,
       },
       update: {
-        status: VectorDocumentStatus.INDEXING,
+        status: SearchIndexItemStatus.INDEXING,
         errorMessage: null,
       },
     });
@@ -72,12 +77,15 @@ export class VectorIndexService {
         // ]);
       }
 
-      await this.prismaService.vectorDocument.update({
+      await this.prismaService.searchIndexItem.update({
         where: {
-          mediaContainerId,
+          indexId_mediaContainerId: {
+            indexId,
+            mediaContainerId,
+          },
         },
         data: {
-          status: VectorDocumentStatus.INDEXED,
+          status: SearchIndexItemStatus.INDEXED,
         },
       });
     } catch (error) {
@@ -86,12 +94,15 @@ export class VectorIndexService {
       this.logger.error(
         `Failed to index container ${mediaContainerId}: ${errorMessage}`
       );
-      await this.prismaService.vectorDocument.update({
+      await this.prismaService.searchIndexItem.update({
         where: {
-          mediaContainerId,
+          indexId_mediaContainerId: {
+            indexId,
+            mediaContainerId,
+          },
         },
         data: {
-          status: VectorDocumentStatus.FAILED,
+          status: SearchIndexItemStatus.FAILED,
           errorMessage,
         },
       });

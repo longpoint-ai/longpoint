@@ -12,28 +12,28 @@ export interface VectorIndexParams {
   lastIndexedAt: Date | null;
 }
 
-@ApiSchema({ name: 'VectorIndex' })
-export class VectorIndexDto {
+@ApiSchema({ name: 'SearchIndex' })
+export class SearchIndexDto {
   @ApiProperty({
-    description: 'The ID of the vector index',
+    description: 'The ID of the index',
     example: 'o1jnduht9zboa0w1dcjfzqi5',
   })
   id: string;
 
   @ApiProperty({
-    description: 'Whether the vector index is active',
+    description: 'Whether the index is active',
     example: true,
   })
   active: boolean;
 
   @ApiProperty({
-    description: 'Whether the vector index is currently indexing',
+    description: 'Whether the index is currently indexing',
     example: false,
   })
   indexing: boolean;
 
   @ApiProperty({
-    description: 'The embedding model used by the vector index',
+    description: 'The model used by the index to generate vector embeddings',
     type: () => AiModelSummaryDto,
     nullable: true,
     example: {
@@ -61,7 +61,7 @@ export class VectorIndexDto {
   vectorProvider: VectorProviderShortDto;
 
   @ApiProperty({
-    description: 'The number of media items indexed by the vector index',
+    description: 'The number of media items indexed',
     example: 100,
   })
   mediaIndexed: number;
