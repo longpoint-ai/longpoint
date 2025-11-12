@@ -6,7 +6,7 @@ model VectorProviderConfig {
   updatedAt  DateTime @updatedAt
 }
 
-model VectorIndex {
+model SearchIndex {
   id               String    @id @default(cuid(2))
   name             String    @unique
   active           Boolean   @default(true)
@@ -19,34 +19,33 @@ model VectorIndex {
   updatedAt        DateTime  @updatedAt
   lastIndexedAt    DateTime?
 
-  documents VectorDocument[]
+  items SearchIndexItem[]
 
   @@index([embeddingModelId])
   @@index([vectorProviderId])
 }
 
-model VectorDocument {
-  id           String               @id @default(cuid(2))
+model SearchIndexItem {
+  id           String                @id @default(cuid(2))
   /// Direct storage of the embedding vector
   // embedding    Unsupported("vector")?
-  /// Original document metadata
-  metadata     Json?
-  status       VectorDocumentStatus @default(PENDING)
+  status       SearchIndexItemStatus @default(PENDING)
   errorMessage String?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
   indexId          String
-  index            VectorIndex    @relation(fields: [indexId], references: [id], onDelete: Cascade)
-  mediaContainerId String         @unique
+  index            SearchIndex    @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  mediaContainerId String
   mediaContainer   MediaContainer @relation(fields: [mediaContainerId], references: [id], onDelete: Cascade)
 
+  @@unique([indexId, mediaContainerId])
   @@index([indexId])
   @@index([status])
   @@index([mediaContainerId])
 }
 
-enum VectorDocumentStatus {
+enum SearchIndexItemStatus {
   PENDING
   INDEXING
   INDEXED

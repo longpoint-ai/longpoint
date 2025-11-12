@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MediaModule } from '../media';
-import { VectorIndexService } from './services/vector-index.service';
+import { SearchIndexService } from './services/search-index.service';
 import { VectorProviderService } from './services/vector-provider.service';
 
 @Module({
   imports: [MediaModule],
-  providers: [VectorProviderService, VectorIndexService],
+  providers: [VectorProviderService, SearchIndexService],
 })
-export class VectorModule {}
+export class SearchModule {}

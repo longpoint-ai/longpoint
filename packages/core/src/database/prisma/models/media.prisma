@@ -13,8 +13,7 @@ model MediaContainer {
   storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id])
 
   assets           MediaAsset[]
-  vectorDocumentId String?
-  vectorDocument   VectorDocument?
+  searchIndexItems SearchIndexItem[]
 
   @@unique([path, name])
   @@index([path])
