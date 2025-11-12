@@ -1,8 +1,14 @@
-import { SearchIndexItemStatus } from '@/database';
+import { Prisma, SearchIndexItemStatus } from '@/database';
+import { AiPluginService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { Injectable, Logger } from '@nestjs/common';
-import { SearchIndexNotFound } from '../search.errors';
+import { CreateSearchIndexDto } from '../dtos';
+import { SearchIndexEntity } from '../entities';
+import {
+  NativeEmbeddingNotSupported,
+  SearchIndexNotFound,
+} from '../search.errors';
 import { VectorProviderService } from './vector-provider.service';
 
 @Injectable()
@@ -12,10 +18,88 @@ export class SearchIndexService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly vectorProviderService: VectorProviderService,
-    private readonly mediaContainerService: MediaContainerService // private readonly aiPluginService: AiPluginService
+    private readonly mediaContainerService: MediaContainerService,
+    private readonly aiPluginService: AiPluginService
   ) {}
 
-  async createIndex() {}
+  async createIndex(data: CreateSearchIndexDto) {
+    const vectorProvider =
+      await this.vectorProviderService.getProviderByIdOrThrow(
+        data.vectorProviderId
+      );
+
+    let embeddingModelId = data.embeddingModelId;
+
+    if (!embeddingModelId && !vectorProvider.supportsEmbedding) {
+      throw new NativeEmbeddingNotSupported(vectorProvider.id);
+    }
+
+    if (embeddingModelId) {
+      // TODO: Handle custom embedding model
+      throw new Error('Custom embedding model not yet supported');
+    }
+
+    const index = await this.prismaService.searchIndex.create({
+      data: {
+        vectorProviderId: vectorProvider.id,
+        embeddingModelId,
+      },
+    });
+
+    if (data.active) {
+      await this.makeActiveIndex(index.id);
+    }
+
+    return new SearchIndexEntity({
+      id: index.id,
+      active: index.active,
+      indexing: index.indexing,
+      embeddingModel: null,
+      vectorProvider,
+      lastIndexedAt: index.lastIndexedAt,
+      mediaIndexed: 0,
+    });
+  }
+
+  async listIndexes(): Promise<SearchIndexEntity[]> {
+    const indexes = await this.prismaService.searchIndex.findMany({
+      select: {
+        id: true,
+        active: true,
+        indexing: true,
+        lastIndexedAt: true,
+        mediaIndexed: true,
+        vectorProviderId: true,
+        embeddingModelId: true,
+      },
+      orderBy: [{ active: 'desc' }, { lastIndexedAt: 'desc' }],
+    });
+
+    const indexEntities: SearchIndexEntity[] = [];
+
+    for (const index of indexes) {
+      const vectorProvider =
+        await this.vectorProviderService.getProviderByIdOrThrow(
+          index.vectorProviderId
+        );
+      const embeddingModel = index.embeddingModelId
+        ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+        : null;
+      indexEntities.push(
+        new SearchIndexEntity({
+          id: index.id,
+          active: index.active,
+          indexing: index.indexing,
+          lastIndexedAt: index.lastIndexedAt,
+          mediaIndexed: index.mediaIndexed,
+          vectorProvider,
+          embeddingModel,
+        })
+      );
+    }
+
+    return indexEntities;
+  }
 
   async indexMediaContainer(indexId: string, mediaContainerId: string) {
     const index = await this.prismaService.searchIndex.findUnique({
@@ -108,6 +192,37 @@ export class SearchIndexService {
       });
 
       throw error;
+    }
+  }
+
+  private async makeActiveIndex(
+    indexId: string,
+    tx?: Prisma.TransactionClient
+  ) {
+    const activate = async (tx: Prisma.TransactionClient) => {
+      await tx.searchIndex.updateMany({
+        where: {
+          active: true,
+        },
+        data: {
+          active: false,
+        },
+      });
+
+      await tx.searchIndex.update({
+        where: {
+          id: indexId,
+        },
+        data: {
+          active: true,
+        },
+      });
+    };
+
+    if (tx) {
+      await activate(tx);
+    } else {
+      await this.prismaService.$transaction(activate);
     }
   }
 }

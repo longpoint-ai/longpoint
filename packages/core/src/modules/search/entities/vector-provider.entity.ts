@@ -1,33 +1,32 @@
-import { ConfigSchemaService } from '@/modules/common/services';
 import {
   EmbedAndUpsertDocument,
   SearchOptions,
   SearchResult,
   VectorDocument,
-  VectorProvider,
+  VectorPluginManifest,
   VectorProviderPlugin,
 } from '@longpoint/devkit';
-import { BaseVectorProviderEntity } from './base-vector-provider.entity';
+import { VectorProviderDto, VectorProviderShortDto } from '../dtos';
 
 export interface VectorProviderEntityArgs {
   plugin: VectorProviderPlugin;
-  configSchemaService: ConfigSchemaService;
 }
 
-export class VectorProviderEntity
-  extends BaseVectorProviderEntity
-  implements VectorProvider
-{
+export class VectorProviderEntity {
+  readonly id: string;
+  readonly name: string;
+  readonly image?: string;
+  readonly supportsEmbedding: boolean;
+  private readonly configSchema: VectorPluginManifest['configSchema'];
+
   private readonly plugin: VectorProviderPlugin;
 
   constructor(args: VectorProviderEntityArgs) {
-    super({
-      id: args.plugin.id,
-      name: args.plugin.name,
-      image: args.plugin.manifest.image,
-      configSchema: args.plugin.manifest.configSchema,
-      configSchemaService: args.configSchemaService,
-    });
+    this.id = args.plugin.id;
+    this.name = args.plugin.name ?? this.id;
+    this.image = args.plugin.manifest.image;
+    this.supportsEmbedding = args.plugin.manifest.supportsEmbedding ?? false;
+    this.configSchema = args.plugin.manifest.configSchema;
     this.plugin = args.plugin;
   }
 
@@ -42,7 +41,7 @@ export class VectorProviderEntity
     return this.plugin.embedAndUpsert(indexId, documents);
   }
 
-  delete(indexId: string, documentIds: string[]): Promise<void> {
+  deleteDocuments(indexId: string, documentIds: string[]): Promise<void> {
     return this.plugin.delete(indexId, documentIds);
   }
 
@@ -64,5 +63,24 @@ export class VectorProviderEntity
 
   dropIndex(indexId: string): Promise<void> {
     return this.plugin.dropIndex(indexId);
+  }
+
+  toDto() {
+    return new VectorProviderDto({
+      id: this.id,
+      name: this.name,
+      image: this.image,
+      configSchema: this.configSchema,
+      supportsEmbedding: this.supportsEmbedding,
+      config: this.plugin.configValues,
+    });
+  }
+
+  toShortDto() {
+    return new VectorProviderShortDto({
+      id: this.id,
+      name: this.name,
+      image: this.image,
+    });
   }
 }

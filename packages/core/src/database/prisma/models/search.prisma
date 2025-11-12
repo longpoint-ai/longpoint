@@ -8,9 +8,9 @@ model VectorProviderConfig {
 
 model SearchIndex {
   id               String    @id @default(cuid(2))
-  name             String    @unique
   active           Boolean   @default(true)
   indexing         Boolean   @default(false)
+  mediaIndexed     Int       @default(0)
   /// Fully qualified model ID of the embedding model to use for this index. `null` implies the vector provider is capable of embedding documents without an external model.
   embeddingModelId String?
   /// Vector database provider ID

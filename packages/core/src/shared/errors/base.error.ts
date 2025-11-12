@@ -22,12 +22,19 @@ export class BaseError extends HttpException {
     super(response, status);
   }
 
-  public toJSON() {
+  toJSON() {
     const response = this.getResponse() as BaseErrorResponse;
     return {
       errorCode: this.errorCode,
       messages: response.messages || [this.message],
       ...(response.details ? { details: response.details } : {}),
     };
+  }
+
+  getMessages(): string[] {
+    const response = this.getResponse() as BaseErrorResponse;
+    return Array.isArray(response.messages)
+      ? response.messages
+      : [response.messages];
   }
 }
