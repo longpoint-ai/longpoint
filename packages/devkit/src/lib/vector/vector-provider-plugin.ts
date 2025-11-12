@@ -21,8 +21,8 @@ export abstract class VectorProviderPlugin<
 {
   readonly id: string;
   readonly name: string;
+  readonly configValues: ConfigValues<T['configSchema']>;
   private readonly _manifest: T;
-  protected readonly configValues: ConfigValues<T['configSchema']>;
 
   constructor(args: VectorProviderPluginArgs<T>) {
     this.id = args.manifest.id;

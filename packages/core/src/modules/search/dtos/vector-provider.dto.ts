@@ -2,7 +2,7 @@ import {
   type ConfigSchemaForDto,
   toConfigSchemaForDto,
 } from '@/shared/dtos/config-schema';
-import { ConfigSchemaDefinition } from '@longpoint/config-schema';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 
 export interface VectorProviderParams {
@@ -10,6 +10,7 @@ export interface VectorProviderParams {
   name: string;
   image?: string | null;
   supportsEmbedding?: boolean;
+  config?: ConfigValues;
   configSchema?: ConfigSchemaDefinition;
 }
 
@@ -45,6 +46,17 @@ export class VectorProviderDto {
   supportsEmbedding: boolean;
 
   @ApiProperty({
+    description: 'The configuration values for the vector provider',
+    type: 'object',
+    additionalProperties: true,
+    example: {
+      apiKey: 'sk-1234567890',
+    },
+    nullable: true,
+  })
+  config: ConfigValues | null;
+
+  @ApiProperty({
     description: 'The schema for the vector provider config',
     type: 'object',
     additionalProperties: {
@@ -58,6 +70,7 @@ export class VectorProviderDto {
     this.name = data.name;
     this.image = data.image ?? null;
     this.supportsEmbedding = data.supportsEmbedding ?? false;
+    this.config = data.config ?? null;
     this.configSchema = data.configSchema
       ? toConfigSchemaForDto(data.configSchema)
       : {};

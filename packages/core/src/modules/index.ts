@@ -5,6 +5,7 @@ export { CommonModule } from './common';
 export { LibraryModule } from './library';
 export { LoggerModule } from './logger';
 export { MediaModule } from './media';
+export { SearchModule } from './search';
 export { SetupModule } from './setup';
 export { StorageModule } from './storage';
 export { StorageUnitModule } from './storage-unit';
