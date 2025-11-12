@@ -8,6 +8,7 @@ model VectorProviderConfig {
 
 model SearchIndex {
   id               String    @id @default(cuid(2))
+  name             String    @unique
   active           Boolean   @default(true)
   indexing         Boolean   @default(false)
   mediaIndexed     Int       @default(0)
@@ -35,9 +36,8 @@ model SearchIndexItem {
   updatedAt    DateTime              @updatedAt
 
   indexId          String
-  index            SearchIndex    @relation(fields: [indexId], references: [id], onDelete: Cascade)
-  mediaContainerId String
-  mediaContainer   MediaContainer @relation(fields: [mediaContainerId], references: [id], onDelete: Cascade)
+  index            SearchIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  mediaContainerId String?
 
   @@unique([indexId, mediaContainerId])
   @@index([indexId])

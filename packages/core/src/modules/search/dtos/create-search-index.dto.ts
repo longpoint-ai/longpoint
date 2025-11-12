@@ -1,8 +1,16 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiSchema,
+  PickType,
+} from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { SearchIndexDto } from './search-index.dto';
 
 @ApiSchema({ name: 'CreateSearchIndex' })
-export class CreateSearchIndexDto {
+export class CreateSearchIndexDto extends PickType(SearchIndexDto, [
+  'name',
+] as const) {
   @IsBoolean()
   @IsOptional()
   @ApiPropertyOptional({
