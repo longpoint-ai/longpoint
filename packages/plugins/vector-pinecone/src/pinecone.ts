@@ -36,13 +36,13 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
   }
 
   override async embedAndUpsert(
-    indexId: string,
+    indexName: string,
     documents: EmbedAndUpsertDocument[]
   ): Promise<void> {
-    await this.client.index(indexId).upsertRecords(
+    await this.client.index(indexName).upsertRecords(
       documents.map((d) => ({
-        _id: d.id,
-        chunk_text: d.text,
+        id: d.id,
+        text: d.text,
         ...(d.metadata ? d.metadata : {}),
       }))
     );

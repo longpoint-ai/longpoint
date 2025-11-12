@@ -1,9 +1,11 @@
 import { AiModelSummaryDto } from '@/modules/ai';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { VectorProviderShortDto } from './vector-provider-short.dto';
 
 export interface VectorIndexParams {
   id: string;
+  name: string;
   active: boolean;
   indexing: boolean;
   embeddingModel: AiModelSummaryDto | null;
@@ -20,9 +22,18 @@ export class SearchIndexDto {
   })
   id: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The name of the index',
+    example: 'my-index',
+  })
+  name: string;
+
   @ApiProperty({
     description: 'Whether the index is active',
     example: true,
+    default: false,
   })
   active: boolean;
 
@@ -75,6 +86,7 @@ export class SearchIndexDto {
 
   constructor(data: VectorIndexParams) {
     this.id = data.id;
+    this.name = data.name;
     this.active = data.active;
     this.indexing = data.indexing;
     this.embeddingModel = data.embeddingModel;

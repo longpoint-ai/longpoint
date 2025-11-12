@@ -35,10 +35,10 @@ export class VectorProviderEntity {
   }
 
   embedAndUpsert(
-    indexId: string,
+    indexName: string,
     documents: EmbedAndUpsertDocument[]
   ): Promise<void> {
-    return this.plugin.embedAndUpsert(indexId, documents);
+    return this.plugin.embedAndUpsert(indexName, documents);
   }
 
   deleteDocuments(indexId: string, documentIds: string[]): Promise<void> {

@@ -15,6 +15,7 @@ import {
   selectMediaContainer,
 } from '../../../shared/selectors/media.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { EventPublisher } from '../../event';
 import { StorageUnitEntity } from '../../storage-unit/entities/storage-unit.entity';
 import { UrlSigningService } from '../../storage/services/url-signing.service';
 import {
@@ -35,6 +36,7 @@ export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   prismaService: PrismaService;
   pathPrefix: string;
   urlSigningService: UrlSigningService;
+  eventPublisher: EventPublisher;
 }
 
 export class MediaContainerEntity {
@@ -48,6 +50,7 @@ export class MediaContainerEntity {
   private readonly prismaService: PrismaService;
   private readonly pathPrefix: string;
   private readonly urlSigningService: UrlSigningService;
+  private readonly eventPublisher: EventPublisher;
   private assets: SelectedMediaContainer['assets'];
 
   constructor(args: MediaContainerEntityArgs) {
@@ -61,6 +64,7 @@ export class MediaContainerEntity {
     this.prismaService = args.prismaService;
     this.pathPrefix = args.pathPrefix;
     this.urlSigningService = args.urlSigningService;
+    this.eventPublisher = args.eventPublisher;
     this.assets = args.assets;
   }
 
@@ -127,6 +131,9 @@ export class MediaContainerEntity {
             prefix: this.pathPrefix,
           })
         );
+        await this.eventPublisher.publish('media.container.deleted', {
+          containerId: this.id,
+        });
         return;
       }
 
@@ -144,6 +151,9 @@ export class MediaContainerEntity {
       });
 
       this._status = updated.status;
+      await this.eventPublisher.publish('media.container.deleted', {
+        containerId: this.id,
+      });
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
         throw new MediaContainerNotFound(this.id);

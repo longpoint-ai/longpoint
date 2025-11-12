@@ -1,14 +1,12 @@
-import { Prisma, SearchIndexItemStatus } from '@/database';
+import { Prisma } from '@/database';
 import { AiPluginService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateSearchIndexDto } from '../dtos';
 import { SearchIndexEntity } from '../entities';
-import {
-  NativeEmbeddingNotSupported,
-  SearchIndexNotFound,
-} from '../search.errors';
+import { NativeEmbeddingNotSupported } from '../search.errors';
+import { SelectedSearchIndex, selectSearchIndex } from '../search.selectors';
 import { VectorProviderService } from './vector-provider.service';
 
 @Injectable()
@@ -39,39 +37,38 @@ export class SearchIndexService {
       throw new Error('Custom embedding model not yet supported');
     }
 
-    const index = await this.prismaService.searchIndex.create({
+    let index = await this.prismaService.searchIndex.create({
       data: {
+        name: data.name,
         vectorProviderId: vectorProvider.id,
         embeddingModelId,
       },
+      select: selectSearchIndex(),
     });
 
     if (data.active) {
-      await this.makeActiveIndex(index.id);
+      index = await this.makeActiveIndex(index.id);
     }
 
     return new SearchIndexEntity({
       id: index.id,
       active: index.active,
       indexing: index.indexing,
-      embeddingModel: null,
-      vectorProvider,
+      name: index.name,
       lastIndexedAt: index.lastIndexedAt,
-      mediaIndexed: 0,
+      mediaIndexed: index.mediaIndexed,
+      vectorProvider,
+      embeddingModel: index.embeddingModelId
+        ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+        : null,
+      mediaContainerService: this.mediaContainerService,
+      prismaService: this.prismaService,
     });
   }
 
   async listIndexes(): Promise<SearchIndexEntity[]> {
     const indexes = await this.prismaService.searchIndex.findMany({
-      select: {
-        id: true,
-        active: true,
-        indexing: true,
-        lastIndexedAt: true,
-        mediaIndexed: true,
-        vectorProviderId: true,
-        embeddingModelId: true,
-      },
+      select: selectSearchIndex(),
       orderBy: [{ active: 'desc' }, { lastIndexedAt: 'desc' }],
     });
 
@@ -90,10 +87,13 @@ export class SearchIndexService {
           id: index.id,
           active: index.active,
           indexing: index.indexing,
+          name: index.name,
           lastIndexedAt: index.lastIndexedAt,
           mediaIndexed: index.mediaIndexed,
           vectorProvider,
           embeddingModel,
+          mediaContainerService: this.mediaContainerService,
+          prismaService: this.prismaService,
         })
       );
     }
@@ -101,98 +101,108 @@ export class SearchIndexService {
     return indexEntities;
   }
 
-  async indexMediaContainer(indexId: string, mediaContainerId: string) {
-    const index = await this.prismaService.searchIndex.findUnique({
+  async getActiveIndex(): Promise<SearchIndexEntity | null> {
+    const index = await this.prismaService.searchIndex.findFirst({
       where: {
-        id: indexId,
+        active: true,
       },
+      select: selectSearchIndex(),
     });
 
     if (!index) {
-      throw new SearchIndexNotFound(indexId);
+      return null;
     }
 
-    const mediaContainer =
-      await this.mediaContainerService.getMediaContainerByIdOrThrow(
-        mediaContainerId
-      );
     const vectorProvider =
       await this.vectorProviderService.getProviderByIdOrThrow(
         index.vectorProviderId
       );
+    const embeddingModel = index.embeddingModelId
+      ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+      : null;
 
-    await this.prismaService.searchIndexItem.upsert({
+    return new SearchIndexEntity({
+      id: index.id,
+      active: index.active,
+      indexing: index.indexing,
+      name: index.name,
+      lastIndexedAt: index.lastIndexedAt,
+      mediaIndexed: index.mediaIndexed,
+      vectorProvider,
+      embeddingModel,
+      mediaContainerService: this.mediaContainerService,
+      prismaService: this.prismaService,
+    });
+  }
+
+  async removeMediaContainer(mediaContainerId: string): Promise<void> {
+    const indexItems = await this.prismaService.searchIndexItem.findMany({
       where: {
-        indexId_mediaContainerId: {
-          indexId,
-          mediaContainerId,
-        },
-      },
-      create: {
-        indexId,
         mediaContainerId,
-        status: SearchIndexItemStatus.INDEXING,
       },
-      update: {
-        status: SearchIndexItemStatus.INDEXING,
-        errorMessage: null,
+      select: {
+        indexId: true,
+        index: {
+          select: {
+            name: true,
+            vectorProviderId: true,
+          },
+        },
       },
     });
 
-    try {
-      const embeddingText = mediaContainer.toEmbeddingText();
-
-      if (!index.embeddingModelId) {
-        await vectorProvider.embedAndUpsert(indexId, [
-          {
-            id: mediaContainerId,
-            text: embeddingText,
-          },
-        ]);
-      } else {
-        // TODO: Handle after embedding model is implemented
-        // const model = this.aiPluginService.getModelOrThrow(index.embeddingModelId);
-        // const embedding = await model.createEmbedding(embeddingText);
-        // await vectorProvider.upsert(indexId, [
-        //   {
-        //     id: mediaContainerId,
-        //     embedding,
-        //   },
-        // ]);
-      }
-
-      await this.prismaService.searchIndexItem.update({
-        where: {
-          indexId_mediaContainerId: {
-            indexId,
-            mediaContainerId,
-          },
-        },
-        data: {
-          status: SearchIndexItemStatus.INDEXED,
-        },
-      });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Failed to index container ${mediaContainerId}: ${errorMessage}`
-      );
-      await this.prismaService.searchIndexItem.update({
-        where: {
-          indexId_mediaContainerId: {
-            indexId,
-            mediaContainerId,
-          },
-        },
-        data: {
-          status: SearchIndexItemStatus.FAILED,
-          errorMessage,
-        },
-      });
-
-      throw error;
+    if (indexItems.length === 0) {
+      return;
     }
+
+    const indexes = new Map<string, { name: string; vectorProviderId: string }>(
+      indexItems.map((item) => [
+        item.indexId,
+        {
+          name: item.index.name,
+          vectorProviderId: item.index.vectorProviderId,
+        },
+      ])
+    );
+
+    // Delete from vector providers
+    for (const [_, index] of indexes) {
+      const vectorProvider =
+        await this.vectorProviderService.getProviderByIdOrThrow(
+          index.vectorProviderId
+        );
+
+      try {
+        await vectorProvider.deleteDocuments(index.name, [mediaContainerId]);
+      } catch (error) {
+        this.logger.error(
+          `Failed to delete container ${mediaContainerId} from vector provider for index ${
+            index.name
+          }: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+        // Continue with database cleanup even if vector provider deletion fails
+      }
+    }
+
+    await this.prismaService.$transaction([
+      this.prismaService.searchIndexItem.deleteMany({
+        where: {
+          mediaContainerId,
+        },
+      }),
+      this.prismaService.searchIndex.updateMany({
+        where: {
+          id: {
+            in: Array.from(indexes.keys()),
+          },
+        },
+        data: {
+          mediaIndexed: {
+            decrement: 1,
+          },
+        },
+      }),
+    ]);
   }
 
   private async makeActiveIndex(
@@ -209,20 +219,46 @@ export class SearchIndexService {
         },
       });
 
-      await tx.searchIndex.update({
+      return tx.searchIndex.update({
         where: {
           id: indexId,
         },
         data: {
           active: true,
         },
+        select: selectSearchIndex(),
       });
     };
 
+    let updatedIndex: SelectedSearchIndex;
+
     if (tx) {
-      await activate(tx);
+      updatedIndex = await activate(tx);
     } else {
-      await this.prismaService.$transaction(activate);
+      updatedIndex = await this.prismaService.$transaction(activate);
     }
+
+    // Trigger background sync after activation
+    this.getActiveIndex()
+      .then((index) => {
+        if (index) {
+          index.sync().catch((error) => {
+            this.logger.error(
+              `Failed to sync index ${index.id} after activation: ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`
+            );
+          });
+        }
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Failed to get active index after activation: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+      });
+
+    return updatedIndex;
   }
 }

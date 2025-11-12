@@ -153,6 +153,10 @@ export class UploadService {
     assetId: string,
     data: Prisma.MediaAssetUpdateInput
   ) {
+    let containerId: string | null = null;
+    let wasReady = false;
+    let isReady = false;
+
     await this.prismaService.$transaction(async (tx) => {
       const updatedAsset = await tx.mediaAsset.update({
         where: {
@@ -163,6 +167,19 @@ export class UploadService {
           containerId: true,
         },
       });
+
+      containerId = updatedAsset.containerId;
+
+      const container = await tx.mediaContainer.findUnique({
+        where: {
+          id: containerId,
+        },
+        select: {
+          status: true,
+        },
+      });
+
+      wasReady = container?.status === 'READY';
 
       const allAssetsForContainer = await tx.mediaAsset.findMany({
         where: {
@@ -208,6 +225,8 @@ export class UploadService {
         containerStatus = 'PARTIALLY_FAILED';
       }
 
+      isReady = containerStatus === 'READY';
+
       await tx.mediaContainer.update({
         where: {
           id: updatedAsset.containerId,
@@ -217,6 +236,12 @@ export class UploadService {
         },
       });
     });
+
+    if (containerId && !wasReady && isReady) {
+      await this.eventPublisher.publish('media.container.ready', {
+        containerId,
+      });
+    }
   }
 
   /**
