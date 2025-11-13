@@ -3,10 +3,10 @@ import { PrismaService } from '../common/services';
 import { SetupStatusDto } from './dtos/setup-status.dto';
 
 @Injectable()
-export class SetupService {
+export class SystemService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getStatus() {
+  async getSetupStatus() {
     const hasSuperAdmin = await this.prismaService.userRole.findFirst({
       where: {
         role: {

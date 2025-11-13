@@ -255,23 +255,6 @@ export interface paths {
         patch: operations["updateVectorProviderConfig"];
         trace?: never;
     };
-    "/setup/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get first time setup status */
-        get: operations["getSetupStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/storage-providers": {
         parameters: {
             query?: never;
@@ -324,6 +307,23 @@ export interface paths {
         head?: never;
         /** Update a storage unit */
         patch: operations["updateStorageUnit"];
+        trace?: never;
+    };
+    "/system/setup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get system setup status */
+        get: operations["getSetupStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -750,7 +750,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-13T21:48:35.335Z
+             * @example 2025-11-13T23:05:03.726Z
              */
             expiresAt: string;
             /**
@@ -946,7 +946,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T20:48:35.335Z
+             * @example 2025-11-13T22:05:03.726Z
              */
             createdAt: string;
             /**
@@ -1000,7 +1000,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T20:48:35.335Z
+             * @example 2025-11-13T22:05:03.726Z
              */
             createdAt: string;
             /**
@@ -1031,7 +1031,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T20:48:35.335Z
+             * @example 2025-11-13T22:05:03.726Z
              */
             createdAt: string;
             /**
@@ -1998,25 +1998,6 @@ export interface operations {
             };
         };
     };
-    getSetupStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SetupStatus"];
-                };
-            };
-        };
-    };
     listStorageProviders: {
         parameters: {
             query?: never;
@@ -2212,6 +2193,25 @@ export interface operations {
                         errorCode?: string;
                         messages?: string[];
                     };
+                };
+            };
+        };
+    };
+    getSetupStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatus"];
                 };
             };
         };

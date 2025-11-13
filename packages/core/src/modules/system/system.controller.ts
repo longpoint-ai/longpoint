@@ -3,21 +3,21 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { SetupStatusDto } from './dtos/setup-status.dto';
-import { SetupService } from './setup.service';
+import { SystemService } from './system.service';
 
-@Controller('setup')
-@Public()
-@ApiSdkTag(SdkTag.Tools)
-export class SetupController {
-  constructor(private readonly setupService: SetupService) {}
+@Controller('system')
+@ApiSdkTag(SdkTag.System)
+export class SystemController {
+  constructor(private readonly systemService: SystemService) {}
 
-  @Get('status')
+  @Get('setup/status')
+  @Public()
   @ApiOperation({
-    summary: 'Get first time setup status',
+    summary: 'Get system setup status',
     operationId: 'getSetupStatus',
   })
   @ApiOkResponse({ type: SetupStatusDto })
-  async getStatus() {
-    return this.setupService.getStatus();
+  async getSetupStatus() {
+    return this.systemService.getSetupStatus();
   }
 }
