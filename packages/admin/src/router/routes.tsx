@@ -8,6 +8,7 @@ import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
 import { DashboardHome } from '../pages/dashboard/home';
 import { Library } from '../pages/dashboard/library';
 import { MediaDetail } from '../pages/dashboard/media-detail';
+import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
@@ -61,6 +62,18 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <Library />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/search"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <SearchResults />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

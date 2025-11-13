@@ -13,6 +13,7 @@ export class Longpoint {
   media: MediaClient;
   storage: StorageClient;
   library: LibraryClient;
+  search: SearchClient;
   tools: ToolsClient;
 
   constructor(config: ClientConfig = {}) {
@@ -28,6 +29,7 @@ export class Longpoint {
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.library = new LibraryClient(this.httpClient);
+    this.search = new SearchClient(this.httpClient);
     this.tools = new ToolsClient(this.httpClient);
   }
 }
@@ -260,6 +262,55 @@ class LibraryClient {
         const queryString = params.toString();
         const url = `library/tree${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
+        return response.data;
+  }
+}
+
+class SearchClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Search media containers
+   */
+    async searchMedia(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
+        const url = `search`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * Create a search index
+   */
+    async createSearchIndex(data: components['schemas']['CreateSearchIndex']): Promise<components['schemas']['SearchIndex']> {
+        const url = `search/indexes`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List search indexes
+   */
+    async listSearchIndexes(): Promise<components['schemas']['SearchIndex'][]> {
+        const url = `search/indexes`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * List installed vector providers
+   */
+    async listVectorProviders(): Promise<components['schemas']['VectorProvider'][]> {
+        const url = `search/vector-providers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update the config for a vector provider
+   */
+    async updateVectorProviderConfig(providerId: string, data: components['schemas']['UpdateVectorProviderConfig']): Promise<components['schemas']['VectorProvider']> {
+        const url = `search/vector-providers/${encodeURIComponent(String(providerId))}`;
+        const response = await this.httpClient.patch(url, data);
         return response.data;
   }
 }
