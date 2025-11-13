@@ -4,7 +4,6 @@ import {
   MediaContainerStatus,
   Prisma,
 } from '@/database';
-import { ClassifierService } from '@/modules/classifier/classifier.service';
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage-unit';
 import type { StorageProvider } from '@longpoint/devkit';
@@ -29,7 +28,6 @@ export class UploadService {
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
     private readonly probeService: MediaProbeService,
-    private readonly classifierService: ClassifierService,
     private readonly configService: ConfigService,
     private readonly urlSigningService: UrlSigningService,
     private readonly eventPublisher: EventPublisher
@@ -88,8 +86,6 @@ export class UploadService {
       });
       throw error;
     }
-
-    this.runClassifiers(uploadToken.mediaAsset);
   }
 
   private async finalize(
@@ -242,24 +238,5 @@ export class UploadService {
         containerId,
       });
     }
-  }
-
-  /**
-   * Run any classifiers that are configured to run on the uploaded asset
-   * @param asset
-   */
-  private async runClassifiers(
-    asset: Pick<MediaAsset, 'id' | 'classifiersOnUpload'>
-  ) {
-    if (asset.classifiersOnUpload.length === 0) {
-      return;
-    }
-
-    const classifiers = await this.classifierService.listClassifiers();
-    const entities = classifiers.filter((classifier) =>
-      asset.classifiersOnUpload.includes(classifier.name)
-    );
-
-    await Promise.all(entities.map((entity) => entity.run(asset.id)));
   }
 }
