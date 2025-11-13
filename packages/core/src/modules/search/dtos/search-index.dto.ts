@@ -81,6 +81,7 @@ export class SearchIndexDto {
     description: 'The date and time the index last ran successfully',
     example: '2025-01-01T00:00:00.000Z',
     nullable: true,
+    type: 'string',
   })
   lastIndexedAt: Date | null;
 

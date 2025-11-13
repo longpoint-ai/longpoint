@@ -1,8 +1,9 @@
 import { ApiSdkTag, Public } from '@/shared/decorators';
 import { SdkTag } from '@/shared/types/swagger.types';
 import { Controller, Get } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { SetupStatusDto } from './dtos/setup-status.dto';
+import { SystemStatusDto } from './dtos/system-status.dto';
 import { SystemService } from './system.service';
 
 @Controller('system')
@@ -19,5 +20,16 @@ export class SystemController {
   @ApiOkResponse({ type: SetupStatusDto })
   async getSetupStatus() {
     return this.systemService.getSetupStatus();
+  }
+
+  @Get('status')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get system status',
+    operationId: 'getSystemStatus',
+  })
+  @ApiOkResponse({ type: SystemStatusDto })
+  async getSystemStatus() {
+    return this.systemService.getSystemStatus();
   }
 }

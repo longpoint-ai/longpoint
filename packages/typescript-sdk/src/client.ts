@@ -326,6 +326,15 @@ class SystemClient {
         const response = await this.httpClient.get(url);
         return response.data;
   }
+
+    /**
+   * Get system status
+   */
+    async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
+        const url = `system/status`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
 }
 
 // Export default instance
