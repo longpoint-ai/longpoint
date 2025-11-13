@@ -274,6 +274,40 @@ export class MediaContainerService {
   }
 
   /**
+   * Lists media containers by their unique identifiers.
+   *
+   * @param ids - The unique identifiers of the media containers
+   *
+   * @returns An array of MediaContainerEntity instances matching the IDs
+   */
+  async listContainersByIds(ids: string[]): Promise<MediaContainerEntity[]> {
+    const containers = await this.prismaService.mediaContainer.findMany({
+      where: { id: { in: ids } },
+      select: {
+        ...selectMediaContainerSummary(),
+        storageUnitId: true,
+      },
+    });
+
+    const entities = await Promise.all(
+      containers.map(
+        async (container) =>
+          new MediaContainerEntity({
+            ...container,
+            storageUnit: await this.storageUnitService.getStorageUnitById(
+              container.storageUnitId
+            ),
+            prismaService: this.prismaService,
+            pathPrefix: this.configService.get('storage.pathPrefix'),
+            urlSigningService: this.urlSigningService,
+            eventPublisher: this.eventPublisher,
+          })
+      )
+    );
+
+    return entities;
+  }
+  /**
    * Determines the effective name to use for a media container.
    *
    * If a name is provided, it checks for conflicts and throws if a container
