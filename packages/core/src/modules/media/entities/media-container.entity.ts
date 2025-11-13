@@ -21,6 +21,7 @@ import { UrlSigningService } from '../../storage/services/url-signing.service';
 import {
   MediaAssetDto,
   MediaAssetVariantsDto,
+  MediaContainerSummaryDto,
   UpdateMediaContainerDto,
 } from '../dtos';
 import { MediaContainerDto } from '../dtos/media-container.dto';
@@ -171,6 +172,17 @@ export class MediaContainerEntity {
       status: this.status,
       createdAt: this.createdAt,
       variants: await this.getVariants(),
+      thumbnails: await this.getThumbnailAssets(),
+    });
+  }
+
+  async toSummaryDto(): Promise<MediaContainerSummaryDto> {
+    return new MediaContainerSummaryDto({
+      id: this.id,
+      name: this.name,
+      path: this.path,
+      status: this.status,
+      createdAt: this.createdAt,
       thumbnails: await this.getThumbnailAssets(),
     });
   }

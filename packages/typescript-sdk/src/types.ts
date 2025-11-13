@@ -186,6 +186,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search media containers */
+        post: operations["searchMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/indexes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List search indexes */
+        get: operations["listSearchIndexes"];
+        put?: never;
+        /** Create a search index */
+        post: operations["createSearchIndex"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/vector-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List installed vector providers */
+        get: operations["listVectorProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/vector-providers/{providerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the config for a vector provider */
+        patch: operations["updateVectorProviderConfig"];
+        trace?: never;
+    };
     "/setup/status": {
         parameters: {
             query?: never;
@@ -681,7 +750,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-07T23:10:20.911Z
+             * @example 2025-11-13T21:48:35.335Z
              */
             expiresAt: string;
             /**
@@ -710,6 +779,29 @@ export interface components {
              * @example https://longpoint.example.com/api/media/abc123/upload?token=abcdefghijklmnopqrst
              */
             url: string;
+        };
+        CreateSearchIndex: {
+            /**
+             * @description Whether to make the new index the active index.
+             * @default false
+             * @example true
+             */
+            active: boolean;
+            /**
+             * @description The fully qualified ID of the embedding model to use for the index. Leave blank to use the vector provider's embedding model, if supported.
+             * @example openai/text-embedding-3-small
+             */
+            embeddingModelId?: string;
+            /**
+             * @description The name of the index
+             * @example my-index
+             */
+            name: string;
+            /**
+             * @description The ID of the vector provider to use for the index
+             * @example pinecone
+             */
+            vectorProviderId: string;
         };
         CreateStorageUnit: {
             /**
@@ -854,7 +946,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-07T22:10:20.911Z
+             * @example 2025-11-13T20:48:35.335Z
              */
             createdAt: string;
             /**
@@ -904,11 +996,42 @@ export interface components {
              */
             variants: components["schemas"]["MediaAssetVariants"];
         };
+        MediaContainerSummary: {
+            /**
+             * Format: date-time
+             * @description When the media container was created
+             * @example 2025-11-13T20:48:35.335Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the media container
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying media
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The directory path of the media container
+             * @example /
+             */
+            path: string;
+            /**
+             * @description The status of the media container
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /** @description Thumbnails for the media container */
+            thumbnails: components["schemas"]["MediaAsset"][];
+        };
         MediaContainerTreeItem: {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-07T22:10:20.911Z
+             * @example 2025-11-13T20:48:35.335Z
              */
             createdAt: string;
             /**
@@ -940,6 +1063,81 @@ export interface components {
              * @enum {string}
              */
             treeItemType: "MEDIA";
+        };
+        SearchIndex: {
+            /**
+             * @description Whether the index is active
+             * @default false
+             * @example true
+             */
+            active: boolean;
+            /**
+             * @description The model used by the index to generate vector embeddings
+             * @example {
+             *       "id": "text-embedding-3-small",
+             *       "name": "Text Embedding 3 Small",
+             *       "fullyQualifiedId": "openai/text-embedding-3-small",
+             *       "provider": {
+             *         "id": "openai",
+             *         "name": "OpenAI",
+             *         "image": null,
+             *         "needsConfig": false
+             *       }
+             *     }
+             */
+            embeddingModel: components["schemas"]["AiModelSummary"] | null;
+            /**
+             * @description The ID of the index
+             * @example o1jnduht9zboa0w1dcjfzqi5
+             */
+            id: string;
+            /**
+             * @description Whether the index is currently indexing
+             * @example false
+             */
+            indexing: boolean;
+            /**
+             * @description The date and time the index last ran successfully
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            lastIndexedAt: Record<string, never> | null;
+            /**
+             * @description The number of media items indexed
+             * @example 100
+             */
+            mediaIndexed: number;
+            /**
+             * @description The name of the index
+             * @example my-index
+             */
+            name: string;
+            /**
+             * @description The vector database provider used by the index
+             * @example {
+             *       "id": "pinecone",
+             *       "name": "Pinecone",
+             *       "image": null
+             *     }
+             */
+            vectorProvider: components["schemas"]["VectorProviderShort"];
+        };
+        SearchQuery: {
+            /** @description Maximum number of results to return */
+            limit?: number;
+            /**
+             * @description The search query text
+             * @example sunset beach
+             */
+            query: string;
+        };
+        SearchResults: {
+            /** @description The search results */
+            results: components["schemas"]["MediaContainerSummary"][];
+            /**
+             * @description Total number of results
+             * @example 5
+             */
+            total: number;
         };
         SetupStatus: {
             /**
@@ -1123,6 +1321,67 @@ export interface components {
              * @example local
              */
             providerId?: string;
+        };
+        UpdateVectorProviderConfig: {
+            /**
+             * @description The configuration values for the vector provider
+             * @example {
+             *       "apiKey": "1234567890"
+             *     }
+             */
+            config: Record<string, never>;
+        };
+        VectorProvider: {
+            /**
+             * @description The configuration values for the vector provider
+             * @example {
+             *       "apiKey": "sk-1234567890"
+             *     }
+             */
+            config: {
+                [key: string]: unknown;
+            } | null;
+            /** @description The schema for the vector provider config */
+            configSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description The ID of the vector provider
+             * @example pinecone
+             */
+            id: string;
+            /**
+             * @description An optional icon image of the vector provider
+             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
+             */
+            image: string | null;
+            /**
+             * @description The name of the vector provider
+             * @example Pinecone
+             */
+            name: string;
+            /**
+             * @description Whether the vector provider is capable of embedding documents without an external model
+             * @example true
+             */
+            supportsEmbedding: boolean;
+        };
+        VectorProviderShort: {
+            /**
+             * @description The ID of the vector provider
+             * @example pinecone
+             */
+            id: string;
+            /**
+             * @description An optional icon image of the vector provider
+             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
+             */
+            image: string | null;
+            /**
+             * @description The name of the vector provider
+             * @example Pinecone
+             */
+            name: string;
         };
     };
     responses: never;
@@ -1626,6 +1885,115 @@ export interface operations {
                         errorCode?: string;
                         messages?: string[];
                     };
+                };
+            };
+        };
+    };
+    searchMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchQuery"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResults"];
+                };
+            };
+        };
+    };
+    listSearchIndexes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchIndex"][];
+                };
+            };
+        };
+    };
+    createSearchIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSearchIndex"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchIndex"];
+                };
+            };
+        };
+    };
+    listVectorProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VectorProvider"][];
+                };
+            };
+        };
+    };
+    updateVectorProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateVectorProviderConfig"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VectorProvider"];
                 };
             };
         };

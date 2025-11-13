@@ -1,4 +1,5 @@
 import { AppSidebar } from '@/components/app-sidebar';
+import { SearchBar } from '@/components/search-bar';
 import { UploadDialog } from '@/components/upload-dialog';
 import { UploadProvider } from '@/contexts/upload-context';
 import {
@@ -20,6 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <main className="flex-1">
             <div className="flex items-center gap-2 p-4 border-b">
               <SidebarTrigger className="h-8 w-8" />
+              <SearchBar />
             </div>
             <div className="container mx-auto px-6 py-8 max-w-7xl">
               {children}

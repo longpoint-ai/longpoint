@@ -2,7 +2,7 @@ import { components } from '@longpoint/sdk';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { MediaGridItem } from './media-grid-item';
 
-interface MediaGridProps {
+export interface MediaGridProps {
   items: components['schemas']['LibraryTree']['items'];
   isLoading?: boolean;
   onFolderClick?: (path: string) => void;

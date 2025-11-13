@@ -2,6 +2,7 @@ import { SearchIndexItemStatus } from '@/database';
 import { AiModelEntity } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
+import { MediaContainerSummaryDto } from '@/modules/media/dtos/media-container-summary.dto';
 import { Logger } from '@nestjs/common';
 import { SearchIndexDto } from '../dtos';
 import { VectorProviderEntity } from './vector-provider.entity';
@@ -55,6 +56,41 @@ export class SearchIndexEntity {
         status: SearchIndexItemStatus.STALE,
       },
     });
+  }
+
+  /**
+   * Queries the search index with a text query and returns matching media containers.
+   * @param queryText The search query text
+   * @param limit Optional limit on the number of results (default: 10)
+   * @returns Array of MediaContainerSummaryDto matching the query
+   */
+  async query(
+    queryText: string,
+    limit = 10
+  ): Promise<MediaContainerSummaryDto[]> {
+    const searchResults = await this.vectorProvider.embedAndSearch(
+      this.name,
+      queryText,
+      { limit }
+    );
+
+    if (searchResults.length === 0) {
+      return [];
+    }
+
+    const scoreMap = new Map<string, number>(
+      searchResults.map((result) => [result.id, result.score])
+    );
+    const containers = await this.mediaContainerService.listContainersByIds(
+      Array.from(scoreMap.keys())
+    );
+    containers.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
+
+    const summaryDtos = await Promise.all(
+      containers.map((container) => container.toSummaryDto())
+    );
+
+    return summaryDtos;
   }
 
   async sync(): Promise<void> {
