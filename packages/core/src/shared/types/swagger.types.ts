@@ -4,7 +4,7 @@ export const SdkTag = {
   Media: 'media',
   Search: 'search',
   Storage: 'storage',
-  Tools: 'tools',
+  System: 'system',
 } as const;
 
 export type SdkTag = (typeof SdkTag)[keyof typeof SdkTag];

@@ -14,7 +14,7 @@ export class Longpoint {
   storage: StorageClient;
   library: LibraryClient;
   search: SearchClient;
-  tools: ToolsClient;
+  system: SystemClient;
 
   constructor(config: ClientConfig = {}) {
     this.httpClient = axios.create({
@@ -30,7 +30,7 @@ export class Longpoint {
     this.storage = new StorageClient(this.httpClient);
     this.library = new LibraryClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
-    this.tools = new ToolsClient(this.httpClient);
+    this.system = new SystemClient(this.httpClient);
   }
 }
 
@@ -315,14 +315,14 @@ class SearchClient {
   }
 }
 
-class ToolsClient {
+class SystemClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Get first time setup status
+   * Get system setup status
    */
     async getSetupStatus(): Promise<components['schemas']['SetupStatus']> {
-        const url = `setup/status`;
+        const url = `system/setup/status`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
