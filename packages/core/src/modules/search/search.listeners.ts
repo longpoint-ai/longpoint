@@ -1,5 +1,6 @@
 import { DebounceTaskExecutor } from '@/shared/utils/debounce-task.executor';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import type { ClassifierRunCompleteEventPayload } from '../classifier';
 import { HandleEvent } from '../event';
 import {
   type MediaContainerDeletedEventPayload,
@@ -39,6 +40,17 @@ export class SearchListeners implements OnModuleDestroy {
     payload: MediaContainerDeletedEventPayload
   ) {
     await this.indexExecutor.requestRun();
+  }
+
+  @HandleEvent('classifier.run.complete')
+  async handleClassifierRunComplete(
+    payload: ClassifierRunCompleteEventPayload
+  ) {
+    const activeIndex = await this.searchIndexService.getActiveIndex();
+    if (activeIndex) {
+      await activeIndex.markContainersAsStale([payload.mediaContainerId]);
+      await this.indexExecutor.requestRun();
+    }
   }
 
   async onModuleDestroy(): Promise<void> {
