@@ -4,15 +4,22 @@ import {
   TabsList,
   TabsTrigger,
 } from '@longpoint/ui/components/tabs';
-import { BotIcon, BoxIcon, SettingsIcon } from 'lucide-react';
+import { BotIcon, BoxIcon, SearchIcon, SettingsIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { GeneralSettings } from './general-settings';
 import { ModelSettings } from './model-settings/model-settings';
 import { NotificationSettings } from './notification-settings';
+import { SearchSettings } from './search-settings';
 import { StorageSettings } from './storage-settings';
 
-const VALID_TABS = ['general', 'storage', 'models', 'notifications'] as const;
+const VALID_TABS = [
+  'general',
+  'storage',
+  'models',
+  'search',
+  'notifications',
+] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
 export function Settings() {
@@ -65,6 +72,10 @@ export function Settings() {
             <BotIcon className="h-4 w-4" />
             Models
           </TabsTrigger>
+          <TabsTrigger value="search">
+            <SearchIcon className="h-4 w-4" />
+            Search
+          </TabsTrigger>
           {/* <TabsTrigger value="notifications">
             <BellIcon className="h-4 w-4" />
             Notifications
@@ -78,6 +89,9 @@ export function Settings() {
         </TabsContent>
         <TabsContent value="models">
           <ModelSettings />
+        </TabsContent>
+        <TabsContent value="search">
+          <SearchSettings />
         </TabsContent>
         <TabsContent value="notifications">
           <NotificationSettings />

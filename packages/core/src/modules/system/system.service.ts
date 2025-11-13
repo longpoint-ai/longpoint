@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services';
 import { SetupStatusDto } from './dtos/setup-status.dto';
+import { SystemStatusDto } from './dtos/system-status.dto';
 
 @Injectable()
 export class SystemService {
@@ -20,5 +21,16 @@ export class SystemService {
     });
 
     return new SetupStatusDto({ isFirstTimeSetup: !hasSuperAdmin });
+  }
+
+  async getSystemStatus() {
+    const totalContainers = await this.prismaService.mediaContainer.count({
+      where: {
+        deletedAt: null,
+        status: 'READY',
+      },
+    });
+
+    return new SystemStatusDto({ totalContainers });
   }
 }

@@ -326,6 +326,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/system/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get system status */
+        get: operations["getSystemStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -750,7 +767,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-13T23:05:03.726Z
+             * @example 2025-11-13T23:41:10.564Z
              */
             expiresAt: string;
             /**
@@ -946,7 +963,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T22:05:03.726Z
+             * @example 2025-11-13T22:41:10.564Z
              */
             createdAt: string;
             /**
@@ -1000,7 +1017,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T22:05:03.726Z
+             * @example 2025-11-13T22:41:10.564Z
              */
             createdAt: string;
             /**
@@ -1031,7 +1048,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T22:05:03.726Z
+             * @example 2025-11-13T22:41:10.564Z
              */
             createdAt: string;
             /**
@@ -1100,7 +1117,7 @@ export interface components {
              * @description The date and time the index last ran successfully
              * @example 2025-01-01T00:00:00.000Z
              */
-            lastIndexedAt: Record<string, never> | null;
+            lastIndexedAt: string | null;
             /**
              * @description The number of media items indexed
              * @example 100
@@ -1253,6 +1270,13 @@ export interface components {
              * @example 2025-01-01T00:00:00.000Z
              */
             updatedAt: string;
+        };
+        SystemStatus: {
+            /**
+             * @description Total number of ready media containers
+             * @example 150
+             */
+            totalContainers: number;
         };
         UpdateAiProviderConfig: {
             /**
@@ -2212,6 +2236,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SetupStatus"];
+                };
+            };
+        };
+    };
+    getSystemStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemStatus"];
                 };
             };
         };
