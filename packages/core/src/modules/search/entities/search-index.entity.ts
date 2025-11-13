@@ -45,99 +45,18 @@ export class SearchIndexEntity {
     this.prismaService = args.prismaService;
   }
 
-  /**
-   * Adds a media container to this index.
-   * @param mediaContainerId The ID of the media container to index
-   */
-  async indexContainer(mediaContainerId: string): Promise<void> {
-    const mediaContainer =
-      await this.mediaContainerService.getMediaContainerByIdOrThrow(
-        mediaContainerId
-      );
-
-    await this.prismaService.searchIndexItem.upsert({
+  async markContainersAsStale(containerIds: string[]): Promise<void> {
+    await this.prismaService.searchIndexItem.updateMany({
       where: {
-        indexId_mediaContainerId: {
-          indexId: this.id,
-          mediaContainerId,
-        },
-      },
-      create: {
         indexId: this.id,
-        mediaContainerId,
-        status: SearchIndexItemStatus.INDEXING,
+        mediaContainerId: { in: containerIds },
       },
-      update: {
-        status: SearchIndexItemStatus.INDEXING,
-        errorMessage: null,
+      data: {
+        status: SearchIndexItemStatus.STALE,
       },
     });
-
-    try {
-      const embeddingText = mediaContainer.toEmbeddingText();
-
-      if (!this.embeddingModel) {
-        await this.vectorProvider.embedAndUpsert(this.name, [
-          {
-            id: mediaContainerId,
-            text: embeddingText,
-          },
-        ]);
-      } else {
-        // TODO: Handle after embedding model is implemented
-        // const embedding = await this.embeddingModel.createEmbedding(embeddingText);
-        // await this.vectorProvider.upsert(this.id, [
-        //   {
-        //     id: mediaContainerId,
-        //     embedding,
-        //   },
-        // ]);
-      }
-
-      await this.prismaService.$transaction([
-        this.prismaService.searchIndexItem.update({
-          where: {
-            indexId_mediaContainerId: {
-              indexId: this.id,
-              mediaContainerId,
-            },
-          },
-          data: {
-            status: SearchIndexItemStatus.INDEXED,
-          },
-        }),
-        this.prismaService.searchIndex.update({
-          where: { id: this.id },
-          data: {
-            mediaIndexed: {
-              increment: 1,
-            },
-          },
-        }),
-      ]);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      await this.prismaService.searchIndexItem.update({
-        where: {
-          indexId_mediaContainerId: {
-            indexId: this.id,
-            mediaContainerId,
-          },
-        },
-        data: {
-          status: SearchIndexItemStatus.FAILED,
-          errorMessage,
-        },
-      });
-
-      throw error;
-    }
   }
 
-  /**
-   * Syncs the index with all `READY` media containers.
-   */
   async sync(): Promise<void> {
     const currentIndex = await this.prismaService.searchIndex.findUnique({
       where: { id: this.id },
@@ -154,44 +73,52 @@ export class SearchIndexEntity {
     });
 
     try {
-      const readyContainers = await this.prismaService.mediaContainer.findMany({
+      // Step 1: Delete items with null mediaContainerId in batches
+      await this.deleteNullContainerItems();
+
+      // Step 2: Find containers that need indexing (new ones and stale ones)
+      const newContainers = await this.prismaService.mediaContainer.findMany({
         where: {
           status: 'READY',
           deletedAt: null,
+          searchIndexItems: {
+            none: {
+              indexId: this.id,
+            },
+          },
         },
         select: {
           id: true,
         },
       });
 
-      const indexedItems = await this.prismaService.searchIndexItem.findMany({
+      const staleItems = await this.prismaService.searchIndexItem.findMany({
         where: {
           indexId: this.id,
-          status: 'INDEXED',
+          status: SearchIndexItemStatus.STALE,
+          mediaContainerId: { not: null },
         },
         select: {
           mediaContainerId: true,
         },
       });
 
-      const indexedContainerIds = new Set(
-        indexedItems.map((item) => item.mediaContainerId)
-      );
+      const staleContainerIds = staleItems
+        .map((item) => item.mediaContainerId)
+        .filter((id): id is string => id !== null);
 
-      // Index containers that aren't already indexed
-      for (const container of readyContainers) {
-        if (!indexedContainerIds.has(container.id)) {
-          try {
-            await this.indexContainer(container.id);
-          } catch (error) {
-            // Continue with other containers even if one fails
-            this.logger.error(
-              `Failed to index container ${container.id}: ${
-                error instanceof Error ? error.message : 'Unknown error'
-              }`
-            );
-          }
-        }
+      const containersToIndex = [
+        ...newContainers.map((c) => c.id),
+        ...staleContainerIds,
+      ];
+
+      if (containersToIndex.length === 0) {
+        this.logger.log('No containers to index');
+      } else {
+        this.logger.log(
+          `Indexing ${containersToIndex.length} containers in batches (${newContainers.length} new, ${staleContainerIds.length} stale)`
+        );
+        await this.indexContainersBatch(containersToIndex);
       }
 
       const totalIndexed = await this.prismaService.searchIndexItem.count({
@@ -201,7 +128,7 @@ export class SearchIndexEntity {
         },
       });
 
-      await this.prismaService.searchIndex.update({
+      const updatedIndex = await this.prismaService.searchIndex.update({
         where: { id: this.id },
         data: {
           indexing: false,
@@ -209,11 +136,252 @@ export class SearchIndexEntity {
           mediaIndexed: totalIndexed,
         },
       });
+
+      this._lastIndexedAt = updatedIndex.lastIndexedAt;
+      this._mediaIndexed = updatedIndex.mediaIndexed;
+      this._indexing = updatedIndex.indexing;
     } catch (error) {
       // Ensure indexing flag is cleared even on error
       await this.prismaService.searchIndex.update({
         where: { id: this.id },
         data: { indexing: false },
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Deletes items with null mediaContainerId in batches.
+   * @param batchSize Number of items to process per batch (default: 50)
+   */
+  private async deleteNullContainerItems(batchSize = 50): Promise<void> {
+    let hasMore = true;
+    let offset = 0;
+
+    while (hasMore) {
+      const nullItems = await this.prismaService.searchIndexItem.findMany({
+        where: {
+          indexId: this.id,
+          mediaContainerId: null,
+        },
+        select: {
+          externalId: true,
+        },
+        take: batchSize,
+        skip: offset,
+      });
+
+      if (nullItems.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      const externalIds = nullItems.map((item) => item.externalId);
+      this.logger.log(
+        `Deleting batch of ${externalIds.length} external IDs with null mediaContainerId`
+      );
+
+      // Delete from vector store first, then from database
+      try {
+        await this.vectorProvider.deleteDocuments(this.name, externalIds);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to delete null items from vector store: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+        // Continue with database cleanup even if vector provider deletion fails
+      }
+
+      await this.prismaService.searchIndexItem.deleteMany({
+        where: {
+          externalId: { in: externalIds },
+        },
+      });
+
+      offset += batchSize;
+      hasMore = nullItems.length === batchSize;
+    }
+  }
+
+  /**
+   * Indexes multiple containers in batches for better scalability.
+   * @param containerIds Array of media container IDs to index
+   * @param batchSize Number of containers to process per batch (default: 50)
+   */
+  private async indexContainersBatch(
+    containerIds: string[],
+    batchSize = 50
+  ): Promise<void> {
+    for (let i = 0; i < containerIds.length; i += batchSize) {
+      const batch = containerIds.slice(i, i + batchSize);
+      this.logger.log(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+          containerIds.length / batchSize
+        )} (${batch.length} containers)`
+      );
+
+      try {
+        await this.processBatch(batch);
+      } catch (error) {
+        this.logger.error(
+          `Failed to process batch: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
+      }
+    }
+  }
+
+  /**
+   * Processes a batch of containers by fetching them, generating embeddings, and upserting.
+   * @param containerIds Array of media container IDs to process
+   */
+  private async processBatch(containerIds: string[]): Promise<void> {
+    // Mark new items as INDEXING
+    await this.prismaService.searchIndexItem.createMany({
+      data: containerIds.map((mediaContainerId) => ({
+        indexId: this.id,
+        mediaContainerId,
+        status: SearchIndexItemStatus.INDEXING,
+        externalId: mediaContainerId,
+      })),
+      skipDuplicates: true,
+    });
+
+    // Update existing items (including STALE ones) to INDEXING status
+    await this.prismaService.searchIndexItem.updateMany({
+      where: {
+        indexId: this.id,
+        mediaContainerId: { in: containerIds },
+      },
+      data: {
+        status: SearchIndexItemStatus.INDEXING,
+      },
+    });
+
+    const containers = await this.mediaContainerService.listContainersByIds(
+      containerIds
+    );
+
+    // Considered stale items if their containers do not exist
+    const foundContainerIds = new Set(containers.map((c) => c.id));
+    const missingContainerIds = containerIds.filter(
+      (id) => !foundContainerIds.has(id)
+    );
+    if (missingContainerIds.length > 0) {
+      const missingItems = await this.prismaService.searchIndexItem.findMany({
+        where: {
+          indexId: this.id,
+          mediaContainerId: { in: missingContainerIds },
+        },
+        select: {
+          id: true,
+        },
+      });
+      const missingItemIds = missingItems.map((item) => item.id);
+
+      if (missingItemIds.length > 0) {
+        try {
+          await this.vectorProvider.deleteDocuments(this.name, missingItemIds);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to delete missing containers from vector store: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`
+          );
+          // Continue with database cleanup even if vector provider deletion fails
+        }
+      }
+
+      await this.prismaService.searchIndexItem.deleteMany({
+        where: {
+          indexId: this.id,
+          mediaContainerId: { in: missingContainerIds },
+        },
+      });
+    }
+
+    if (containers.length === 0) {
+      return;
+    }
+
+    // Get the search index item IDs for the found containers
+    const indexItems = await this.prismaService.searchIndexItem.findMany({
+      where: {
+        indexId: this.id,
+        mediaContainerId: { in: Array.from(foundContainerIds) },
+      },
+      select: {
+        id: true,
+        externalId: true,
+        mediaContainerId: true,
+      },
+    });
+
+    // Create a map from media container ID to search index item external ID
+    const containerIdToItemId = new Map(
+      indexItems.map((item) => [item.mediaContainerId, item.externalId])
+    );
+
+    try {
+      const documents = containers.map((container) => {
+        const externalId = containerIdToItemId.get(container.id);
+        if (!externalId) {
+          throw new Error(
+            `Search index item external ID not found for container ${container.id}`
+          );
+        }
+        return {
+          id: externalId, // Use search index item external ID as the vector document ID
+          text: container.toEmbeddingText(),
+        };
+      });
+
+      if (!this.embeddingModel) {
+        await this.vectorProvider.embedAndUpsert(this.name, documents);
+      } else {
+        // TODO: Handle after embedding model is implemented
+      }
+
+      // Only update items for containers that were actually found
+      await this.prismaService.searchIndexItem.updateMany({
+        where: {
+          indexId: this.id,
+          mediaContainerId: { in: Array.from(foundContainerIds) },
+        },
+        data: {
+          status: SearchIndexItemStatus.INDEXED,
+        },
+      });
+    } catch (error) {
+      // Get item IDs for cleanup
+      const externalIdsToDelete = indexItems.map((item) => item.externalId);
+
+      // Delete from vector store first
+      if (externalIdsToDelete.length > 0) {
+        try {
+          await this.vectorProvider.deleteDocuments(
+            this.name,
+            externalIdsToDelete
+          );
+        } catch (deleteError) {
+          this.logger.warn(
+            `Failed to delete external IDs from vector store during error cleanup: ${
+              deleteError instanceof Error
+                ? deleteError.message
+                : 'Unknown error'
+            }`
+          );
+        }
+      }
+
+      // Then delete from database
+      await this.prismaService.searchIndexItem.deleteMany({
+        where: {
+          indexId: this.id,
+          mediaContainerId: { in: Array.from(foundContainerIds) },
+        },
       });
       throw error;
     }

@@ -24,7 +24,7 @@ export interface MediaContainerReadyEventPayload extends EventPayload {
 }
 
 export interface MediaContainerDeletedEventPayload extends EventPayload {
-  containerId: string;
+  containerIds: string[];
 }
 
 export interface MediaEventPayloads {

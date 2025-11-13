@@ -132,7 +132,7 @@ export class MediaContainerEntity {
           })
         );
         await this.eventPublisher.publish('media.container.deleted', {
-          containerId: this.id,
+          containerIds: [this.id],
         });
         return;
       }
@@ -152,7 +152,7 @@ export class MediaContainerEntity {
 
       this._status = updated.status;
       await this.eventPublisher.publish('media.container.deleted', {
-        containerId: this.id,
+        containerIds: [this.id],
       });
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
