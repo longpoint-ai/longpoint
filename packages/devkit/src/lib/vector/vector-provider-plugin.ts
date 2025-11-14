@@ -13,6 +13,7 @@ export interface VectorProviderPluginArgs<
 > {
   manifest: T;
   providerConfigValues: ConfigValues<T['providerConfigSchema']>;
+  indexConfigValues: ConfigValues<T['indexConfigSchema']>;
 }
 
 export abstract class VectorProviderPlugin<
@@ -22,35 +23,32 @@ export abstract class VectorProviderPlugin<
   readonly id: string;
   readonly name: string;
   readonly providerConfigValues: ConfigValues<T['providerConfigSchema']>;
+  protected readonly indexConfigValues: ConfigValues<T['indexConfigSchema']>;
   private readonly _manifest: T;
 
   constructor(args: VectorProviderPluginArgs<T>) {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
     this.providerConfigValues = args.providerConfigValues;
+    this.indexConfigValues = args.indexConfigValues;
     this._manifest = args.manifest;
   }
 
-  abstract upsert(indexId: string, documents: VectorDocument[]): Promise<void>;
-  abstract delete(indexId: string, documentIds: string[]): Promise<void>;
+  abstract upsert(documents: VectorDocument[]): Promise<void>;
+  abstract delete(documentIds: string[]): Promise<void>;
   abstract search(
-    indexId: string,
     queryVector: number[],
     options?: SearchOptions
   ): Promise<SearchResult[]>;
-  abstract dropIndex(name: string): Promise<void>;
+  abstract dropIndex(): Promise<void>;
 
-  embedAndUpsert(
-    indexId: string,
-    documents: EmbedAndUpsertDocument[]
-  ): Promise<void> {
+  embedAndUpsert(documents: EmbedAndUpsertDocument[]): Promise<void> {
     throw new Error(
       `Embed and upsert is not implemented by the vector provider plugin '${this.id}'.`
     );
   }
 
   embedAndSearch(
-    indexId: string,
     queryText: string,
     options?: SearchOptions
   ): Promise<SearchResult[]> {

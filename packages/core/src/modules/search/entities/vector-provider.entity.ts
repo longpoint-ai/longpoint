@@ -1,86 +1,66 @@
+import { ConfigSchemaService } from '@/modules/common/services';
 import {
   EmbedAndUpsertDocument,
   SearchOptions,
   SearchResult,
   VectorDocument,
-  VectorPluginManifest,
+  VectorProvider,
   VectorProviderPlugin,
 } from '@longpoint/devkit';
-import { VectorProviderDto, VectorProviderShortDto } from '../dtos';
+import { BaseVectorProviderEntity } from './base-vector-provider.entity';
 
 export interface VectorProviderEntityArgs {
   plugin: VectorProviderPlugin;
+  configSchemaService: ConfigSchemaService;
 }
 
-export class VectorProviderEntity {
-  readonly id: string;
-  readonly name: string;
-  readonly image?: string;
-  readonly supportsEmbedding: boolean;
-  private readonly configSchema: VectorPluginManifest['configSchema'];
-
+export class VectorProviderEntity
+  extends BaseVectorProviderEntity
+  implements VectorProvider
+{
   private readonly plugin: VectorProviderPlugin;
 
   constructor(args: VectorProviderEntityArgs) {
-    this.id = args.plugin.id;
-    this.name = args.plugin.name ?? this.id;
-    this.image = args.plugin.manifest.image;
-    this.supportsEmbedding = args.plugin.manifest.supportsEmbedding ?? false;
-    this.configSchema = args.plugin.manifest.configSchema;
+    super({
+      id: args.plugin.id,
+      name: args.plugin.name,
+      image: args.plugin.manifest.image,
+      supportsEmbedding: args.plugin.manifest.supportsEmbedding ?? false,
+      providerConfigSchema: args.plugin.manifest.providerConfigSchema,
+      providerConfigValues: args.plugin.providerConfigValues,
+      indexConfigSchema: args.plugin.manifest.indexConfigSchema,
+      configSchemaService: args.configSchemaService,
+    });
     this.plugin = args.plugin;
   }
 
-  upsert(indexId: string, documents: VectorDocument[]): Promise<void> {
-    return this.plugin.upsert(indexId, documents);
+  upsert(documents: VectorDocument[]): Promise<void> {
+    return this.plugin.upsert(documents);
   }
 
-  embedAndUpsert(
-    indexName: string,
-    documents: EmbedAndUpsertDocument[]
-  ): Promise<void> {
-    return this.plugin.embedAndUpsert(indexName, documents);
+  embedAndUpsert(documents: EmbedAndUpsertDocument[]): Promise<void> {
+    return this.plugin.embedAndUpsert(documents);
   }
 
-  deleteDocuments(indexId: string, documentIds: string[]): Promise<void> {
-    return this.plugin.delete(indexId, documentIds);
+  delete(documentIds: string[]): Promise<void> {
+    return this.plugin.delete(documentIds);
   }
 
   search(
-    indexId: string,
     queryVector: number[],
     options?: SearchOptions
   ): Promise<SearchResult[]> {
-    return this.plugin.search(indexId, queryVector, options);
+    return this.plugin.search(queryVector, options);
   }
 
   embedAndSearch(
-    indexId: string,
     queryText: string,
     options?: SearchOptions
   ): Promise<SearchResult[]> {
-    return this.plugin.embedAndSearch(indexId, queryText, options);
+    return this.plugin.embedAndSearch(queryText, options);
   }
 
-  dropIndex(indexId: string): Promise<void> {
-    return this.plugin.dropIndex(indexId);
-  }
-
-  toDto() {
-    return new VectorProviderDto({
-      id: this.id,
-      name: this.name,
-      image: this.image,
-      configSchema: this.configSchema,
-      supportsEmbedding: this.supportsEmbedding,
-      config: this.plugin.providerConfigValues,
-    });
-  }
-
-  toShortDto() {
-    return new VectorProviderShortDto({
-      id: this.id,
-      name: this.name,
-      image: this.image,
-    });
+  dropIndex(): Promise<void> {
+    return this.plugin.dropIndex();
   }
 }

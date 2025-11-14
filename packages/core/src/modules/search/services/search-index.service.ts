@@ -1,7 +1,8 @@
 import { Prisma } from '@/database';
 import { AiPluginService } from '@/modules/ai';
-import { PrismaService } from '@/modules/common/services';
+import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
+import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateSearchIndexDto } from '../dtos';
 import { SearchIndexEntity } from '../entities';
@@ -20,13 +21,20 @@ export class SearchIndexService {
     private readonly prismaService: PrismaService,
     private readonly vectorProviderService: VectorProviderService,
     private readonly mediaContainerService: MediaContainerService,
-    private readonly aiPluginService: AiPluginService
+    private readonly aiPluginService: AiPluginService,
+    private readonly configSchemaService: ConfigSchemaService
   ) {}
 
   async createIndex(data: CreateSearchIndexDto) {
+    const indexConfigForDb =
+      await this.vectorProviderService.processConfigForDb(
+        data.vectorProviderId,
+        data.config ?? {}
+      );
     const vectorProvider =
       await this.vectorProviderService.getProviderByIdOrThrow(
-        data.vectorProviderId
+        data.vectorProviderId,
+        indexConfigForDb
       );
 
     let embeddingModelId = data.embeddingModelId;
@@ -45,6 +53,7 @@ export class SearchIndexService {
         name: data.name,
         vectorProviderId: vectorProvider.id,
         embeddingModelId,
+        config: indexConfigForDb,
       },
       select: selectSearchIndex(),
     });
@@ -66,6 +75,8 @@ export class SearchIndexService {
         : null,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
+      configFromDb: index.config as ConfigValues,
+      configSchemaService: this.configSchemaService,
     });
   }
 
@@ -79,8 +90,8 @@ export class SearchIndexService {
 
     for (const index of indexes) {
       const vectorProvider =
-        await this.vectorProviderService.getProviderByIdOrThrow(
-          index.vectorProviderId
+        await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
+          index.id
         );
       const embeddingModel = index.embeddingModelId
         ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
@@ -97,6 +108,8 @@ export class SearchIndexService {
           embeddingModel,
           mediaContainerService: this.mediaContainerService,
           prismaService: this.prismaService,
+          configFromDb: index.config as ConfigValues,
+          configSchemaService: this.configSchemaService,
         })
       );
     }
@@ -115,8 +128,8 @@ export class SearchIndexService {
     }
 
     const vectorProvider =
-      await this.vectorProviderService.getProviderByIdOrThrow(
-        index.vectorProviderId
+      await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
+        index.id
       );
     const embeddingModel = index.embeddingModelId
       ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
@@ -133,6 +146,8 @@ export class SearchIndexService {
       embeddingModel,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
+      configFromDb: index.config as ConfigValues,
+      configSchemaService: this.configSchemaService,
     });
   }
 
@@ -157,8 +172,8 @@ export class SearchIndexService {
     }
 
     const vectorProvider =
-      await this.vectorProviderService.getProviderByIdOrThrow(
-        index.vectorProviderId
+      await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
+        index.id
       );
     const embeddingModel = index.embeddingModelId
       ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
@@ -175,77 +190,9 @@ export class SearchIndexService {
       embeddingModel,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
+      configFromDb: index.config as ConfigValues,
+      configSchemaService: this.configSchemaService,
     });
-  }
-
-  async removeMediaContainer(mediaContainerId: string): Promise<void> {
-    const indexItems = await this.prismaService.searchIndexItem.findMany({
-      where: {
-        mediaContainerId,
-      },
-      select: {
-        indexId: true,
-        index: {
-          select: {
-            name: true,
-            vectorProviderId: true,
-          },
-        },
-      },
-    });
-
-    if (indexItems.length === 0) {
-      return;
-    }
-
-    const indexes = new Map<string, { name: string; vectorProviderId: string }>(
-      indexItems.map((item) => [
-        item.indexId,
-        {
-          name: item.index.name,
-          vectorProviderId: item.index.vectorProviderId,
-        },
-      ])
-    );
-
-    // Delete from vector providers
-    for (const [_, index] of indexes) {
-      const vectorProvider =
-        await this.vectorProviderService.getProviderByIdOrThrow(
-          index.vectorProviderId
-        );
-
-      try {
-        await vectorProvider.deleteDocuments(index.name, [mediaContainerId]);
-      } catch (error) {
-        this.logger.error(
-          `Failed to delete container ${mediaContainerId} from vector provider for index ${
-            index.name
-          }: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-        // Continue with database cleanup even if vector provider deletion fails
-      }
-    }
-
-    await this.prismaService.$transaction([
-      this.prismaService.searchIndexItem.deleteMany({
-        where: {
-          mediaContainerId,
-        },
-      }),
-      this.prismaService.searchIndex.updateMany({
-        where: {
-          id: {
-            in: Array.from(indexes.keys()),
-          },
-        },
-        data: {
-          mediaIndexed: {
-            decrement: 1,
-          },
-        },
-      }),
-    ]);
   }
 
   private async makeActiveIndex(

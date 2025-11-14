@@ -16,6 +16,8 @@ model SearchIndex {
   embeddingModelId String?
   /// Vector database provider ID
   vectorProviderId String
+  /// Provider-specific configuration
+  config           Json?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   lastIndexedAt    DateTime?

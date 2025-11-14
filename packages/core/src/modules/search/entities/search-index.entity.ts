@@ -1,8 +1,9 @@
 import { SearchIndexItemStatus } from '@/database';
 import { AiModelEntity } from '@/modules/ai';
-import { PrismaService } from '@/modules/common/services';
+import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { MediaContainerSummaryDto } from '@/modules/media/dtos/media-container-summary.dto';
+import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
 import { SearchIndexDto } from '../dtos';
 import { VectorProviderEntity } from './vector-provider.entity';
@@ -13,11 +14,13 @@ export interface SearchIndexEntityArgs {
   indexing: boolean;
   name: string;
   mediaIndexed: number;
+  configFromDb: ConfigValues;
   lastIndexedAt: Date | null;
   vectorProvider: VectorProviderEntity;
   embeddingModel: AiModelEntity | null;
   mediaContainerService: MediaContainerService;
   prismaService: PrismaService;
+  configSchemaService: ConfigSchemaService;
 }
 
 export class SearchIndexEntity {
@@ -27,6 +30,7 @@ export class SearchIndexEntity {
   private _name: string;
   private _mediaIndexed: number;
   private _lastIndexedAt: Date | null;
+  private _configFromDb: ConfigValues;
   private readonly vectorProvider: VectorProviderEntity;
   private readonly embeddingModel: AiModelEntity | null;
   private readonly mediaContainerService: MediaContainerService;
@@ -39,6 +43,7 @@ export class SearchIndexEntity {
     this._indexing = args.indexing;
     this._name = args.name;
     this._mediaIndexed = args.mediaIndexed;
+    this._configFromDb = args.configFromDb;
     this._lastIndexedAt = args.lastIndexedAt;
     this.vectorProvider = args.vectorProvider;
     this.embeddingModel = args.embeddingModel;
@@ -68,11 +73,9 @@ export class SearchIndexEntity {
     queryText: string,
     limit = 10
   ): Promise<MediaContainerSummaryDto[]> {
-    const searchResults = await this.vectorProvider.embedAndSearch(
-      this.name,
-      queryText,
-      { limit }
-    );
+    const searchResults = await this.vectorProvider.embedAndSearch(queryText, {
+      limit,
+    });
 
     if (searchResults.length === 0) {
       return [];
@@ -191,7 +194,7 @@ export class SearchIndexEntity {
    */
   async delete(): Promise<void> {
     try {
-      await this.vectorProvider.dropIndex(this.name);
+      await this.vectorProvider.dropIndex();
     } catch (error) {
       this.logger.warn(
         `Failed to delete index from vector store: ${
@@ -239,7 +242,7 @@ export class SearchIndexEntity {
 
       // Delete from vector store first, then from database
       try {
-        await this.vectorProvider.deleteDocuments(this.name, externalIds);
+        await this.vectorProvider.delete(externalIds);
       } catch (error) {
         this.logger.warn(
           `Failed to delete null items from vector store: ${
@@ -339,7 +342,7 @@ export class SearchIndexEntity {
 
       if (missingItemIds.length > 0) {
         try {
-          await this.vectorProvider.deleteDocuments(this.name, missingItemIds);
+          await this.vectorProvider.delete(missingItemIds);
         } catch (error) {
           this.logger.warn(
             `Failed to delete missing containers from vector store: ${
@@ -395,7 +398,7 @@ export class SearchIndexEntity {
       });
 
       if (!this.embeddingModel) {
-        await this.vectorProvider.embedAndUpsert(this.name, documents);
+        await this.vectorProvider.embedAndUpsert(documents);
       } else {
         // TODO: Handle after embedding model is implemented
       }
@@ -417,10 +420,7 @@ export class SearchIndexEntity {
       // Delete from vector store first
       if (externalIdsToDelete.length > 0) {
         try {
-          await this.vectorProvider.deleteDocuments(
-            this.name,
-            externalIdsToDelete
-          );
+          await this.vectorProvider.delete(externalIdsToDelete);
         } catch (deleteError) {
           this.logger.warn(
             `Failed to delete external IDs from vector store during error cleanup: ${
@@ -443,12 +443,15 @@ export class SearchIndexEntity {
     }
   }
 
-  toDto(): SearchIndexDto {
+  async toDto(): Promise<SearchIndexDto> {
     return new SearchIndexDto({
       id: this.id,
       active: this._active,
       indexing: this._indexing,
       name: this._name,
+      config: this._configFromDb
+        ? await this.vectorProvider.processIndexConfigFromDb(this._configFromDb)
+        : null,
       embeddingModel: this.embeddingModel?.toSummaryDto() ?? null,
       vectorProvider: this.vectorProvider.toShortDto(),
       mediaIndexed: this._mediaIndexed,
