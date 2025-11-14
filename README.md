@@ -1,9 +1,8 @@
 <div align="center">
 <img src="placeholder-logo.png" alt="Longpoint Logo" width="120" />
 
-<div style="font-size:24px;font-weight:bold;margin-bottom:4px;margin-top:8px;">Longpoint</div>
-
-<div style="font-size:14px;color:#888;margin-bottom:12px;">Open source digital asset management that understands your content</div>
+### Longpoint
+Open source digital asset management that understands your content.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Status: Proof of Concept](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow.svg)]()
