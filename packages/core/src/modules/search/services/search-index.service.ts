@@ -5,7 +5,10 @@ import { MediaContainerService } from '@/modules/media';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateSearchIndexDto } from '../dtos';
 import { SearchIndexEntity } from '../entities';
-import { NativeEmbeddingNotSupported } from '../search.errors';
+import {
+  NativeEmbeddingNotSupported,
+  SearchIndexNotFound,
+} from '../search.errors';
 import { SelectedSearchIndex, selectSearchIndex } from '../search.selectors';
 import { VectorProviderService } from './vector-provider.service';
 
@@ -99,6 +102,46 @@ export class SearchIndexService {
     }
 
     return indexEntities;
+  }
+
+  async getIndexById(indexId: string): Promise<SearchIndexEntity | null> {
+    const index = await this.prismaService.searchIndex.findUnique({
+      where: { id: indexId },
+      select: selectSearchIndex(),
+    });
+
+    if (!index) {
+      return null;
+    }
+
+    const vectorProvider =
+      await this.vectorProviderService.getProviderByIdOrThrow(
+        index.vectorProviderId
+      );
+    const embeddingModel = index.embeddingModelId
+      ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+      : null;
+
+    return new SearchIndexEntity({
+      id: index.id,
+      active: index.active,
+      indexing: index.indexing,
+      name: index.name,
+      lastIndexedAt: index.lastIndexedAt,
+      mediaIndexed: index.mediaIndexed,
+      vectorProvider,
+      embeddingModel,
+      mediaContainerService: this.mediaContainerService,
+      prismaService: this.prismaService,
+    });
+  }
+
+  async getIndexByIdOrThrow(id: string): Promise<SearchIndexEntity> {
+    const index = await this.getIndexById(id);
+    if (!index) {
+      throw new SearchIndexNotFound(id);
+    }
+    return index;
   }
 
   async getActiveIndex(): Promise<SearchIndexEntity | null> {

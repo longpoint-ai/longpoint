@@ -1,10 +1,11 @@
 import { ApiSdkTag, RequirePermission } from '@/shared/decorators';
 import { SdkTag } from '@/shared/types/swagger.types';
 import { Permission } from '@longpoint/types';
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
@@ -39,5 +40,17 @@ export class SearchIndexController {
   async listSearchIndexes() {
     const indexes = await this.searchIndexService.listIndexes();
     return indexes.map((index) => index.toDto());
+  }
+
+  @Delete(':id')
+  @RequirePermission(Permission.SEARCH_INDEX_DELETE)
+  @ApiOperation({
+    summary: 'Delete a search index',
+    operationId: 'deleteSearchIndex',
+  })
+  @ApiNoContentResponse()
+  async deleteSearchIndex(@Param('id') id: string) {
+    const index = await this.searchIndexService.getIndexByIdOrThrow(id);
+    await index.delete();
   }
 }
