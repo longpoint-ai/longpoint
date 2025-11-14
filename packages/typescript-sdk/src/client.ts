@@ -13,7 +13,8 @@ export class Longpoint {
   media: MediaClient;
   storage: StorageClient;
   library: LibraryClient;
-  tools: ToolsClient;
+  search: SearchClient;
+  system: SystemClient;
 
   constructor(config: ClientConfig = {}) {
     this.httpClient = axios.create({
@@ -28,7 +29,8 @@ export class Longpoint {
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.library = new LibraryClient(this.httpClient);
-    this.tools = new ToolsClient(this.httpClient);
+    this.search = new SearchClient(this.httpClient);
+    this.system = new SystemClient(this.httpClient);
   }
 }
 
@@ -264,14 +266,81 @@ class LibraryClient {
   }
 }
 
-class ToolsClient {
+class SearchClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Get first time setup status
+   * Search media containers
+   */
+    async searchMedia(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
+        const url = `search`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * Create a search index
+   */
+    async createSearchIndex(data: components['schemas']['CreateSearchIndex']): Promise<components['schemas']['SearchIndex']> {
+        const url = `search/indexes`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List search indexes
+   */
+    async listSearchIndexes(): Promise<components['schemas']['SearchIndex'][]> {
+        const url = `search/indexes`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Delete a search index
+   */
+    async deleteSearchIndex(id: string): Promise<void> {
+        const url = `search/indexes/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * List installed vector providers
+   */
+    async listVectorProviders(): Promise<components['schemas']['VectorProvider'][]> {
+        const url = `search/vector-providers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update the config for a vector provider
+   */
+    async updateVectorProviderConfig(providerId: string, data: components['schemas']['UpdateVectorProviderConfig']): Promise<components['schemas']['VectorProvider']> {
+        const url = `search/vector-providers/${encodeURIComponent(String(providerId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+}
+
+class SystemClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Get system setup status
    */
     async getSetupStatus(): Promise<components['schemas']['SetupStatus']> {
-        const url = `setup/status`;
+        const url = `system/setup/status`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get system status
+   */
+    async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
+        const url = `system/status`;
         const response = await this.httpClient.get(url);
         return response.data;
   }

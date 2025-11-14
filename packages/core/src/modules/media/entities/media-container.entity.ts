@@ -1,9 +1,11 @@
 import {
+  MediaAssetStatus,
   MediaAssetVariant,
   MediaContainerStatus,
   MediaType,
 } from '@/database/generated/prisma';
-import { SupportedMimeType } from '@longpoint/types';
+import { JsonObject, SupportedMimeType } from '@longpoint/types';
+import { formatBytes } from '@longpoint/utils/format';
 import {
   getMediaContainerPath,
   mimeTypeToExtension,
@@ -13,17 +15,20 @@ import {
   selectMediaContainer,
 } from '../../../shared/selectors/media.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { EventPublisher } from '../../event';
 import { StorageUnitEntity } from '../../storage-unit/entities/storage-unit.entity';
 import { UrlSigningService } from '../../storage/services/url-signing.service';
 import {
   MediaAssetDto,
   MediaAssetVariantsDto,
+  MediaContainerSummaryDto,
   UpdateMediaContainerDto,
 } from '../dtos';
 import { MediaContainerDto } from '../dtos/media-container.dto';
 import {
   MediaContainerAlreadyDeleted,
   MediaContainerAlreadyExists,
+  MediaContainerNotEmbeddable,
   MediaContainerNotFound,
 } from '../media.errors';
 
@@ -32,6 +37,7 @@ export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   prismaService: PrismaService;
   pathPrefix: string;
   urlSigningService: UrlSigningService;
+  eventPublisher: EventPublisher;
 }
 
 export class MediaContainerEntity {
@@ -45,6 +51,7 @@ export class MediaContainerEntity {
   private readonly prismaService: PrismaService;
   private readonly pathPrefix: string;
   private readonly urlSigningService: UrlSigningService;
+  private readonly eventPublisher: EventPublisher;
   private assets: SelectedMediaContainer['assets'];
 
   constructor(args: MediaContainerEntityArgs) {
@@ -58,6 +65,7 @@ export class MediaContainerEntity {
     this.prismaService = args.prismaService;
     this.pathPrefix = args.pathPrefix;
     this.urlSigningService = args.urlSigningService;
+    this.eventPublisher = args.eventPublisher;
     this.assets = args.assets;
   }
 
@@ -124,6 +132,9 @@ export class MediaContainerEntity {
             prefix: this.pathPrefix,
           })
         );
+        await this.eventPublisher.publish('media.container.deleted', {
+          containerIds: [this.id],
+        });
         return;
       }
 
@@ -141,6 +152,9 @@ export class MediaContainerEntity {
       });
 
       this._status = updated.status;
+      await this.eventPublisher.publish('media.container.deleted', {
+        containerIds: [this.id],
+      });
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
         throw new MediaContainerNotFound(this.id);
@@ -160,6 +174,64 @@ export class MediaContainerEntity {
       variants: await this.getVariants(),
       thumbnails: await this.getThumbnailAssets(),
     });
+  }
+
+  async toSummaryDto(): Promise<MediaContainerSummaryDto> {
+    return new MediaContainerSummaryDto({
+      id: this.id,
+      name: this.name,
+      path: this.path,
+      status: this.status,
+      createdAt: this.createdAt,
+      thumbnails: await this.getThumbnailAssets(),
+    });
+  }
+
+  /**
+   * Builds an embedding-friendly document from this media container.
+   * Aggregates container metadata, asset information, and classifier results
+   * into a format suitable for generating vector embeddings.
+   *
+   * @returns The embedding document, or null if the container has no primary asset
+   */
+  toEmbeddingText(): string {
+    const primaryAsset = this.assets.find(
+      (asset) => asset.variant === MediaAssetVariant.PRIMARY
+    );
+
+    if (primaryAsset?.status !== MediaAssetStatus.READY) {
+      throw new MediaContainerNotEmbeddable(this.id);
+    }
+
+    const classifierResults = primaryAsset.classifierRuns.reduce((acc, run) => {
+      acc[run.classifier.name] = run.result as JsonObject;
+      return acc;
+    }, {} as Record<string, JsonObject>);
+
+    const dimensions =
+      primaryAsset.width && primaryAsset.height
+        ? `${primaryAsset.width}x${primaryAsset.height}`
+        : undefined;
+
+    const textParts: string[] = [
+      `Name: ${this.name}`,
+      `Path: ${this.path}`,
+      `MIME Type: ${primaryAsset.mimeType}`,
+      dimensions ? `Dimensions: ${dimensions}` : '',
+      primaryAsset.size ? `Size: ${formatBytes(primaryAsset.size)}` : '',
+      primaryAsset.aspectRatio
+        ? `Aspect Ratio: ${primaryAsset.aspectRatio.toFixed(2)}`
+        : '',
+    ];
+
+    for (const [classifierName, result] of Object.entries(classifierResults)) {
+      const resultText = this.formatClassifierResult(result);
+      textParts.push(`${classifierName}: ${resultText}`);
+    }
+
+    const text = textParts.filter(Boolean).join(', ');
+
+    return text;
   }
 
   private async getVariants() {
@@ -197,6 +269,32 @@ export class MediaContainerEntity {
       ...asset,
       url,
     };
+  }
+
+  /**
+   * Formats classifier result JSON into a readable string for embedding.
+   */
+  private formatClassifierResult(result: JsonObject): string {
+    if (typeof result === 'string') {
+      return result;
+    }
+    if (Array.isArray(result)) {
+      return result.map((item) => String(item)).join(', ');
+    }
+    if (typeof result === 'object' && result !== null) {
+      return Object.entries(result)
+        .map(([key, value]) => {
+          if (typeof value === 'string' || typeof value === 'number') {
+            return `${key}: ${value}`;
+          }
+          if (typeof value === 'boolean') {
+            return `${key}: ${value ? 'yes' : 'no'}`;
+          }
+          return `${key}: ${JSON.stringify(value)}`;
+        })
+        .join(', ');
+    }
+    return String(result);
   }
 
   get name() {

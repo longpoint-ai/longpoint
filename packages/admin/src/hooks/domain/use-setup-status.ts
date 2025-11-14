@@ -18,7 +18,7 @@ export function useSetupStatus(): SetupStatus {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await client.tools.getSetupStatus();
+      const data = await client.system.getSetupStatus();
       setIsFirstTimeSetup(data.isFirstTimeSetup);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));

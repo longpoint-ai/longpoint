@@ -10,6 +10,7 @@ import {
 } from '../../../shared/selectors/media.selectors';
 import { MediaContainerEntity } from '../../common/entities';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { EventPublisher } from '../../event';
 import { StorageUnitService } from '../../storage-unit/services/storage-unit.service';
 import { UrlSigningService } from '../../storage/services/url-signing.service';
 import { CreateMediaContainerDto } from '../dtos';
@@ -43,7 +44,8 @@ export class MediaContainerService {
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
     private readonly configService: ConfigService,
-    private readonly urlSigningService: UrlSigningService
+    private readonly urlSigningService: UrlSigningService,
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   /**
@@ -108,6 +110,7 @@ export class MediaContainerService {
         prismaService: this.prismaService,
         pathPrefix: this.configService.get('storage.pathPrefix'),
         urlSigningService: this.urlSigningService,
+        eventPublisher: this.eventPublisher,
       }),
     };
   }
@@ -141,6 +144,7 @@ export class MediaContainerService {
       prismaService: this.prismaService,
       pathPrefix: this.configService.get('storage.pathPrefix'),
       urlSigningService: this.urlSigningService,
+      eventPublisher: this.eventPublisher,
     });
   }
 
@@ -199,6 +203,7 @@ export class MediaContainerService {
       prismaService: this.prismaService,
       pathPrefix: this.configService.get('storage.pathPrefix'),
       urlSigningService: this.urlSigningService,
+      eventPublisher: this.eventPublisher,
     });
   }
 
@@ -260,6 +265,7 @@ export class MediaContainerService {
             prismaService: this.prismaService,
             pathPrefix: this.configService.get('storage.pathPrefix'),
             urlSigningService: this.urlSigningService,
+            eventPublisher: this.eventPublisher,
           })
       )
     );
@@ -267,6 +273,40 @@ export class MediaContainerService {
     return entities;
   }
 
+  /**
+   * Lists media containers by their unique identifiers.
+   *
+   * @param ids - The unique identifiers of the media containers
+   *
+   * @returns An array of MediaContainerEntity instances matching the IDs
+   */
+  async listContainersByIds(ids: string[]): Promise<MediaContainerEntity[]> {
+    const containers = await this.prismaService.mediaContainer.findMany({
+      where: { id: { in: ids } },
+      select: {
+        ...selectMediaContainerSummary(),
+        storageUnitId: true,
+      },
+    });
+
+    const entities = await Promise.all(
+      containers.map(
+        async (container) =>
+          new MediaContainerEntity({
+            ...container,
+            storageUnit: await this.storageUnitService.getStorageUnitById(
+              container.storageUnitId
+            ),
+            prismaService: this.prismaService,
+            pathPrefix: this.configService.get('storage.pathPrefix'),
+            urlSigningService: this.urlSigningService,
+            eventPublisher: this.eventPublisher,
+          })
+      )
+    );
+
+    return entities;
+  }
   /**
    * Determines the effective name to use for a media container.
    *

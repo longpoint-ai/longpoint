@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { selectClassifier } from '../../shared/selectors/classifier.selectors';
 import { AiPluginService } from '../ai';
 import { PrismaService } from '../common/services';
+import { EventPublisher } from '../event';
 import { MediaContainerService } from '../media';
 import { ClassifierNotFound } from './classifier.errors';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
@@ -13,7 +14,8 @@ export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly aiPluginService: AiPluginService,
-    private readonly mediaContainerService: MediaContainerService
+    private readonly mediaContainerService: MediaContainerService,
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   async createClassifier(data: CreateClassifierDto) {
@@ -44,6 +46,7 @@ export class ClassifierService {
       prismaService: this.prismaService,
       aiPluginService: this.aiPluginService,
       mediaContainerService: this.mediaContainerService,
+      eventPublisher: this.eventPublisher,
     });
 
     return classifierEntity;
@@ -68,6 +71,7 @@ export class ClassifierService {
       aiPluginService: this.aiPluginService,
       modelInput: classifier.modelInput as ConfigValues,
       mediaContainerService: this.mediaContainerService,
+      eventPublisher: this.eventPublisher,
     });
   }
 
@@ -92,6 +96,7 @@ export class ClassifierService {
           prismaService: this.prismaService,
           aiPluginService: this.aiPluginService,
           mediaContainerService: this.mediaContainerService,
+          eventPublisher: this.eventPublisher,
         })
     );
   }

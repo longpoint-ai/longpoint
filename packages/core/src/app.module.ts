@@ -8,12 +8,14 @@ import {
   LibraryModule,
   LoggerModule,
   MediaModule,
+  SearchModule,
   SetupModule,
   StorageModule,
   StorageUnitModule,
   UploadModule,
 } from './modules';
 import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
+import { EventModule } from './modules/event';
 
 @Module({
   imports: [
@@ -21,12 +23,14 @@ import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
     getStaticModule(),
     CommonModule,
     LoggerModule,
+    EventModule,
     // Feature modules
     AiModule,
     AuthModule,
     ClassifierModule,
     LibraryModule,
     MediaModule,
+    SearchModule,
     SetupModule,
     StorageModule,
     StorageUnitModule,

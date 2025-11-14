@@ -69,3 +69,14 @@ export class MediaContainerAlreadyDeleted extends BaseError {
     );
   }
 }
+
+export class MediaContainerNotEmbeddable extends BaseError {
+  constructor(mediaContainerId: string) {
+    super(
+      ErrorCode.OPERATION_NOT_SUPPORTED,
+      `Media container ${mediaContainerId} is not currently embeddable, due to the primary asset not being ready`,
+      HttpStatus.BAD_REQUEST,
+      { mediaContainerId }
+    );
+  }
+}
