@@ -19,14 +19,15 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
     super({
       manifest: args.manifest,
       providerConfigValues: args.providerConfigValues,
+      indexConfigValues: args.indexConfigValues,
     });
     this.client = new Pinecone({
       apiKey: this.providerConfigValues.apiKey,
     });
   }
 
-  async upsert(indexId: string, documents: VectorDocument[]): Promise<void> {
-    await this.client.index(indexId).upsert(
+  async upsert(documents: VectorDocument[]): Promise<void> {
+    await this.client.index(this.indexName).upsert(
       documents.map((d) => ({
         id: d.id,
         values: d.embedding,
@@ -36,10 +37,9 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
   }
 
   override async embedAndUpsert(
-    indexName: string,
     documents: EmbedAndUpsertDocument[]
   ): Promise<void> {
-    await this.client.index(indexName).upsertRecords(
+    await this.client.index(this.indexName).upsertRecords(
       documents.map((d) => ({
         id: d.id,
         text: d.text,
@@ -48,20 +48,19 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
     );
   }
 
-  async delete(indexId: string, documentIds: string[]): Promise<void> {
-    await this.client.index(indexId).deleteMany(documentIds);
+  async delete(documentIds: string[]): Promise<void> {
+    await this.client.index(this.indexName).deleteMany(documentIds);
   }
 
-  async dropIndex(indexId: string): Promise<void> {
-    await this.client.index(indexId).deleteAll();
+  async dropIndex(): Promise<void> {
+    await this.client.index(this.indexName).deleteAll();
   }
 
   async search(
-    indexId: string,
     queryVector: number[],
     options?: SearchOptions
   ): Promise<SearchResult[]> {
-    const result = await this.client.index(indexId).query({
+    const result = await this.client.index(this.indexName).query({
       vector: queryVector,
       topK: options?.limit ?? 10,
     });
@@ -73,12 +72,11 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
   }
 
   override async embedAndSearch(
-    indexId: string,
     queryText: string,
     options?: SearchOptions
   ): Promise<SearchResult[]> {
     const top = options?.limit ?? 10;
-    const result = await this.client.index(indexId).searchRecords({
+    const result = await this.client.index(this.indexName).searchRecords({
       query: {
         topK: top,
         inputs: { text: queryText },
@@ -97,5 +95,9 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
         metadata: fields as VectorMetadata,
       };
     });
+  }
+
+  private get indexName(): string {
+    return this.indexConfigValues.name;
   }
 }

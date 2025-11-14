@@ -6,6 +6,7 @@ export interface VectorPluginManifest {
   description?: string;
   image?: string;
   supportsEmbedding?: boolean;
+  indexConfigSchema?: ConfigSchemaDefinition;
   providerConfigSchema?: ConfigSchemaDefinition;
 }
 
@@ -38,21 +39,16 @@ export interface SearchResult {
 }
 
 export interface VectorProvider {
-  upsert(indexId: string, documents: VectorDocument[]): Promise<void>;
-  embedAndUpsert(
-    indexId: string,
-    documents: EmbedAndUpsertDocument[]
-  ): Promise<void>;
-  delete(indexId: string, documentIds: string[]): Promise<void>;
+  upsert(documents: VectorDocument[]): Promise<void>;
+  embedAndUpsert(documents: EmbedAndUpsertDocument[]): Promise<void>;
+  delete(documentIds: string[]): Promise<void>;
   search(
-    indexId: string,
     queryVector: number[],
     options?: SearchOptions
   ): Promise<SearchResult[]>;
   embedAndSearch(
-    indexId: string,
     queryText: string,
     options?: SearchOptions
   ): Promise<SearchResult[]>;
-  dropIndex(indexId: string): Promise<void>;
+  dropIndex(): Promise<void>;
 }

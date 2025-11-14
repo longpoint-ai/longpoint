@@ -1,9 +1,10 @@
 import { AiModelSummaryDto } from '@/modules/ai';
+import { ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { VectorProviderShortDto } from './vector-provider-short.dto';
 
-export interface VectorIndexParams {
+export interface SearchIndexParams {
   id: string;
   name: string;
   active: boolean;
@@ -12,6 +13,7 @@ export interface VectorIndexParams {
   vectorProvider: VectorProviderShortDto;
   mediaIndexed: number;
   lastIndexedAt: Date | null;
+  config: ConfigValues | null;
 }
 
 @ApiSchema({ name: 'SearchIndex' })
@@ -85,7 +87,15 @@ export class SearchIndexDto {
   })
   lastIndexedAt: Date | null;
 
-  constructor(data: VectorIndexParams) {
+  @ApiProperty({
+    description: 'The configuration values for the index',
+    type: 'object',
+    nullable: true,
+    additionalProperties: true,
+  })
+  config: ConfigValues | null;
+
+  constructor(data: SearchIndexParams) {
     this.id = data.id;
     this.name = data.name;
     this.active = data.active;
@@ -94,5 +104,6 @@ export class SearchIndexDto {
     this.vectorProvider = data.vectorProvider;
     this.mediaIndexed = data.mediaIndexed;
     this.lastIndexedAt = data.lastIndexedAt;
+    this.config = data.config;
   }
 }

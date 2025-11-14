@@ -12,6 +12,7 @@ export interface VectorProviderParams {
   supportsEmbedding?: boolean;
   config?: ConfigValues;
   configSchema?: ConfigSchemaDefinition;
+  indexConfigSchema?: ConfigSchemaDefinition;
 }
 
 @ApiSchema({ name: 'VectorProvider' })
@@ -65,6 +66,15 @@ export class VectorProviderDto {
   })
   configSchema: ConfigSchemaForDto;
 
+  @ApiProperty({
+    description: 'The schema for the vector provider index config',
+    type: 'object',
+    additionalProperties: {
+      $ref: getSchemaPath('ConfigSchemaValue'),
+    },
+  })
+  indexConfigSchema: ConfigSchemaForDto;
+
   constructor(data: VectorProviderParams) {
     this.id = data.id;
     this.name = data.name;
@@ -73,6 +83,9 @@ export class VectorProviderDto {
     this.config = data.config ?? null;
     this.configSchema = data.configSchema
       ? toConfigSchemaForDto(data.configSchema)
+      : {};
+    this.indexConfigSchema = data.indexConfigSchema
+      ? toConfigSchemaForDto(data.indexConfigSchema)
       : {};
   }
 }

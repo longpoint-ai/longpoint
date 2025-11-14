@@ -10,6 +10,7 @@ export const selectSearchIndex = () => {
     mediaIndexed: true,
     vectorProviderId: true,
     embeddingModelId: true,
+    config: true,
   } satisfies Prisma.SearchIndexSelect;
 };
 

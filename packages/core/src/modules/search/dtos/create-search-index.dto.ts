@@ -1,10 +1,17 @@
+import type { ConfigValues } from '@longpoint/config-schema';
 import {
   ApiProperty,
   ApiPropertyOptional,
   ApiSchema,
   PickType,
 } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { SearchIndexDto } from './search-index.dto';
 
 @ApiSchema({ name: 'CreateSearchIndex' })
@@ -37,4 +44,12 @@ export class CreateSearchIndexDto extends PickType(SearchIndexDto, [
     example: 'pinecone',
   })
   vectorProviderId!: string;
+
+  @IsObject()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: 'Provider-specific configuration for the index',
+    example: {},
+  })
+  config?: ConfigValues;
 }
