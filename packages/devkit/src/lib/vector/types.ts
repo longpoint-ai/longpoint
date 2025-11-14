@@ -5,8 +5,8 @@ export interface VectorPluginManifest {
   name?: string;
   description?: string;
   image?: string;
-  configSchema?: ConfigSchemaDefinition;
   supportsEmbedding?: boolean;
+  providerConfigSchema?: ConfigSchemaDefinition;
 }
 
 export interface VectorMetadata {

@@ -221,6 +221,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/search/indexes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a search index */
+        delete: operations["deleteSearchIndex"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search/vector-providers": {
         parameters: {
             query?: never;
@@ -767,7 +784,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-13T23:41:10.564Z
+             * @example 2025-11-14T17:08:43.074Z
              */
             expiresAt: string;
             /**
@@ -963,7 +980,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T22:41:10.564Z
+             * @example 2025-11-14T16:08:43.074Z
              */
             createdAt: string;
             /**
@@ -1017,7 +1034,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T22:41:10.564Z
+             * @example 2025-11-14T16:08:43.074Z
              */
             createdAt: string;
             /**
@@ -1048,7 +1065,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-13T22:41:10.564Z
+             * @example 2025-11-14T16:08:43.074Z
              */
             createdAt: string;
             /**
@@ -1975,6 +1992,25 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SearchIndex"];
                 };
+            };
+        };
+    };
+    deleteSearchIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -3,6 +3,7 @@ import {
   getDefaultValueForType,
   validateConfigSchemaForm,
 } from '@/components/config-schema';
+import { DeleteSearchIndexDialog } from '@/components/delete-search-index-dialog';
 import { useClient } from '@/hooks/common';
 import { components } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
@@ -19,13 +20,19 @@ import { Progress } from '@longpoint/ui/components/progress';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { Spinner } from '@longpoint/ui/components/spinner';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export function SearchSettings() {
   const client = useClient();
   const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [indexToDelete, setIndexToDelete] = useState<{
+    id: string;
+    name: string;
+    isActive: boolean;
+  } | null>(null);
 
   const {
     data: providers,
@@ -59,6 +66,15 @@ export function SearchSettings() {
   const indexedContainers = activeIndex?.mediaIndexed ?? 0;
   const progressPercentage =
     totalContainers > 0 ? (indexedContainers / totalContainers) * 100 : 0;
+
+  const handleDeleteClick = (index: components['schemas']['SearchIndex']) => {
+    setIndexToDelete({
+      id: index.id,
+      name: index.name,
+      isActive: index.active,
+    });
+    setDeleteDialogOpen(true);
+  };
 
   if (providersLoading || indexesLoading || systemStatusLoading) {
     return (
@@ -111,68 +127,101 @@ export function SearchSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Active Index Status Card */}
-      {activeIndex && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Active Search Index</CardTitle>
-                <CardDescription>
-                  Current indexing status and progress
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                {activeIndex.indexing && (
-                  <Spinner className="h-4 w-4 text-muted-foreground" />
+      {/* Search Indexes List */}
+      <div className="space-y-4">
+        <h3 className="text-2xl font-semibold">Search Indexes</h3>
+        {indexes && indexes.length > 0 ? (
+          indexes.map((index) => (
+            <Card key={index.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{index.name}</CardTitle>
+                    <CardDescription>
+                      {index.active
+                        ? 'Active search index - current indexing status and progress'
+                        : 'Inactive search index'}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {index.indexing && (
+                      <Spinner className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <Badge variant={index.active ? 'default' : 'secondary'}>
+                      {index.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteClick(index)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Vector Provider
+                    </span>
+                    <span className="font-medium">
+                      {index.vectorProvider.name}
+                    </span>
+                  </div>
+                  {index.embeddingModel && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Embedding Model
+                      </span>
+                      <span className="font-medium">
+                        {index.embeddingModel.name}
+                      </span>
+                    </div>
+                  )}
+                  {index.lastIndexedAt && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Last Indexed
+                      </span>
+                      <span className="font-medium">
+                        {new Date(index.lastIndexedAt).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Media Indexed</span>
+                    <span className="font-medium">{index.mediaIndexed}</span>
+                  </div>
+                </div>
+                {index.active && (
+                  <div className="space-y-2 pt-2 border-t">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Indexing Progress
+                      </span>
+                      <span className="font-medium">
+                        {indexedContainers} / {totalContainers} containers
+                      </span>
+                    </div>
+                    <Progress value={progressPercentage} className="h-2" />
+                  </div>
                 )}
-                <Badge variant={activeIndex.active ? 'default' : 'secondary'}>
-                  {activeIndex.active ? 'Active' : 'Inactive'}
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Index Name</span>
-                <span className="font-medium">{activeIndex.name}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Vector Provider</span>
-                <span className="font-medium">
-                  {activeIndex.vectorProvider.name}
-                </span>
-              </div>
-              {activeIndex.embeddingModel && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Embedding Model</span>
-                  <span className="font-medium">
-                    {activeIndex.embeddingModel.name}
-                  </span>
-                </div>
-              )}
-              {activeIndex.lastIndexedAt && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Last Indexed</span>
-                  <span className="font-medium">
-                    {new Date(activeIndex.lastIndexedAt).toLocaleString()}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="space-y-2 pt-2 border-t">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Indexing Progress</span>
-                <span className="font-medium">
-                  {indexedContainers} / {totalContainers} containers
-                </span>
-              </div>
-              <Progress value={progressPercentage} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground">
+                No search indexes found. Create one to enable search
+                functionality.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Vector Provider Configuration */}
       <div className="space-y-4">
@@ -186,6 +235,22 @@ export function SearchSettings() {
           />
         ))}
       </div>
+
+      {/* Delete Dialog */}
+      {indexToDelete && (
+        <DeleteSearchIndexDialog
+          open={deleteDialogOpen}
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) {
+              setIndexToDelete(null);
+            }
+          }}
+          indexId={indexToDelete.id}
+          indexName={indexToDelete.name}
+          isActive={indexToDelete.isActive}
+        />
+      )}
     </div>
   );
 }

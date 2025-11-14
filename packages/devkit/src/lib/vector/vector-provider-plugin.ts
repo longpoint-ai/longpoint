@@ -12,7 +12,7 @@ export interface VectorProviderPluginArgs<
   T extends VectorPluginManifest = VectorPluginManifest
 > {
   manifest: T;
-  configValues: ConfigValues<T['configSchema']>;
+  providerConfigValues: ConfigValues<T['providerConfigSchema']>;
 }
 
 export abstract class VectorProviderPlugin<
@@ -21,13 +21,13 @@ export abstract class VectorProviderPlugin<
 {
   readonly id: string;
   readonly name: string;
-  readonly configValues: ConfigValues<T['configSchema']>;
+  readonly providerConfigValues: ConfigValues<T['providerConfigSchema']>;
   private readonly _manifest: T;
 
   constructor(args: VectorProviderPluginArgs<T>) {
     this.id = args.manifest.id;
     this.name = args.manifest.name ?? this.id;
-    this.configValues = args.configValues;
+    this.providerConfigValues = args.providerConfigValues;
     this._manifest = args.manifest;
   }
 
@@ -38,7 +38,7 @@ export abstract class VectorProviderPlugin<
     queryVector: number[],
     options?: SearchOptions
   ): Promise<SearchResult[]>;
-  abstract dropIndex(indexId: string): Promise<void>;
+  abstract dropIndex(name: string): Promise<void>;
 
   embedAndUpsert(
     indexId: string,

@@ -72,7 +72,7 @@ export class VectorProviderEntity {
       image: this.image,
       configSchema: this.configSchema,
       supportsEmbedding: this.supportsEmbedding,
-      config: this.plugin.configValues,
+      config: this.plugin.providerConfigValues,
     });
   }
 

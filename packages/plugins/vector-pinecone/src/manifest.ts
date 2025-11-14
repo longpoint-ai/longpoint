@@ -7,7 +7,7 @@ export const manifest = {
     'The purpose-built vector database delivering relevant results at any scale',
   image: 'icon.png',
   supportsEmbedding: true,
-  configSchema: {
+  providerConfigSchema: {
     apiKey: {
       label: 'API Key',
       type: 'secret',

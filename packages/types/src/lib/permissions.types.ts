@@ -11,6 +11,7 @@ export const Permission = {
   CLASSIFIER_DELETE: 'classifier:delete',
   SEARCH_INDEX_CREATE: 'search-index:create',
   SEARCH_INDEX_READ: 'search-index:read',
+  SEARCH_INDEX_DELETE: 'search-index:delete',
   SETTINGS_PAGE_READ: 'settings-page:read',
   STORAGE_UNIT_CREATE: 'storage-unit:create',
   STORAGE_UNIT_READ: 'storage-unit:read',

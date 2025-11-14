@@ -18,10 +18,10 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
   constructor(args: VectorProviderPluginArgs<typeof manifest>) {
     super({
       manifest: args.manifest,
-      configValues: args.configValues,
+      providerConfigValues: args.providerConfigValues,
     });
     this.client = new Pinecone({
-      apiKey: this.configValues.apiKey,
+      apiKey: this.providerConfigValues.apiKey,
     });
   }
 

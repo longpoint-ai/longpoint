@@ -297,6 +297,15 @@ class SearchClient {
   }
 
     /**
+   * Delete a search index
+   */
+    async deleteSearchIndex(id: string): Promise<void> {
+        const url = `search/indexes/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
    * List installed vector providers
    */
     async listVectorProviders(): Promise<components['schemas']['VectorProvider'][]> {

@@ -187,6 +187,26 @@ export class SearchIndexEntity {
   }
 
   /**
+   * Deletes the search index from the database and the vector provider.
+   */
+  async delete(): Promise<void> {
+    try {
+      await this.vectorProvider.dropIndex(this.name);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to delete index from vector store: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+      // Continue with database cleanup even if vector provider deletion fails
+    }
+
+    await this.prismaService.searchIndex.delete({
+      where: { id: this.id },
+    });
+  }
+
+  /**
    * Deletes items with null mediaContainerId in batches.
    * @param batchSize Number of items to process per batch (default: 50)
    */
