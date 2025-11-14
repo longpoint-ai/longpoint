@@ -1,6 +1,5 @@
 import { SelectedMediaContainer } from '@/shared/selectors/media.selectors';
 import { ApiProperty, ApiSchema, PickType } from '@nestjs/swagger';
-import { addHours } from 'date-fns';
 import { MediaContainerDto } from './media-container.dto';
 
 export type CreateMediaContainerResponseParam = Pick<
@@ -25,7 +24,7 @@ export class CreateMediaContainerResponseDto extends PickType(
 
   @ApiProperty({
     description: 'The date and time the upload URL expires.',
-    example: addHours(new Date(), 1),
+    example: '2025-11-14T23:09:41.289Z',
   })
   expiresAt: Date;
 

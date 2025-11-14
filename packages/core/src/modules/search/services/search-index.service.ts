@@ -27,7 +27,7 @@ export class SearchIndexService {
 
   async createIndex(data: CreateSearchIndexDto) {
     const indexConfigForDb =
-      await this.vectorProviderService.processConfigForDb(
+      await this.vectorProviderService.processIndexConfigForDb(
         data.vectorProviderId,
         data.config ?? {}
       );

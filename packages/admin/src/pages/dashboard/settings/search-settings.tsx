@@ -3,6 +3,7 @@ import {
   getDefaultValueForType,
   validateConfigSchemaForm,
 } from '@/components/config-schema';
+import { CreateSearchIndexDialog } from '@/components/create-search-index-dialog';
 import { DeleteSearchIndexDialog } from '@/components/delete-search-index-dialog';
 import { useClient } from '@/hooks/common';
 import { components } from '@longpoint/sdk';
@@ -27,6 +28,7 @@ import { toast } from 'sonner';
 export function SearchSettings() {
   const client = useClient();
   const queryClient = useQueryClient();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<{
     id: string;
@@ -129,7 +131,15 @@ export function SearchSettings() {
     <div className="space-y-6">
       {/* Search Indexes List */}
       <div className="space-y-4">
-        <h3 className="text-2xl font-semibold">Search Indexes</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-semibold">Search Indexes</h3>
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            disabled={!providers || providers.length === 0}
+          >
+            Create Index
+          </Button>
+        </div>
         {indexes && indexes.length > 0 ? (
           indexes.map((index) => (
             <Card key={index.id}>
@@ -137,19 +147,17 @@ export function SearchSettings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>{index.name}</CardTitle>
-                    <CardDescription>
-                      {index.active
-                        ? 'Active search index - current indexing status and progress'
-                        : 'Inactive search index'}
-                    </CardDescription>
+                    {index.active && (
+                      <Badge variant="default" className="mt-2">
+                        Active
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     {index.indexing && (
                       <Spinner className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <Badge variant={index.active ? 'default' : 'secondary'}>
-                      {index.active ? 'Active' : 'Inactive'}
-                    </Badge>
+
                     <Button
                       variant="destructive"
                       size="sm"
@@ -202,10 +210,13 @@ export function SearchSettings() {
                         Indexing Progress
                       </span>
                       <span className="font-medium">
-                        {indexedContainers} / {totalContainers} containers
+                        {`${Math.round(progressPercentage)}%`}
                       </span>
                     </div>
-                    <Progress value={progressPercentage} className="h-2" />
+                    <Progress
+                      value={Math.round(progressPercentage)}
+                      className="h-2"
+                    />
                   </div>
                 )}
               </CardContent>
@@ -235,6 +246,15 @@ export function SearchSettings() {
           />
         ))}
       </div>
+
+      {/* Create Dialog */}
+      {providers && (
+        <CreateSearchIndexDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          providers={providers}
+        />
+      )}
 
       {/* Delete Dialog */}
       {indexToDelete && (

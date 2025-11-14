@@ -185,13 +185,16 @@ export class VectorProviderService implements OnModuleInit {
     return await this.getProviderByIdOrThrow(providerId, inboundConfig);
   }
 
-  async processConfigForDb(providerId: string, configValues: ConfigValues) {
+  async processIndexConfigForDb(
+    providerId: string,
+    configValues: ConfigValues
+  ) {
     const regEntry = this.providerPluginRegistry.get(providerId);
     if (!regEntry) {
       throw new VectorProviderNotFound(providerId);
     }
     return await this.configSchemaService
-      .get(regEntry.manifest.providerConfigSchema)
+      .get(regEntry.manifest.indexConfigSchema)
       .processInboundValues(configValues);
   }
 
