@@ -39,7 +39,7 @@ export class SearchIndexController {
   @ApiOkResponse({ type: [SearchIndexDto] })
   async listSearchIndexes() {
     const indexes = await this.searchIndexService.listIndexes();
-    return indexes.map((index) => index.toDto());
+    return await Promise.all(indexes.map((index) => index.toDto()));
   }
 
   @Delete(':id')

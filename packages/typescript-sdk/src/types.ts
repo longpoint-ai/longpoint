@@ -784,7 +784,7 @@ export interface components {
             /**
              * Format: date-time
              * @description The date and time the upload URL expires.
-             * @example 2025-11-14T17:08:43.074Z
+             * @example 2025-11-14T23:09:41.289Z
              */
             expiresAt: string;
             /**
@@ -821,6 +821,11 @@ export interface components {
              * @example true
              */
             active: boolean;
+            /**
+             * @description Provider-specific configuration for the index
+             * @example {}
+             */
+            config?: Record<string, never>;
             /**
              * @description The fully qualified ID of the embedding model to use for the index. Leave blank to use the vector provider's embedding model, if supported.
              * @example openai/text-embedding-3-small
@@ -980,7 +985,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-14T16:08:43.074Z
+             * @example 2025-11-14T22:34:29.792Z
              */
             createdAt: string;
             /**
@@ -1034,7 +1039,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-14T16:08:43.074Z
+             * @example 2025-11-14T22:34:29.792Z
              */
             createdAt: string;
             /**
@@ -1065,7 +1070,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-14T16:08:43.074Z
+             * @example 2025-11-14T22:34:29.792Z
              */
             createdAt: string;
             /**
@@ -1105,6 +1110,10 @@ export interface components {
              * @example true
              */
             active: boolean;
+            /** @description The configuration values for the index */
+            config: {
+                [key: string]: unknown;
+            } | null;
             /**
              * @description The model used by the index to generate vector embeddings
              * @example {
@@ -1396,6 +1405,10 @@ export interface components {
              * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
              */
             image: string | null;
+            /** @description The schema for the vector provider index config */
+            indexConfigSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
             /**
              * @description The name of the vector provider
              * @example Pinecone
