@@ -92,6 +92,13 @@
         "command": "prisma db seed",
         "cwd": "packages/core/src/database"
       }
+    },
+    "db:reset": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prisma migrate reset",
+        "cwd": "packages/core/src/database"
+      }
     }
   },
   "name": "@longpoint/core"

@@ -8,8 +8,13 @@ import {
   StorageProviderPlugin,
   StorageProviderPluginArgs,
 } from '../storage/index.js';
+import { VectorPluginManifest } from '../vector/types.js';
+import {
+  VectorProviderPlugin,
+  VectorProviderPluginArgs,
+} from '../vector/vector-provider-plugin.js';
 
-type PluginType = 'storage' | 'ai';
+type PluginType = 'storage' | 'ai' | 'vector';
 
 export interface BasePluginConfig {
   /**
@@ -35,4 +40,15 @@ export interface AiPluginConfig<T extends AiPluginManifest = AiPluginManifest>
   provider: new (args: AiProviderPluginArgs<T>) => AiProviderPlugin<T>;
 }
 
-export type PluginConfig = StoragePluginConfig<any> | AiPluginConfig<any>;
+export interface VectorPluginConfig<
+  T extends VectorPluginManifest = VectorPluginManifest
+> extends BasePluginConfig {
+  type: 'vector';
+  manifest: T;
+  provider: new (args: VectorProviderPluginArgs<T>) => VectorProviderPlugin<T>;
+}
+
+export type PluginConfig =
+  | StoragePluginConfig<any>
+  | AiPluginConfig<any>
+  | VectorPluginConfig<any>;

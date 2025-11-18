@@ -12,7 +12,8 @@ model MediaContainer {
   storageUnitId String
   storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id])
 
-  assets MediaAsset[]
+  assets           MediaAsset[]
+  searchIndexItems SearchIndexItem[]
 
   @@unique([path, name])
   @@index([path])

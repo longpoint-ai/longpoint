@@ -9,11 +9,14 @@ export const Permission = {
   CLASSIFIER_READ: 'classifier:read',
   CLASSIFIER_UPDATE: 'classifier:update',
   CLASSIFIER_DELETE: 'classifier:delete',
+  SEARCH_INDEX_CREATE: 'search-index:create',
+  SEARCH_INDEX_READ: 'search-index:read',
+  SEARCH_INDEX_DELETE: 'search-index:delete',
+  SETTINGS_PAGE_READ: 'settings-page:read',
   STORAGE_UNIT_CREATE: 'storage-unit:create',
   STORAGE_UNIT_READ: 'storage-unit:read',
   STORAGE_UNIT_UPDATE: 'storage-unit:update',
   STORAGE_UNIT_DELETE: 'storage-unit:delete',
-  SETTINGS_PAGE_READ: 'settings-page:read',
   SUPER: 'super',
 } as const;
 

@@ -1,6 +1,7 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
 import { AiModelEntity, AiPluginService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
+import { EventPublisher } from '@/modules/event';
 import { MediaAssetDto, MediaContainerService } from '@/modules/media';
 import { Unexpected } from '@/shared/errors';
 import { selectClassifier } from '@/shared/selectors/classifier.selectors';
@@ -8,6 +9,7 @@ import { ConfigValues } from '@longpoint/config-schema';
 import { toBase64DataUri } from '@longpoint/utils/string';
 import { Logger } from '@nestjs/common';
 import { ClassifierNotFound } from '../classifier.errors';
+import { ClassifierEvents } from '../classifier.events';
 import {
   ClassifierDto,
   ClassifierSummaryDto,
@@ -23,12 +25,14 @@ export interface ClassifierEntityArgs
   prismaService: PrismaService;
   aiPluginService: AiPluginService;
   mediaContainerService: MediaContainerService;
+  eventPublisher: EventPublisher;
 }
 
 export class ClassifierEntity {
   private readonly prismaService: PrismaService;
   private readonly aiPluginService: AiPluginService;
   private readonly mediaContainerService: MediaContainerService;
+  private readonly eventPublisher: EventPublisher;
   private readonly logger = new Logger(ClassifierEntity.name);
 
   private _id: string;
@@ -50,6 +54,7 @@ export class ClassifierEntity {
     this.prismaService = args.prismaService;
     this.aiPluginService = args.aiPluginService;
     this.mediaContainerService = args.mediaContainerService;
+    this.eventPublisher = args.eventPublisher;
   }
 
   /**
@@ -62,6 +67,7 @@ export class ClassifierEntity {
       await this.mediaContainerService.getMediaContainerByAssetIdOrThrow(
         mediaAssetId
       );
+    const containerId = container.id;
     const serialized = await container.toDto();
     const asset = serialized.variants.primary;
 
@@ -101,7 +107,7 @@ export class ClassifierEntity {
         source,
         modelConfig: this.modelInput as ConfigValues,
       });
-      return await this.prismaService.classifierRun.update({
+      const updatedRun = await this.prismaService.classifierRun.update({
         where: {
           id: classifierRun.id,
         },
@@ -111,6 +117,13 @@ export class ClassifierEntity {
           completedAt: new Date(),
         },
       });
+      await this.eventPublisher.publish(
+        ClassifierEvents.CLASSIFIER_RUN_COMPLETE,
+        {
+          mediaContainerId: containerId,
+        }
+      );
+      return updatedRun;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Unknown error';
       this.logger.error(`Classifier "${this.name}" failed: ${errorMessage}`);

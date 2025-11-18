@@ -4,7 +4,6 @@ import {
   MediaContainerStatus,
   Prisma,
 } from '@/database';
-import { ClassifierService } from '@/modules/classifier/classifier.service';
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage-unit';
 import type { StorageProvider } from '@longpoint/devkit';
@@ -18,6 +17,7 @@ import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
 import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
+import { EventPublisher } from '../event';
 import { UrlSigningService } from '../storage/services/url-signing.service';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { TokenExpired } from './upload.errors';
@@ -28,9 +28,9 @@ export class UploadService {
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
     private readonly probeService: MediaProbeService,
-    private readonly classifierService: ClassifierService,
     private readonly configService: ConfigService,
-    private readonly urlSigningService: UrlSigningService
+    private readonly urlSigningService: UrlSigningService,
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
@@ -86,8 +86,6 @@ export class UploadService {
       });
       throw error;
     }
-
-    this.runClassifiers(uploadToken.mediaAsset);
   }
 
   private async finalize(
@@ -126,9 +124,17 @@ export class UploadService {
           delete: true,
         },
       });
+      await this.eventPublisher.publish('media.asset.ready', {
+        id: asset.id,
+        containerId: asset.containerId,
+      });
     } catch (e) {
       await this.updateAsset(asset.id, {
         status: 'FAILED',
+      });
+      await this.eventPublisher.publish('media.asset.failed', {
+        id: asset.id,
+        containerId: asset.containerId,
       });
       throw e;
     }
@@ -143,6 +149,10 @@ export class UploadService {
     assetId: string,
     data: Prisma.MediaAssetUpdateInput
   ) {
+    let containerId: string | null = null;
+    let wasReady = false;
+    let isReady = false;
+
     await this.prismaService.$transaction(async (tx) => {
       const updatedAsset = await tx.mediaAsset.update({
         where: {
@@ -153,6 +163,19 @@ export class UploadService {
           containerId: true,
         },
       });
+
+      containerId = updatedAsset.containerId;
+
+      const container = await tx.mediaContainer.findUnique({
+        where: {
+          id: containerId,
+        },
+        select: {
+          status: true,
+        },
+      });
+
+      wasReady = container?.status === 'READY';
 
       const allAssetsForContainer = await tx.mediaAsset.findMany({
         where: {
@@ -198,6 +221,8 @@ export class UploadService {
         containerStatus = 'PARTIALLY_FAILED';
       }
 
+      isReady = containerStatus === 'READY';
+
       await tx.mediaContainer.update({
         where: {
           id: updatedAsset.containerId,
@@ -207,24 +232,11 @@ export class UploadService {
         },
       });
     });
-  }
 
-  /**
-   * Run any classifiers that are configured to run on the uploaded asset
-   * @param asset
-   */
-  private async runClassifiers(
-    asset: Pick<MediaAsset, 'id' | 'classifiersOnUpload'>
-  ) {
-    if (asset.classifiersOnUpload.length === 0) {
-      return;
+    if (containerId && !wasReady && isReady) {
+      await this.eventPublisher.publish('media.container.ready', {
+        containerId,
+      });
     }
-
-    const classifiers = await this.classifierService.listClassifiers();
-    const entities = classifiers.filter((classifier) =>
-      asset.classifiersOnUpload.includes(classifier.name)
-    );
-
-    await Promise.all(entities.map((entity) => entity.run(asset.id)));
   }
 }
