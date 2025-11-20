@@ -37,9 +37,8 @@ export class AiProviderController {
   })
   @ApiOkResponse({ type: [AiProviderDto] })
   async listAiProviders() {
-    return this.aiProviderService
-      .listProviders()
-      .map((provider) => provider.toDto());
+    const providers = await this.aiProviderService.listProviders();
+    return providers.map((provider) => provider.toDto());
   }
 
   @Patch(':providerId')

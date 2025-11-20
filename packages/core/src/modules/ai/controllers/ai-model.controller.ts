@@ -29,8 +29,7 @@ export class AiModelController {
   })
   @ApiOkResponse({ type: [AiModelDto] })
   async listModels() {
-    return this.aiProviderService
-      .listModels()
-      .map((model) => model.toSummaryDto());
+    const models = await this.aiProviderService.listModels();
+    return models.map((model) => model.toSummaryDto());
   }
 }

@@ -20,7 +20,7 @@ export class ClassifierService {
 
   async createClassifier(data: CreateClassifierDto) {
     const modelInput = data.modelInput ?? undefined;
-    const model = this.aiProviderService.getModelOrThrow(data.modelId);
+    const model = await this.aiProviderService.getModelOrThrow(data.modelId);
     const processedModelInput = await model.processInboundClassifierInput(
       modelInput
     );
@@ -66,7 +66,7 @@ export class ClassifierService {
 
     return new ClassifierEntity({
       ...classifier,
-      model: this.aiProviderService.getModelOrThrow(classifier.modelId),
+      model: await this.aiProviderService.getModelOrThrow(classifier.modelId),
       prismaService: this.prismaService,
       aiProviderService: this.aiProviderService,
       modelInput: classifier.modelInput as ConfigValues,
@@ -88,16 +88,20 @@ export class ClassifierService {
       select: selectClassifier(),
     });
 
-    return classifiers.map(
-      (classifier) =>
-        new ClassifierEntity({
-          ...classifier,
-          model: this.aiProviderService.getModelOrThrow(classifier.modelId),
-          prismaService: this.prismaService,
-          aiProviderService: this.aiProviderService,
-          mediaContainerService: this.mediaContainerService,
-          eventPublisher: this.eventPublisher,
-        })
+    return Promise.all(
+      classifiers.map(
+        async (classifier) =>
+          new ClassifierEntity({
+            ...classifier,
+            model: await this.aiProviderService.getModelOrThrow(
+              classifier.modelId
+            ),
+            prismaService: this.prismaService,
+            aiProviderService: this.aiProviderService,
+            mediaContainerService: this.mediaContainerService,
+            eventPublisher: this.eventPublisher,
+          })
+      )
     );
   }
 }

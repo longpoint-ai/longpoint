@@ -149,7 +149,7 @@ export class ClassifierEntity {
     let model = this._model;
 
     if (newModelId && !newModelInput) {
-      model = this.aiProviderService.getModelOrThrow(newModelId);
+      model = await this.aiProviderService.getModelOrThrow(newModelId);
       modelInputToUpdate = await model.processInboundClassifierInput(
         oldModelInput
       );
@@ -158,7 +158,7 @@ export class ClassifierEntity {
         newModelInput
       );
     } else if (newModelInput && newModelId) {
-      model = this.aiProviderService.getModelOrThrow(newModelId);
+      model = await this.aiProviderService.getModelOrThrow(newModelId);
       modelInputToUpdate = await model.processInboundClassifierInput(
         newModelInput
       );

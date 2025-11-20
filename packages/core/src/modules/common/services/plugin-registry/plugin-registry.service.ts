@@ -15,10 +15,9 @@ import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { extname, join } from 'path';
 
-type PluginType = 'storage' | 'ai' | 'vector';
+export type PluginType = 'storage' | 'ai' | 'vector';
 
-// Type mappings from PluginType to manifest types
-type ManifestForType<T extends PluginType> = T extends 'storage'
+export type ManifestForType<T extends PluginType> = T extends 'storage'
   ? StoragePluginManifest
   : T extends 'ai'
   ? AiPluginManifest
@@ -26,8 +25,7 @@ type ManifestForType<T extends PluginType> = T extends 'storage'
   ? VectorPluginManifest
   : never;
 
-// Type mappings from PluginType to config types
-type ConfigForType<T extends PluginType> = T extends 'storage'
+export type ConfigForType<T extends PluginType> = T extends 'storage'
   ? StoragePluginConfig
   : T extends 'ai'
   ? AiPluginConfig
@@ -35,7 +33,7 @@ type ConfigForType<T extends PluginType> = T extends 'storage'
   ? VectorPluginConfig
   : never;
 
-interface PluginRegistryEntry<T extends PluginType = PluginType> {
+export interface PluginRegistryEntry<T extends PluginType = PluginType> {
   packageName: string;
   packagePath: string;
   manifest: ManifestForType<T>;
