@@ -29,7 +29,7 @@ export class StorageProviderService {
       return new BaseStorageProviderEntity({
         configSchemaService: this.configSchemaService,
         id: entry.derivedId,
-        name: entry.manifest.name,
+        displayName: entry.manifest.displayName,
         image: entry.manifest.image,
         configSchema: entry.manifest.configSchema,
       });
@@ -40,14 +40,8 @@ export class StorageProviderService {
     id: string,
     configFromDb: ConfigValues
   ): Promise<StorageProviderEntity | null> {
-    // Extract type and name from derived ID (format: 'storage-s3')
-    const [type, ...nameParts] = id.split('-');
-    if (type !== 'storage') {
-      return null;
-    }
-    const name = nameParts.join('-');
-
-    const registryEntry = this.pluginRegistryService.getPlugin('storage', name);
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'storage'>(id);
 
     if (!registryEntry) {
       return null;
@@ -61,7 +55,8 @@ export class StorageProviderService {
 
     return new StorageProviderEntity({
       configSchemaService: this.configSchemaService,
-      storageProviderPlugin: new StorageProviderClass({
+      pluginRegistryEntry: registryEntry,
+      pluginInstance: new StorageProviderClass({
         baseUrl: this.configService.get('server.origin'),
         configValues: configForUse,
         manifest: registryEntry.manifest,
@@ -81,12 +76,8 @@ export class StorageProviderService {
   }
 
   async processConfigForDb(providerId: string, configValues: ConfigValues) {
-    const [type, ...nameParts] = providerId.split('-');
-    if (type !== 'storage') {
-      throw new StorageProviderNotFound(providerId);
-    }
-    const name = nameParts.join('-');
-    const registryEntry = this.pluginRegistryService.getPlugin('storage', name);
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'storage'>(providerId);
     if (!registryEntry) {
       throw new StorageProviderNotFound(providerId);
     }

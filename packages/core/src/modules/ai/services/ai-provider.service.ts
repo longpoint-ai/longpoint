@@ -89,11 +89,8 @@ export class AiProviderService {
 
     const [providerId, modelId] = fullyQualifiedId.split('/');
 
-    // Extract name from providerId (format: 'ai-openai')
-    const [, ...nameParts] = providerId.split('-');
-    const name = nameParts.join('-');
-
-    const registryEntry = this.pluginRegistryService.getPlugin('ai', name);
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'ai'>(providerId);
     if (!registryEntry) {
       return null;
     }
@@ -156,10 +153,8 @@ export class AiProviderService {
    * @returns
    */
   async updateProviderConfig(providerId: string, configValues: ConfigValues) {
-    const [, ...nameParts] = providerId.split('-');
-    const name = nameParts.join('-');
-
-    const registryEntry = this.pluginRegistryService.getPlugin('ai', name);
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'ai'>(providerId);
     if (!registryEntry) {
       throw new AiProviderNotFound(providerId);
     }
@@ -197,11 +192,8 @@ export class AiProviderService {
       return cached;
     }
 
-    // Extract name from providerId (format: 'ai-openai')
-    const [, ...nameParts] = providerId.split('-');
-    const name = nameParts.join('-');
-
-    const registryEntry = this.pluginRegistryService.getPlugin('ai', name);
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'ai'>(providerId);
     if (!registryEntry) {
       return null;
     }
@@ -248,12 +240,9 @@ export class AiProviderService {
       return null;
     }
 
-    // Get plugin instance from provider entity
-    // Extract name from providerId (format: 'ai-openai')
-    const [, ...nameParts] = options.providerId.split('-');
-    const name = nameParts.join('-');
-
-    const registryEntry = this.pluginRegistryService.getPlugin('ai', name);
+    const registryEntry = this.pluginRegistryService.getPluginById<'ai'>(
+      options.providerId
+    );
     if (!registryEntry) {
       return null;
     }

@@ -39,8 +39,7 @@ export interface CreateSignedUrlOptions {
 }
 
 export interface StoragePluginManifest {
-  id: string;
-  name?: string;
+  displayName?: string;
   configSchema?: ConfigSchemaDefinition;
   image?: string;
 }

@@ -1,10 +1,8 @@
 import { StoragePluginManifest } from '@longpoint/devkit';
 
 export const manifest = {
-  id: 'local',
-  name: 'Local',
+  displayName: 'Local Storage',
   configSchema: {},
-  image: 'https://via.placeholder.com/150',
 } satisfies StoragePluginManifest;
 
 export type LocalStoragePluginManifest = typeof manifest;

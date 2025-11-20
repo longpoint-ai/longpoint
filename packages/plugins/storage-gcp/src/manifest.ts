@@ -1,8 +1,8 @@
 import { StoragePluginManifest } from '@longpoint/devkit';
 
 export const manifest = {
-  id: 'gcp',
-  name: 'GCP',
+  displayName: 'Google Cloud Storage',
+  image: 'icon.png',
   configSchema: {
     bucket: {
       label: 'Bucket',
@@ -27,7 +27,6 @@ export const manifest = {
       required: true,
     },
   },
-  image: 'https://via.placeholder.com/150',
 } satisfies StoragePluginManifest;
 
 export type GCPStoragePluginManifest = typeof manifest;

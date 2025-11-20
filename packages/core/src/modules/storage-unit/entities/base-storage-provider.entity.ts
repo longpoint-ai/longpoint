@@ -6,8 +6,9 @@ import { StorageProviderDto, StorageProviderShortDto } from '../dtos';
 export interface BaseStorageProviderEntityArgs
   extends Pick<
     StoragePluginManifest,
-    'id' | 'name' | 'image' | 'configSchema'
+    'displayName' | 'image' | 'configSchema'
   > {
+  id: string;
   configSchemaService: ConfigSchemaService;
 }
 
@@ -16,14 +17,14 @@ export interface BaseStorageProviderEntityArgs
  */
 export class BaseStorageProviderEntity {
   readonly id: string;
-  readonly name: string;
+  readonly displayName: string;
   readonly image?: string;
   private readonly configSchema: StoragePluginManifest['configSchema'];
   private readonly configSchemaService: ConfigSchemaService;
 
   constructor(args: BaseStorageProviderEntityArgs) {
     this.id = args.id;
-    this.name = args.name ?? this.id;
+    this.displayName = args.displayName ?? this.id;
     this.image = args.image;
     this.configSchema = args.configSchema;
     this.configSchemaService = args.configSchemaService;
@@ -44,7 +45,7 @@ export class BaseStorageProviderEntity {
   toDto() {
     return new StorageProviderDto({
       id: this.id,
-      name: this.name,
+      name: this.displayName,
       image: this.image,
       configSchema: this.configSchema,
     });
@@ -53,7 +54,7 @@ export class BaseStorageProviderEntity {
   toShortDto() {
     return new StorageProviderShortDto({
       id: this.id,
-      name: this.name,
+      name: this.displayName,
       image: this.image,
     });
   }

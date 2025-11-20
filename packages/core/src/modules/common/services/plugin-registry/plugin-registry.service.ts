@@ -63,31 +63,14 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Get a specific plugin by type and name.
-   * @param type - The plugin type (storage, ai, vector)
-   * @param name - The plugin name (e.g., 's3', 'openai', 'pinecone')
-   * @returns The plugin registry entry with strongly typed manifest or null if not found
-   */
-  getPlugin<T extends PluginType>(
-    type: T,
-    name: string
-  ): PluginRegistryEntry<T> | null {
-    const derivedId = `${type}-${name}`;
-    const entry = this.pluginRegistry.get(derivedId);
-    if (!entry || entry.type !== type) {
-      return null;
-    }
-    return entry as PluginRegistryEntry<T>;
-  }
-
-  /**
    * Get a specific plugin by its derived ID.
    * @param id - The derived plugin ID (e.g., 'storage-s3', 'ai-openai')
    * @returns The plugin registry entry or null if not found
-   * @deprecated Use getPlugin(type, name) for strongly typed access
    */
-  getPluginById(id: string): PluginRegistryEntry | null {
-    return this.pluginRegistry.get(id) ?? null;
+  getPluginById<T extends PluginType>(
+    id: string
+  ): PluginRegistryEntry<T> | null {
+    return this.pluginRegistry.get(id) as PluginRegistryEntry<T> | null;
   }
 
   /**
@@ -236,7 +219,19 @@ export class PluginRegistryService implements OnModuleInit {
       return manifest;
     }
 
-    // Storage plugins don't need image processing
+    if (manifest.image) {
+      const processedImage = await this.processImage(
+        manifest.image,
+        packagePath
+      );
+      if (processedImage) {
+        return {
+          ...manifest,
+          image: processedImage,
+        };
+      }
+    }
+
     return manifest;
   }
 
