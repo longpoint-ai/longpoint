@@ -134,7 +134,6 @@ export class PluginRegistryService implements OnModuleInit {
       'index.js'
     )).default;
 
-    // Validate plugin config
     if (!pluginConfig.type) {
       this.logger.error(`Plugin ${packageName} has no type`);
       return;

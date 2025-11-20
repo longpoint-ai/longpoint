@@ -1,10 +1,14 @@
-import { ConfigSchemaService } from '@/modules/common/services';
+import {
+  ConfigSchemaService,
+  PluginRegistryEntry,
+} from '@/modules/common/services';
 import { AiProviderPlugin } from '@longpoint/devkit';
 import { AiModelShortDto } from '../dtos/ai-model-short.dto';
 import { AiProviderSummaryDto } from '../dtos/ai-provider-summary.dto';
 import { AiProviderDto } from '../dtos/ai-provider.dto';
 
 export interface AiProviderEntityArgs {
+  pluginRegistryEntry: PluginRegistryEntry<'ai'>;
   pluginInstance: AiProviderPlugin;
   configSchemaService: ConfigSchemaService;
 }
@@ -13,13 +17,16 @@ export class AiProviderEntity {
   readonly id: string;
   readonly name: string;
   readonly image?: string;
+  private readonly pluginRegistryEntry: PluginRegistryEntry<'ai'>;
   private readonly pluginInstance: AiProviderPlugin;
   private readonly configSchemaService: ConfigSchemaService;
 
   constructor(args: AiProviderEntityArgs) {
-    this.id = args.pluginInstance.id;
-    this.name = args.pluginInstance.name ?? this.id;
-    this.image = args.pluginInstance.manifest.provider.image;
+    const { derivedId, manifest } = args.pluginRegistryEntry;
+    this.id = derivedId;
+    this.name = manifest.provider.name ?? derivedId;
+    this.image = manifest.provider.image;
+    this.pluginRegistryEntry = args.pluginRegistryEntry;
     this.pluginInstance = args.pluginInstance;
     this.configSchemaService = args.configSchemaService;
   }
@@ -31,14 +38,13 @@ export class AiProviderEntity {
       image: this.image ?? null,
       config: this.pluginInstance.configValues,
       needsConfig: this.needsConfig,
-      configSchema: this.pluginInstance.manifest.provider.config,
-      models: Object.keys(this.pluginInstance.manifest.models).map(
+      configSchema: this.pluginRegistryEntry.manifest.provider.config,
+      models: Object.keys(this.manifest.models).map(
         (modelId) =>
           new AiModelShortDto({
             id: modelId,
-            name: this.pluginInstance.manifest.models[modelId].name ?? modelId,
-            description:
-              this.pluginInstance.manifest.models[modelId].description ?? null,
+            name: this.manifest.models[modelId].name ?? modelId,
+            description: this.manifest.models[modelId].description ?? null,
             fullyQualifiedId: `${this.id}/${modelId}`,
           })
       ),
@@ -55,7 +61,7 @@ export class AiProviderEntity {
   }
 
   get needsConfig(): boolean {
-    const configSchema = this.pluginInstance.manifest.provider.config;
+    const configSchema = this.manifest.provider.config;
 
     if (!configSchema) {
       return false;
@@ -66,5 +72,9 @@ export class AiProviderEntity {
       .validate(this.pluginInstance.configValues);
 
     return !result.valid;
+  }
+
+  private get manifest() {
+    return this.pluginRegistryEntry.manifest;
   }
 }

@@ -212,6 +212,7 @@ export class AiProviderService {
 
     const entity = new AiProviderEntity({
       pluginInstance,
+      pluginRegistryEntry: registryEntry,
       configSchemaService: this.configSchemaService,
     });
 

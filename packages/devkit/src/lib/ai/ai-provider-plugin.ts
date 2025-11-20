@@ -12,14 +12,10 @@ export interface AiProviderPluginArgs<
 export abstract class AiProviderPlugin<
   M extends AiPluginManifest = AiPluginManifest
 > {
-  readonly id: string;
-  readonly name: string;
-  readonly manifest: M;
+  protected readonly manifest: M;
   readonly configValues: ConfigValues<M['provider']['config']>;
 
   constructor(args: AiProviderPluginArgs<M>) {
-    this.id = args.manifest.provider.id;
-    this.name = args.manifest.provider.name ?? this.id;
     this.manifest = args.manifest;
     this.configValues = args.configValues;
   }
