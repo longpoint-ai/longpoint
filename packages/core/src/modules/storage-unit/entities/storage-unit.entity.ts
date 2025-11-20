@@ -1,5 +1,4 @@
 import { ConfigValues } from '@longpoint/config-schema';
-import { Logger } from '@nestjs/common';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { StorageUnitSummaryDto } from '../dtos/storage-unit-summary.dto';
@@ -44,7 +43,6 @@ export class StorageUnitEntity {
   private readonly prismaService: PrismaService;
   private readonly storageUnitService: StorageUnitService;
   private readonly storageProviderService: StorageProviderService;
-  private readonly logger = new Logger(StorageUnitEntity.name);
 
   constructor(args: StorageUnitEntityArgs) {
     this.id = args.id;

@@ -159,7 +159,7 @@ export class AiProviderService {
       throw new AiProviderNotFound(providerId);
     }
 
-    const schemaObj = registryEntry.manifest.provider?.config;
+    const schemaObj = registryEntry.manifest.configSchema;
     if (!schemaObj) {
       throw new InvalidInput('Provider does not support configuration');
     }
@@ -198,13 +198,11 @@ export class AiProviderService {
       return null;
     }
 
-    // Lazy load config from DB
     const config = await this.getProviderConfigFromDb(
       providerId,
-      registryEntry.manifest.provider?.config
+      registryEntry.manifest.configSchema
     );
 
-    // Create plugin instance with config
     const pluginInstance = new registryEntry.provider({
       manifest: registryEntry.manifest,
       configValues: config ?? {},
@@ -251,7 +249,7 @@ export class AiProviderService {
     // Load config and create plugin instance
     const config = await this.getProviderConfigFromDb(
       options.providerId,
-      registryEntry.manifest.provider?.config
+      registryEntry.manifest.configSchema
     );
 
     const pluginInstance = new registryEntry.provider({

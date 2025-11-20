@@ -6,14 +6,14 @@ export interface AiProviderPluginArgs<
   M extends AiPluginManifest = AiPluginManifest
 > {
   manifest: M;
-  configValues: ConfigValues<M['provider']['config']>;
+  configValues: ConfigValues<M['configSchema']>;
 }
 
 export abstract class AiProviderPlugin<
   M extends AiPluginManifest = AiPluginManifest
 > {
   protected readonly manifest: M;
-  readonly configValues: ConfigValues<M['provider']['config']>;
+  readonly configValues: ConfigValues<M['configSchema']>;
 
   constructor(args: AiProviderPluginArgs<M>) {
     this.manifest = args.manifest;

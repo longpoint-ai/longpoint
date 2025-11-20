@@ -90,6 +90,8 @@ export class PluginRegistryService implements OnModuleInit {
    * Discover all installed plugins in node_modules.
    */
   private async discoverAllPlugins() {
+    this.logger.debug(`Loading plugins...`);
+
     const modulesPath = findNodeModulesPath(process.cwd());
     if (!modulesPath) {
       this.logger.warn('Could not find node_modules directory');
@@ -100,8 +102,6 @@ export class PluginRegistryService implements OnModuleInit {
     const packageNames = modules.filter((module) =>
       module.startsWith('longpoint-')
     );
-
-    this.logger.log(`Discovering ${packageNames.length} plugin packages...`);
 
     for (const packageName of packageNames) {
       try {
@@ -115,9 +115,7 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
-    this.logger.log(
-      `Successfully discovered ${this.pluginRegistry.size} plugins`
-    );
+    this.logger.log(`${this.pluginRegistry.size} plugins loaded`);
   }
 
   /**
@@ -153,7 +151,6 @@ export class PluginRegistryService implements OnModuleInit {
 
     const processedManifest = await this.processManifest(
       pluginConfig.manifest,
-      pluginConfig.type,
       packagePath
     );
 
@@ -178,46 +175,8 @@ export class PluginRegistryService implements OnModuleInit {
    */
   private async processManifest(
     manifest: any,
-    type: PluginType,
     packagePath: string
   ): Promise<any> {
-    if (type === 'ai') {
-      // AI manifests have provider.image
-      if (manifest.provider?.image) {
-        const processedImage = await this.processImage(
-          manifest.provider.image,
-          packagePath
-        );
-        if (processedImage) {
-          return {
-            ...manifest,
-            provider: {
-              ...manifest.provider,
-              image: processedImage,
-            },
-          };
-        }
-      }
-      return manifest;
-    }
-
-    if (type === 'vector') {
-      // Vector manifests have image at root level
-      if (manifest.image) {
-        const processedImage = await this.processImage(
-          manifest.image,
-          packagePath
-        );
-        if (processedImage) {
-          return {
-            ...manifest,
-            image: processedImage,
-          };
-        }
-      }
-      return manifest;
-    }
-
     if (manifest.image) {
       const processedImage = await this.processImage(
         manifest.image,

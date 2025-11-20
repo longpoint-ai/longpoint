@@ -24,8 +24,8 @@ export class AiProviderEntity {
   constructor(args: AiProviderEntityArgs) {
     const { derivedId, manifest } = args.pluginRegistryEntry;
     this.id = derivedId;
-    this.name = manifest.provider.name ?? derivedId;
-    this.image = manifest.provider.image;
+    this.name = manifest.displayName ?? derivedId;
+    this.image = manifest.image;
     this.pluginRegistryEntry = args.pluginRegistryEntry;
     this.pluginInstance = args.pluginInstance;
     this.configSchemaService = args.configSchemaService;
@@ -38,7 +38,7 @@ export class AiProviderEntity {
       image: this.image ?? null,
       config: this.pluginInstance.configValues,
       needsConfig: this.needsConfig,
-      configSchema: this.pluginRegistryEntry.manifest.provider.config,
+      configSchema: this.pluginRegistryEntry.manifest.configSchema,
       models: Object.keys(this.manifest.models).map(
         (modelId) =>
           new AiModelShortDto({
@@ -61,7 +61,7 @@ export class AiProviderEntity {
   }
 
   get needsConfig(): boolean {
-    const configSchema = this.manifest.provider.config;
+    const configSchema = this.manifest.configSchema;
 
     if (!configSchema) {
       return false;
