@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, HardDrive, Trash2 } from 'lucide-react';
 
 interface StorageUnitCardProps {
   storageUnit: {
@@ -16,6 +16,7 @@ interface StorageUnitCardProps {
     provider: {
       id: string;
       name: string;
+      image: string | null;
     };
     isDefault: boolean;
   };
@@ -40,7 +41,18 @@ export function StorageUnitCard({
               )}
             </CardTitle>
             <CardDescription className="mt-1">
-              {storageUnit.provider.name}
+              <div className="flex items-center gap-2">
+                {storageUnit.provider.image ? (
+                  <img
+                    src={storageUnit.provider.image}
+                    alt={storageUnit.provider.name}
+                    className="h-4 w-4 rounded"
+                  />
+                ) : (
+                  <HardDrive className="h-4 w-4" />
+                )}
+                <span>{storageUnit.provider.name}</span>
+              </div>
             </CardDescription>
           </div>
         </div>

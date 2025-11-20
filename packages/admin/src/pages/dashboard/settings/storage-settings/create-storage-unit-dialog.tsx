@@ -29,6 +29,7 @@ import {
 } from '@longpoint/ui/components/select';
 import { Switch } from '@longpoint/ui/components/switch';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { HardDrive } from 'lucide-react';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -186,7 +187,18 @@ export function CreateStorageUnitDialog({
                       ) : providers && providers.length > 0 ? (
                         providers.map((provider) => (
                           <SelectItem key={provider.id} value={provider.id}>
-                            {provider.name}
+                            <div className="flex items-center gap-2">
+                              {provider.image ? (
+                                <img
+                                  src={provider.image}
+                                  alt={provider.name}
+                                  className="h-4 w-4 rounded"
+                                />
+                              ) : (
+                                <HardDrive className="h-4 w-4" />
+                              )}
+                              <span>{provider.name}</span>
+                            </div>
                           </SelectItem>
                         ))
                       ) : (
