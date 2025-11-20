@@ -32,7 +32,6 @@ export class AuthService {
       }),
       emailAndPassword: {
         enabled: true,
-        disableSignUp: true,
       },
 
       baseURL: this.configService.get('server.origin'), // better-auth expects the origin, not including the path
