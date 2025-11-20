@@ -24,8 +24,8 @@ interface ProviderPluginRegistryEntry {
 }
 
 @Injectable()
-export class AiPluginService implements OnModuleInit {
-  private readonly logger = new Logger(AiPluginService.name);
+export class AiProviderService implements OnModuleInit {
+  private readonly logger = new Logger(AiProviderService.name);
   private readonly providerPluginRegistry = new Map<
     string,
     ProviderPluginRegistryEntry

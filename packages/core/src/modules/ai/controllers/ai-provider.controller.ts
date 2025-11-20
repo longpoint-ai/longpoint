@@ -6,13 +6,13 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiAiProviderNotFoundResponse } from '../ai.errors';
 import { AiProviderDto } from '../dtos/ai-provider.dto';
 import { UpdateAiProviderConfigDto } from '../dtos/update-ai-provider-config.dto';
-import { AiPluginService } from '../services/ai-plugin.service';
+import { AiProviderService } from '../services/ai-provider.service';
 
 @Controller('ai/providers')
 @ApiSdkTag(SdkTag.AI)
 @ApiBearerAuth()
 export class AiProviderController {
-  constructor(private readonly aiPluginService: AiPluginService) {}
+  constructor(private readonly aiProviderService: AiProviderService) {}
 
   @Get(':providerId')
   @RequirePermission(Permission.AI_PROVIDER_READ)
@@ -23,7 +23,9 @@ export class AiProviderController {
   @ApiOkResponse({ type: AiProviderDto })
   @ApiAiProviderNotFoundResponse()
   async getAiProvider(@Param('providerId') providerId: string) {
-    const provider = await this.aiPluginService.getProviderOrThrow(providerId);
+    const provider = await this.aiProviderService.getProviderOrThrow(
+      providerId
+    );
     return provider.toDto();
   }
 
@@ -35,7 +37,7 @@ export class AiProviderController {
   })
   @ApiOkResponse({ type: [AiProviderDto] })
   async listAiProviders() {
-    return this.aiPluginService
+    return this.aiProviderService
       .listProviders()
       .map((provider) => provider.toDto());
   }
@@ -51,7 +53,7 @@ export class AiProviderController {
     @Param('providerId') providerId: string,
     @Body() body: UpdateAiProviderConfigDto
   ) {
-    const provider = await this.aiPluginService.updateProviderConfig(
+    const provider = await this.aiProviderService.updateProviderConfig(
       providerId,
       body.config
     );

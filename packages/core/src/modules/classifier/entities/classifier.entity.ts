@@ -1,5 +1,5 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
-import { AiModelEntity, AiPluginService } from '@/modules/ai';
+import { AiModelEntity, AiProviderService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
 import { MediaAssetDto, MediaContainerService } from '@/modules/media';
@@ -23,14 +23,14 @@ export interface ClassifierEntityArgs
   > {
   model: AiModelEntity;
   prismaService: PrismaService;
-  aiPluginService: AiPluginService;
+  aiProviderService: AiProviderService;
   mediaContainerService: MediaContainerService;
   eventPublisher: EventPublisher;
 }
 
 export class ClassifierEntity {
   private readonly prismaService: PrismaService;
-  private readonly aiPluginService: AiPluginService;
+  private readonly aiProviderService: AiProviderService;
   private readonly mediaContainerService: MediaContainerService;
   private readonly eventPublisher: EventPublisher;
   private readonly logger = new Logger(ClassifierEntity.name);
@@ -52,7 +52,7 @@ export class ClassifierEntity {
     this._model = args.model;
     this._modelInput = args.modelInput as ConfigValues;
     this.prismaService = args.prismaService;
-    this.aiPluginService = args.aiPluginService;
+    this.aiProviderService = args.aiProviderService;
     this.mediaContainerService = args.mediaContainerService;
     this.eventPublisher = args.eventPublisher;
   }
@@ -149,7 +149,7 @@ export class ClassifierEntity {
     let model = this._model;
 
     if (newModelId && !newModelInput) {
-      model = this.aiPluginService.getModelOrThrow(newModelId);
+      model = this.aiProviderService.getModelOrThrow(newModelId);
       modelInputToUpdate = await model.processInboundClassifierInput(
         oldModelInput
       );
@@ -158,7 +158,7 @@ export class ClassifierEntity {
         newModelInput
       );
     } else if (newModelInput && newModelId) {
-      model = this.aiPluginService.getModelOrThrow(newModelId);
+      model = this.aiProviderService.getModelOrThrow(newModelId);
       modelInputToUpdate = await model.processInboundClassifierInput(
         newModelInput
       );
