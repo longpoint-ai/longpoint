@@ -1,19 +1,16 @@
-import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
+import {
+  ConfigSchemaService,
+  PluginRegistryService,
+  PrismaService,
+} from '@/modules/common/services';
 import { InvalidInput, InvalidProviderConfig } from '@/shared/errors';
 import { ConfigValues } from '@longpoint/config-schema';
 import {
-  PluginConfig,
   VectorPluginManifest,
   VectorProviderPlugin,
   VectorProviderPluginArgs,
 } from '@longpoint/devkit';
-import { findNodeModulesPath } from '@longpoint/utils/path';
-import { toBase64DataUri } from '@longpoint/utils/string';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { existsSync } from 'fs';
-import { readdir, readFile } from 'fs/promises';
-import { createRequire } from 'module';
-import { extname, join } from 'path';
+import { Injectable } from '@nestjs/common';
 import { BaseVectorProviderEntity } from '../entities/base-vector-provider.entity';
 import { VectorProviderEntity } from '../entities/vector-provider.entity';
 import { SearchIndexNotFound, VectorProviderNotFound } from '../search.errors';
@@ -26,8 +23,7 @@ interface ProviderPluginRegistryEntry {
 }
 
 @Injectable()
-export class VectorProviderService implements OnModuleInit {
-  private readonly logger = new Logger(VectorProviderService.name);
+export class VectorProviderService {
   private readonly providerPluginRegistry = new Map<
     string,
     ProviderPluginRegistryEntry
@@ -35,11 +31,25 @@ export class VectorProviderService implements OnModuleInit {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly configSchemaService: ConfigSchemaService
+    private readonly configSchemaService: ConfigSchemaService,
+    private readonly pluginRegistryService: PluginRegistryService
   ) {}
 
-  async onModuleInit() {
-    await this.buildProviderRegistry();
+  private buildProviderRegistry() {
+    const plugins = this.pluginRegistryService.listPlugins('vector');
+
+    for (const registryEntry of plugins) {
+      this.providerPluginRegistry.set(registryEntry.derivedId, {
+        VectorProviderClass: registryEntry.provider,
+        manifest: registryEntry.manifest,
+      });
+    }
+  }
+
+  private ensureRegistryBuilt() {
+    if (this.providerPluginRegistry.size === 0) {
+      this.buildProviderRegistry();
+    }
   }
 
   /**
@@ -47,12 +57,13 @@ export class VectorProviderService implements OnModuleInit {
    * @returns A list of base vector provider entities.
    */
   async listProviders() {
-    const regEntries = Array.from(this.providerPluginRegistry.values());
+    this.ensureRegistryBuilt();
+    const regEntries = Array.from(this.providerPluginRegistry.entries());
     const providerConfigs =
       await this.prismaService.vectorProviderConfig.findMany({
         where: {
           providerId: {
-            in: regEntries.map((regEntry) => regEntry.manifest.id),
+            in: regEntries.map(([derivedId]) => derivedId),
           },
         },
         select: {
@@ -70,7 +81,7 @@ export class VectorProviderService implements OnModuleInit {
           .get(regEntry.manifest.providerConfigSchema)
           .processOutboundValues(config as ConfigValues);
         return new BaseVectorProviderEntity({
-          id: regEntry.manifest.id,
+          id: providerId, // Use derived ID
           name: regEntry.manifest.name,
           image: regEntry.manifest.image,
           supportsEmbedding: regEntry.manifest.supportsEmbedding ?? false,
@@ -84,6 +95,7 @@ export class VectorProviderService implements OnModuleInit {
   }
 
   async getProviderById(id: string, indexConfigFromDb: ConfigValues) {
+    this.ensureRegistryBuilt();
     const pluginRegistryEntry = this.providerPluginRegistry.get(id);
     if (!pluginRegistryEntry) {
       return null;
@@ -162,6 +174,7 @@ export class VectorProviderService implements OnModuleInit {
    * @returns A vector provider entity with the updated configuration.
    */
   async updateProviderConfig(providerId: string, configValues: ConfigValues) {
+    this.ensureRegistryBuilt();
     const regEntry = this.providerPluginRegistry.get(providerId);
     if (!regEntry) {
       throw new VectorProviderNotFound(providerId);
@@ -189,6 +202,7 @@ export class VectorProviderService implements OnModuleInit {
     providerId: string,
     configValues: ConfigValues
   ) {
+    this.ensureRegistryBuilt();
     const regEntry = this.providerPluginRegistry.get(providerId);
     if (!regEntry) {
       throw new VectorProviderNotFound(providerId);
@@ -196,124 +210,5 @@ export class VectorProviderService implements OnModuleInit {
     return await this.configSchemaService
       .get(regEntry.manifest.indexConfigSchema)
       .processInboundValues(configValues);
-  }
-
-  private async buildProviderRegistry() {
-    const modulesPath = findNodeModulesPath(process.cwd());
-    if (!modulesPath) return;
-
-    const modules = await readdir(modulesPath);
-    const packageNames = modules.filter((module) =>
-      module.startsWith('longpoint-vector-')
-    );
-
-    for (const packageName of packageNames) {
-      const packagePath = join(modulesPath, packageName);
-      const require = createRequire(__filename);
-      const pluginConfig: PluginConfig = require(join(
-        packagePath,
-        'dist',
-        'index.js'
-      )).default;
-
-      if (pluginConfig.type !== 'vector') continue;
-      if (!pluginConfig.provider) {
-        this.logger.error(
-          `Vector plugin ${packageName} has an invalid provider class`
-        );
-        continue;
-      }
-      if (!pluginConfig.manifest) {
-        this.logger.error(
-          `Vector plugin ${packageName} has an invalid manifest`
-        );
-        continue;
-      }
-
-      if (pluginConfig.manifest.image) {
-        const processedImage = await this.processImage(
-          pluginConfig.manifest.image,
-          packagePath
-        );
-        if (processedImage) {
-          pluginConfig.manifest.image = processedImage;
-        }
-      }
-
-      this.providerPluginRegistry.set(pluginConfig.manifest.id, {
-        VectorProviderClass: pluginConfig.provider,
-        manifest: pluginConfig.manifest,
-      });
-    }
-  }
-
-  /**
-   * Process an image value from the manifest.
-   * If it's a URL (starts with http:// or https://), return it as is.
-   * If it's a local file path, read it and convert to a base64 data URI.
-   * @param imageValue - The image value from the manifest (URL or local file path)
-   * @param packagePath - The path to the plugin package
-   * @returns The processed image value (URL or base64 data URI)
-   */
-  private async processImage(
-    imageValue: string,
-    packagePath: string
-  ): Promise<string | undefined> {
-    // If it's already a URL, return it as is
-    if (imageValue.startsWith('http://') || imageValue.startsWith('https://')) {
-      return imageValue;
-    }
-
-    // Try to find the image file in the package
-    // Check common locations: assets/, dist/assets/, or root
-    const possiblePaths = [
-      join(packagePath, 'assets', imageValue),
-      join(packagePath, 'dist', 'assets', imageValue),
-      join(packagePath, imageValue),
-    ];
-
-    let imagePath: string | null = null;
-    for (const path of possiblePaths) {
-      if (existsSync(path)) {
-        imagePath = path;
-        break;
-      }
-    }
-
-    if (!imagePath) {
-      this.logger.warn(
-        `Image file not found for plugin at ${packagePath}: ${imageValue}`
-      );
-      return undefined;
-    }
-
-    try {
-      // Read the image file
-      const imageBuffer = await readFile(imagePath);
-
-      // Determine MIME type from file extension
-      const ext = extname(imagePath).toLowerCase();
-      const mimeTypes: Record<string, string> = {
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.gif': 'image/gif',
-        '.webp': 'image/webp',
-        '.svg': 'image/svg+xml',
-      };
-
-      const mimeType = mimeTypes[ext] || 'image/png';
-
-      // Convert to base64 data URI
-      const base64 = imageBuffer.toString('base64');
-      return toBase64DataUri(mimeType, base64);
-    } catch (error) {
-      this.logger.error(
-        `Failed to read image file ${imagePath}: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
-      return undefined;
-    }
   }
 }

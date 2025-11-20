@@ -1,61 +1,37 @@
 import {
   ConfigSchemaService,
   ConfigService,
+  PluginRegistryService,
   PrismaService,
 } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
-import {
-  PluginConfig,
-  StoragePluginManifest,
-  StorageProviderPlugin,
-  StorageProviderPluginArgs,
-} from '@longpoint/devkit';
-import { findNodeModulesPath } from '@longpoint/utils/path';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { readdir } from 'fs/promises';
-import { createRequire } from 'module';
-import { join } from 'path';
+import { Injectable } from '@nestjs/common';
 import { StorageProviderEntity } from '../entities';
 import { BaseStorageProviderEntity } from '../entities/base-storage-provider.entity';
 import { StorageProviderNotFound } from '../storage-unit.errors';
 
-interface ProviderPluginRegistryEntry {
-  StorageProviderClass: new (
-    args: StorageProviderPluginArgs
-  ) => StorageProviderPlugin;
-  manifest: StoragePluginManifest;
-}
-
 @Injectable()
-export class StorageProviderService implements OnModuleInit {
-  private readonly logger = new Logger(StorageProviderService.name);
-  private readonly providerPluginRegistry = new Map<
-    string,
-    ProviderPluginRegistryEntry
-  >();
-
+export class StorageProviderService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prismaService: PrismaService,
-    private readonly configSchemaService: ConfigSchemaService
+    private readonly configSchemaService: ConfigSchemaService,
+    private readonly pluginRegistryService: PluginRegistryService
   ) {}
-
-  async onModuleInit() {
-    await this.buildProviderRegistry();
-  }
 
   /**
    * List all installed storage providers.
    * @returns A list of base storage provider entities.
    */
   async listProviders() {
-    return Array.from(this.providerPluginRegistry.values()).map((regEntry) => {
+    const plugins = this.pluginRegistryService.listPlugins('storage');
+    return plugins.map((entry) => {
       return new BaseStorageProviderEntity({
         configSchemaService: this.configSchemaService,
-        id: regEntry.manifest.id,
-        name: regEntry.manifest.name,
-        image: regEntry.manifest.image,
-        configSchema: regEntry.manifest.configSchema,
+        id: entry.derivedId,
+        displayName: entry.manifest.displayName,
+        image: entry.manifest.image,
+        configSchema: entry.manifest.configSchema,
       });
     });
   }
@@ -64,23 +40,26 @@ export class StorageProviderService implements OnModuleInit {
     id: string,
     configFromDb: ConfigValues
   ): Promise<StorageProviderEntity | null> {
-    const pluginRegistryEntry = this.providerPluginRegistry.get(id);
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'storage'>(id);
 
-    if (!pluginRegistryEntry) {
+    if (!registryEntry) {
       return null;
     }
 
-    const schemaObj = pluginRegistryEntry.manifest.configSchema;
+    const StorageProviderClass = registryEntry.provider;
+    const schemaObj = registryEntry.manifest.configSchema;
     const configForUse = await this.configSchemaService
       .get(schemaObj)
       .processOutboundValues(configFromDb);
 
     return new StorageProviderEntity({
       configSchemaService: this.configSchemaService,
-      storageProviderPlugin: new pluginRegistryEntry.StorageProviderClass({
+      pluginRegistryEntry: registryEntry,
+      pluginInstance: new StorageProviderClass({
         baseUrl: this.configService.get('server.origin'),
         configValues: configForUse,
-        manifest: pluginRegistryEntry.manifest,
+        manifest: registryEntry.manifest,
       }),
     });
   }
@@ -97,12 +76,13 @@ export class StorageProviderService implements OnModuleInit {
   }
 
   async processConfigForDb(providerId: string, configValues: ConfigValues) {
-    const pluginRegistryEntry = this.providerPluginRegistry.get(providerId);
-    if (!pluginRegistryEntry) {
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'storage'>(providerId);
+    if (!registryEntry) {
       throw new StorageProviderNotFound(providerId);
     }
     return await this.configSchemaService
-      .get(pluginRegistryEntry.manifest.configSchema)
+      .get(registryEntry.manifest.configSchema)
       .processInboundValues(configValues);
   }
 
@@ -134,44 +114,5 @@ export class StorageProviderService implements OnModuleInit {
       throw new StorageProviderNotFound(id);
     }
     return provider;
-  }
-
-  private async buildProviderRegistry() {
-    const modulesPath = findNodeModulesPath(process.cwd());
-    if (!modulesPath) return;
-
-    const modules = await readdir(modulesPath);
-    const packageNames = modules.filter((module) =>
-      module.startsWith('longpoint-storage-')
-    );
-
-    for (const packageName of packageNames) {
-      const packagePath = join(modulesPath, packageName);
-      const require = createRequire(__filename);
-      const pluginConfig: PluginConfig = require(join(
-        packagePath,
-        'dist',
-        'index.js'
-      )).default;
-
-      if (pluginConfig.type !== 'storage') continue;
-      if (!pluginConfig.provider) {
-        this.logger.error(
-          `Storage plugin ${packageName} has an invalid provider class`
-        );
-        continue;
-      }
-      if (!pluginConfig.manifest) {
-        this.logger.error(
-          `Storage plugin ${packageName} has an invalid manifest`
-        );
-        continue;
-      }
-
-      this.providerPluginRegistry.set(pluginConfig.manifest.id, {
-        StorageProviderClass: pluginConfig.provider,
-        manifest: pluginConfig.manifest,
-      });
-    }
   }
 }

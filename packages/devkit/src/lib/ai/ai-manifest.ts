@@ -1,15 +1,10 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 
 export interface AiPluginManifest {
-  provider: AiProviderManifest;
-  models: Record<string, AiModelManifest>;
-}
-
-export interface AiProviderManifest {
-  id: string;
-  name?: string;
-  config?: ConfigSchemaDefinition;
+  displayName?: string;
+  configSchema?: ConfigSchemaDefinition;
   image?: string;
+  models: Record<string, AiModelManifest>;
 }
 
 export interface AiModelManifest {

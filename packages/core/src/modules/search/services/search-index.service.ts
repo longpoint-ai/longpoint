@@ -1,5 +1,5 @@
 import { Prisma } from '@/database';
-import { AiPluginService } from '@/modules/ai';
+import { AiProviderService } from '@/modules/ai';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { ConfigValues } from '@longpoint/config-schema';
@@ -21,7 +21,7 @@ export class SearchIndexService {
     private readonly prismaService: PrismaService,
     private readonly vectorProviderService: VectorProviderService,
     private readonly mediaContainerService: MediaContainerService,
-    private readonly aiPluginService: AiPluginService,
+    private readonly aiProviderService: AiProviderService,
     private readonly configSchemaService: ConfigSchemaService
   ) {}
 
@@ -71,7 +71,7 @@ export class SearchIndexService {
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
       embeddingModel: index.embeddingModelId
-        ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+        ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
         : null,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
@@ -94,7 +94,7 @@ export class SearchIndexService {
           index.id
         );
       const embeddingModel = index.embeddingModelId
-        ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+        ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
         : null;
       indexEntities.push(
         new SearchIndexEntity({
@@ -132,7 +132,7 @@ export class SearchIndexService {
         index.id
       );
     const embeddingModel = index.embeddingModelId
-      ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+      ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
       : null;
 
     return new SearchIndexEntity({
@@ -176,7 +176,7 @@ export class SearchIndexService {
         index.id
       );
     const embeddingModel = index.embeddingModelId
-      ? await this.aiPluginService.getModelOrThrow(index.embeddingModelId)
+      ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
       : null;
 
     return new SearchIndexEntity({

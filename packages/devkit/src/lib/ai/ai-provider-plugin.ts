@@ -6,20 +6,16 @@ export interface AiProviderPluginArgs<
   M extends AiPluginManifest = AiPluginManifest
 > {
   manifest: M;
-  configValues: ConfigValues<M['provider']['config']>;
+  configValues: ConfigValues<M['configSchema']>;
 }
 
 export abstract class AiProviderPlugin<
   M extends AiPluginManifest = AiPluginManifest
 > {
-  readonly id: string;
-  readonly name: string;
-  readonly manifest: M;
-  readonly configValues: ConfigValues<M['provider']['config']>;
+  protected readonly manifest: M;
+  readonly configValues: ConfigValues<M['configSchema']>;
 
   constructor(args: AiProviderPluginArgs<M>) {
-    this.id = args.manifest.provider.id;
-    this.name = args.manifest.provider.name ?? this.id;
     this.manifest = args.manifest;
     this.configValues = args.configValues;
   }

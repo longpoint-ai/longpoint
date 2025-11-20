@@ -1,8 +1,8 @@
 import { StoragePluginManifest } from '@longpoint/devkit';
 
 export const manifest = {
-  id: 's3',
-  name: 'S3',
+  displayName: 'S3 Compatible',
+  image: 'icon.png',
   configSchema: {
     bucket: {
       label: 'Bucket',
@@ -49,7 +49,6 @@ export const manifest = {
       required: false,
     },
   },
-  image: 'https://via.placeholder.com/150',
 } satisfies StoragePluginManifest;
 
 export type S3StoragePluginManifest = typeof manifest;

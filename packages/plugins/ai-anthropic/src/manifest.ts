@@ -1,19 +1,16 @@
 import { AiPluginManifest } from '@longpoint/devkit';
 
 export const manifest = {
-  provider: {
-    id: 'anthropic',
-    name: 'Anthropic',
-    image:
-      'https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png',
-    config: {
-      apiKey: {
-        label: 'API Key',
-        type: 'secret',
-        required: true,
-        description:
-          'Your Claude API key. You can find it in the Claude Console.',
-      },
+  displayName: 'Anthropic',
+  image:
+    'https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png',
+  configSchema: {
+    apiKey: {
+      label: 'API Key',
+      type: 'secret',
+      required: true,
+      description:
+        'Your Claude API key. You can find it in the Claude Console.',
     },
   },
   models: {

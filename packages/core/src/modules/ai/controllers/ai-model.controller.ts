@@ -3,13 +3,13 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { AiModelDto } from '../dtos';
-import { AiPluginService } from '../services/ai-plugin.service';
+import { AiProviderService } from '../services/ai-provider.service';
 
 @Controller('ai/models')
 @ApiSdkTag(SdkTag.AI)
 @ApiBearerAuth()
 export class AiModelController {
-  constructor(private readonly aiPluginService: AiPluginService) {}
+  constructor(private readonly aiProviderService: AiProviderService) {}
 
   @Get(':id')
   @ApiOperation({
@@ -18,7 +18,7 @@ export class AiModelController {
   })
   @ApiOkResponse({ type: AiModelDto })
   async getModel(@Param('id') id: string) {
-    const model = await this.aiPluginService.getModelOrThrow(id);
+    const model = await this.aiProviderService.getModelOrThrow(id);
     return model.toDto();
   }
 
@@ -29,8 +29,7 @@ export class AiModelController {
   })
   @ApiOkResponse({ type: [AiModelDto] })
   async listModels() {
-    return this.aiPluginService
-      .listModels()
-      .map((model) => model.toSummaryDto());
+    const models = await this.aiProviderService.listModels();
+    return models.map((model) => model.toSummaryDto());
   }
 }

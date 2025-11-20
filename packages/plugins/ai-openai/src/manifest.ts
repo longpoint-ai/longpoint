@@ -1,18 +1,15 @@
 import { AiPluginManifest } from '@longpoint/devkit';
 
 export const manifest = {
-  provider: {
-    id: 'openai',
-    name: 'OpenAI',
-    image: 'icon.png',
-    config: {
-      apiKey: {
-        label: 'API Key',
-        type: 'secret',
-        required: true,
-        description:
-          'Your OpenAI API key. You can find or create one at https://platform.openai.com/api-keys',
-      },
+  displayName: 'OpenAI',
+  image: 'icon.png',
+  configSchema: {
+    apiKey: {
+      label: 'API Key',
+      type: 'secret',
+      required: true,
+      description:
+        'Your OpenAI API key. You can find or create one at https://platform.openai.com/api-keys',
     },
   },
   models: {

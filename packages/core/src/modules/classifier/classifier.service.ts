@@ -1,7 +1,7 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
 import { selectClassifier } from '../../shared/selectors/classifier.selectors';
-import { AiPluginService } from '../ai';
+import { AiProviderService } from '../ai';
 import { PrismaService } from '../common/services';
 import { EventPublisher } from '../event';
 import { MediaContainerService } from '../media';
@@ -13,14 +13,14 @@ import { ClassifierEntity } from './entities';
 export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly aiPluginService: AiPluginService,
+    private readonly aiProviderService: AiProviderService,
     private readonly mediaContainerService: MediaContainerService,
     private readonly eventPublisher: EventPublisher
   ) {}
 
   async createClassifier(data: CreateClassifierDto) {
     const modelInput = data.modelInput ?? undefined;
-    const model = this.aiPluginService.getModelOrThrow(data.modelId);
+    const model = await this.aiProviderService.getModelOrThrow(data.modelId);
     const processedModelInput = await model.processInboundClassifierInput(
       modelInput
     );
@@ -44,7 +44,7 @@ export class ClassifierService {
       model,
       modelInput: processedModelInput,
       prismaService: this.prismaService,
-      aiPluginService: this.aiPluginService,
+      aiProviderService: this.aiProviderService,
       mediaContainerService: this.mediaContainerService,
       eventPublisher: this.eventPublisher,
     });
@@ -66,9 +66,9 @@ export class ClassifierService {
 
     return new ClassifierEntity({
       ...classifier,
-      model: this.aiPluginService.getModelOrThrow(classifier.modelId),
+      model: await this.aiProviderService.getModelOrThrow(classifier.modelId),
       prismaService: this.prismaService,
-      aiPluginService: this.aiPluginService,
+      aiProviderService: this.aiProviderService,
       modelInput: classifier.modelInput as ConfigValues,
       mediaContainerService: this.mediaContainerService,
       eventPublisher: this.eventPublisher,
@@ -88,16 +88,20 @@ export class ClassifierService {
       select: selectClassifier(),
     });
 
-    return classifiers.map(
-      (classifier) =>
-        new ClassifierEntity({
-          ...classifier,
-          model: this.aiPluginService.getModelOrThrow(classifier.modelId),
-          prismaService: this.prismaService,
-          aiPluginService: this.aiPluginService,
-          mediaContainerService: this.mediaContainerService,
-          eventPublisher: this.eventPublisher,
-        })
+    return Promise.all(
+      classifiers.map(
+        async (classifier) =>
+          new ClassifierEntity({
+            ...classifier,
+            model: await this.aiProviderService.getModelOrThrow(
+              classifier.modelId
+            ),
+            prismaService: this.prismaService,
+            aiProviderService: this.aiProviderService,
+            mediaContainerService: this.mediaContainerService,
+            eventPublisher: this.eventPublisher,
+          })
+      )
     );
   }
 }

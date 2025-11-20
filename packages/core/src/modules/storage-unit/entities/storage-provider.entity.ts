@@ -1,10 +1,14 @@
-import { ConfigSchemaService } from '@/modules/common/services';
+import {
+  ConfigSchemaService,
+  PluginRegistryEntry,
+} from '@/modules/common/services';
 import { StorageProvider, StorageProviderPlugin } from '@longpoint/devkit';
 import { Readable } from 'stream';
 import { BaseStorageProviderEntity } from './base-storage-provider.entity';
 
 export interface StorageProviderEntityArgs {
-  storageProviderPlugin: StorageProviderPlugin;
+  pluginInstance: StorageProviderPlugin;
+  pluginRegistryEntry: PluginRegistryEntry<'storage'>;
   configSchemaService: ConfigSchemaService;
 }
 
@@ -12,36 +16,37 @@ export class StorageProviderEntity
   extends BaseStorageProviderEntity
   implements StorageProvider
 {
-  private readonly plugin: StorageProviderPlugin;
+  private readonly pluginInstance: StorageProviderPlugin;
 
   constructor(args: StorageProviderEntityArgs) {
+    const { derivedId, manifest } = args.pluginRegistryEntry;
     super({
-      id: args.storageProviderPlugin.id,
-      name: args.storageProviderPlugin.name,
-      image: args.storageProviderPlugin.manifest.image,
-      configSchema: args.storageProviderPlugin.manifest.configSchema,
+      id: derivedId,
+      displayName: manifest.displayName,
+      image: manifest.image,
+      configSchema: manifest.configSchema,
       configSchemaService: args.configSchemaService,
     });
-    this.plugin = args.storageProviderPlugin;
+    this.pluginInstance = args.pluginInstance;
   }
 
   upload(path: string, body: Readable | Buffer | string): Promise<boolean> {
-    return this.plugin.upload(path, body);
+    return this.pluginInstance.upload(path, body);
   }
 
   getFileStream(path: string): Promise<Readable> {
-    return this.plugin.getFileStream(path);
+    return this.pluginInstance.getFileStream(path);
   }
 
   getFileContents(path: string): Promise<Buffer> {
-    return this.plugin.getFileContents(path);
+    return this.pluginInstance.getFileContents(path);
   }
 
   exists(path: string): Promise<boolean> {
-    return this.plugin.exists(path);
+    return this.pluginInstance.exists(path);
   }
 
   deleteDirectory(path: string): Promise<void> {
-    return this.plugin.deleteDirectory(path);
+    return this.pluginInstance.deleteDirectory(path);
   }
 }
