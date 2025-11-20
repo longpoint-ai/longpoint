@@ -18,8 +18,6 @@ export class AuthService {
     this.betterAuth = this.initializeBetterAuth();
   }
 
-  async signUp() {}
-
   handleAuthRequest(req: Request, res: Response) {
     return toNodeHandler(this.betterAuth)(req, res);
   }
