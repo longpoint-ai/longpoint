@@ -190,8 +190,8 @@ export function StorageProviderConfigDetail() {
                 </div>
               </Field>
               <Field>
-                <FieldLabel>Usage Count</FieldLabel>
-                <Badge variant="secondary">
+                <FieldLabel>Usage</FieldLabel>
+                <Badge variant="secondary" className="w-fit!">
                   {config.usageCount || 0} storage unit
                   {config.usageCount !== 1 ? 's' : ''}
                 </Badge>
