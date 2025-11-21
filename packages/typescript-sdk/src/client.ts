@@ -12,7 +12,6 @@ export class Longpoint {
   ai: AiClient;
   media: MediaClient;
   storage: StorageClient;
-  library: LibraryClient;
   search: SearchClient;
   system: SystemClient;
 
@@ -28,7 +27,6 @@ export class Longpoint {
     this.ai = new AiClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
-    this.library = new LibraryClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
   }
@@ -137,7 +135,7 @@ class MediaClient {
    * Creates an empty container that is ready to receive an upload.
    */
     async createMedia(data: components['schemas']['CreateMediaContainer']): Promise<components['schemas']['CreateMediaContainerResponse']> {
-        const url = `media`;
+        const url = `media/containers`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
@@ -146,7 +144,7 @@ class MediaClient {
    * Get a media container
    */
     async getMedia(containerId: string): Promise<components['schemas']['MediaContainer']> {
-        const url = `media/${encodeURIComponent(String(containerId))}`;
+        const url = `media/containers/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -155,7 +153,7 @@ class MediaClient {
    * Update a media container
    */
     async updateMedia(containerId: string, data: components['schemas']['UpdateMediaContainer']): Promise<components['schemas']['MediaContainer']> {
-        const url = `media/${encodeURIComponent(String(containerId))}`;
+        const url = `media/containers/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
@@ -166,8 +164,24 @@ class MediaClient {
    * All associated assets will be deleted.
    */
     async deleteMedia(containerId: string, data: components['schemas']['DeleteMediaContainer']): Promise<void> {
-        const url = `media/${encodeURIComponent(String(containerId))}`;
+        const url = `media/containers/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.delete(url, { data });
+        return response.data;
+  }
+
+    /**
+   * List the contents of a library tree
+   */
+    async getTree(options?: { path?: string }): Promise<components['schemas']['LibraryTree']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.path !== undefined) {
+            params.append('path', String(options.path));
+          }
+        }
+        const queryString = params.toString();
+        const url = `media/tree${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
         return response.data;
   }
 
@@ -182,7 +196,7 @@ class MediaClient {
           }
         }
         const queryString = params.toString();
-        const url = `media/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
+        const url = `media/containers/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.put(url);
         return response.data;
   }
@@ -307,26 +321,6 @@ class StorageClient {
     async deleteStorageConfig(id: string): Promise<void> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.delete(url);
-        return response.data;
-  }
-}
-
-class LibraryClient {
-  constructor(private httpClient: AxiosInstance) {}
-
-    /**
-   * List the contents of a library tree
-   */
-    async getTree(options?: { path?: string }): Promise<components['schemas']['LibraryTree']> {
-        const params = new URLSearchParams();
-        if (options) {
-          if (options.path !== undefined) {
-            params.append('path', String(options.path));
-          }
-        }
-        const queryString = params.toString();
-        const url = `library/tree${queryString ? `?${queryString}` : ''}`;
-        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

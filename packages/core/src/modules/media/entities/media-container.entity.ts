@@ -24,7 +24,7 @@ import {
   MediaContainerSummaryDto,
   UpdateMediaContainerDto,
 } from '../dtos';
-import { MediaContainerDto } from '../dtos/media-container.dto';
+import { MediaContainerDto } from '../dtos/containers/media-container.dto';
 import {
   MediaContainerAlreadyDeleted,
   MediaContainerAlreadyExists,

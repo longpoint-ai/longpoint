@@ -7,7 +7,7 @@ import { ApiMediaContainerNotFoundResponse } from '../media/media.errors';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { UploadService } from './upload.service';
 
-@Controller('media')
+@Controller('media/containers')
 @ApiSdkTag(SdkTag.Media)
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}

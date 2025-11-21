@@ -1,6 +1,6 @@
 import { MediaContainerSummaryDto } from '@/modules/media/dtos';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { TreeItem, TreeItemType } from '../library.types';
+import { TreeItem, TreeItemType } from '../../media.types';
 
 export type MediaContainerTreeItemParams = MediaContainerSummaryDto;
 @ApiSchema({ name: 'MediaContainerTreeItem' })

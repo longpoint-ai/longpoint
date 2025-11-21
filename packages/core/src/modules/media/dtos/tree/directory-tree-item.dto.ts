@@ -1,5 +1,5 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { TreeItem, TreeItemType } from '../library.types';
+import { TreeItem, TreeItemType } from '../../media.types';
 
 export interface DirectoryTreeItemParams extends TreeItem {
   treeItemType: typeof TreeItemType.DIRECTORY;

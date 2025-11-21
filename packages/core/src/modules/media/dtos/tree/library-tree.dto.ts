@@ -5,7 +5,7 @@ import {
   ApiSchema,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { TreeItemType } from '../library.types';
+import { TreeItemType } from '../../media.types';
 import {
   DirectoryTreeItemDto,
   DirectoryTreeItemParams,

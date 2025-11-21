@@ -2,7 +2,7 @@ import { SearchIndexItemStatus } from '@/database';
 import { AiModelEntity } from '@/modules/ai';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
-import { MediaContainerSummaryDto } from '@/modules/media/dtos/media-container-summary.dto';
+import { MediaContainerSummaryDto } from '@/modules/media/dtos/containers/media-container-summary.dto';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
 import { SearchIndexDto } from '../dtos';

@@ -1,6 +1,5 @@
 export const SdkTag = {
   AI: 'ai',
-  Library: 'library',
   Media: 'media',
   Search: 'search',
   Storage: 'storage',
