@@ -4,7 +4,6 @@ export const selectStorageUnit = () => {
   return {
     id: true,
     name: true,
-    provider: true,
     isDefault: true,
     storageProviderConfigId: true,
     storageProviderConfig: {

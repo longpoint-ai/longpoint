@@ -33,11 +33,13 @@ import {
   ChevronUp,
   Edit,
   HardDrive,
+  Plus,
   Settings,
   Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { CreateStorageUnitSimpleDialog } from './create-storage-unit-simple-dialog';
 import { DeleteStorageProviderConfigDialog } from './delete-storage-provider-config-dialog';
 import { DeleteStorageUnitDialog } from './delete-storage-unit-dialog';
 import { EditStorageProviderConfigDialog } from './edit-storage-provider-config-dialog';
@@ -58,6 +60,7 @@ export function StorageProviderConfigDetail() {
   } | null>(null);
   const [editUnitDialogOpen, setEditUnitDialogOpen] = useState(false);
   const [deleteUnitDialogOpen, setDeleteUnitDialogOpen] = useState(false);
+  const [createUnitDialogOpen, setCreateUnitDialogOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
 
   const {
@@ -281,10 +284,18 @@ export function StorageProviderConfigDetail() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Storage Units</CardTitle>
-          <CardDescription>
-            Storage units using this configuration
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Storage Units</CardTitle>
+              <CardDescription>
+                Storage units using this configuration
+              </CardDescription>
+            </div>
+            <Button onClick={() => setCreateUnitDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Create Unit
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoadingUnits ? (
@@ -407,6 +418,19 @@ export function StorageProviderConfigDetail() {
         configId={config.id}
         configName={config.name}
         usageCount={config.storageUnitCount || 0}
+      />
+
+      <CreateStorageUnitSimpleDialog
+        open={createUnitDialogOpen}
+        onOpenChange={(open) => {
+          setCreateUnitDialogOpen(open);
+          if (!open) {
+            queryClient.invalidateQueries({
+              queryKey: ['storage-units', configId],
+            });
+          }
+        }}
+        configId={configId!}
       />
 
       {selectedStorageUnit && (

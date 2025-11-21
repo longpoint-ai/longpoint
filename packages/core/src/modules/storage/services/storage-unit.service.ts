@@ -175,7 +175,6 @@ export class StorageUnitService {
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
         name: 'Default',
-        provider: providerId,
         isDefault: true,
         storageProviderConfigId: defaultConfig.id,
       },
@@ -204,12 +203,11 @@ export class StorageUnitService {
       data.storageConfigId
     );
     storageProviderConfigId = config.id;
-    providerId = config.provider;
+    providerId = config.provider.id;
 
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
         name: data.name,
-        provider: providerId,
         isDefault: data.isDefault ?? false,
         storageProviderConfigId,
       },

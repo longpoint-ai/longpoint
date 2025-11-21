@@ -32,8 +32,8 @@ export interface StorageProviderConfigEntityArgs {
 export class StorageProviderConfigEntity {
   readonly id: string;
   readonly createdAt: Date;
+  readonly provider: StorageProviderEntity;
   private _name: string;
-  private _provider: StorageProviderEntity;
   private _updatedAt: Date;
   private configFromDb: ConfigValues | null;
 
@@ -43,8 +43,8 @@ export class StorageProviderConfigEntity {
 
   constructor(args: StorageProviderConfigEntityArgs) {
     this.id = args.id;
+    this.provider = args.provider;
     this._name = args.name;
-    this._provider = args.provider;
     this.createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
     this.configFromDb = args.configFromDb;
@@ -62,7 +62,7 @@ export class StorageProviderConfigEntity {
       let configForDb: ConfigValues | null = null;
       if (data.config !== undefined) {
         configForDb = await this.storageProviderService.processConfigForDb(
-          this._provider.id,
+          this.provider.id,
           data.config
         );
       }
@@ -140,7 +140,7 @@ export class StorageProviderConfigEntity {
    * @returns The decrypted config values
    */
   async getConfig(): Promise<ConfigValues> {
-    return await this._provider.processConfigFromDb(this.configFromDb ?? {});
+    return await this.provider.processConfigFromDb(this.configFromDb ?? {});
   }
 
   async toDto(): Promise<StorageConfigDto> {
@@ -149,7 +149,7 @@ export class StorageProviderConfigEntity {
     return new StorageConfigDto({
       id: this.id,
       name: this._name,
-      provider: this._provider.toSummaryDto(),
+      provider: this.provider.toSummaryDto(),
       config,
       storageUnitCount,
       createdAt: this.createdAt,
@@ -162,7 +162,7 @@ export class StorageProviderConfigEntity {
     return new StorageConfigSummaryDto({
       id: this.id,
       name: this._name,
-      provider: this._provider.toSummaryDto(),
+      provider: this.provider.toSummaryDto(),
       storageUnitCount,
     });
   }
@@ -178,10 +178,6 @@ export class StorageProviderConfigEntity {
   get name(): string {
     return this._name;
   }
-
-  // get provider(): string {
-  //   return this._provider;
-  // }
 
   get updatedAt(): Date {
     return this._updatedAt;
