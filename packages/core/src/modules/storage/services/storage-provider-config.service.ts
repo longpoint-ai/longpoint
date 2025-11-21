@@ -7,7 +7,7 @@ import { StorageProviderConfigEntity } from '../entities/storage-provider-config
 import {
   StorageProviderConfigNotFound,
   StorageProviderNotFound,
-} from '../storage-unit.errors';
+} from '../storage.errors';
 import { StorageProviderService } from './storage-provider.service';
 
 type SelectedStorageProviderConfig = {

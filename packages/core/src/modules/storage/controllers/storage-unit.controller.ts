@@ -29,7 +29,7 @@ import {
   ApiCannotDeleteDefaultStorageUnitResponse,
   ApiStorageUnitInUseResponse,
   ApiStorageUnitNotFoundResponse,
-} from '../storage-unit.errors';
+} from '../storage.errors';
 
 @Controller('storage/units')
 @ApiSdkTag(SdkTag.Storage)

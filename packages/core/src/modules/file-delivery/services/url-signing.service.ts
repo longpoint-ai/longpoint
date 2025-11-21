@@ -1,7 +1,7 @@
 import { ConfigService } from '@/modules/common/services';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
-import { InvalidSignature } from '../storage.errors';
+import { InvalidSignature } from '../file-delivery.errors';
 
 export interface GenerateSignedUrlOptions {
   w?: number;

@@ -12,7 +12,7 @@ import {
   CannotDeleteDefaultStorageUnit,
   StorageUnitInUse,
   StorageUnitNotFound,
-} from '../storage-unit.errors';
+} from '../storage.errors';
 import { StorageProviderEntity } from './storage-provider.entity';
 
 export interface StorageUnitEntityArgs {

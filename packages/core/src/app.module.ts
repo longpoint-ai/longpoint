@@ -5,13 +5,13 @@ import {
   AuthModule,
   ClassifierModule,
   CommonModule,
+  FileDeliveryModule,
   LibraryModule,
   LoggerModule,
   MediaModule,
   SearchModule,
   SetupModule,
   StorageModule,
-  StorageUnitModule,
   UploadModule,
 } from './modules';
 import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
@@ -28,12 +28,12 @@ import { EventModule } from './modules/event';
     AiModule,
     AuthModule,
     ClassifierModule,
+    FileDeliveryModule,
     LibraryModule,
     MediaModule,
     SearchModule,
     SetupModule,
     StorageModule,
-    StorageUnitModule,
     UploadModule,
   ],
   providers: [

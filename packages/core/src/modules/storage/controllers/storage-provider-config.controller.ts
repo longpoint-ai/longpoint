@@ -27,7 +27,7 @@ import { StorageProviderConfigService } from '../services/storage-provider-confi
 import {
   ApiStorageProviderConfigInUseResponse,
   ApiStorageProviderConfigNotFoundResponse,
-} from '../storage-unit.errors';
+} from '../storage.errors';
 
 @Controller('storage/configs')
 @ApiSdkTag(SdkTag.Storage)

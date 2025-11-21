@@ -9,7 +9,7 @@ import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
 import { StorageProviderEntity } from '../entities';
 import { BaseStorageProviderEntity } from '../entities/base-storage-provider.entity';
-import { StorageProviderNotFound } from '../storage-unit.errors';
+import { StorageProviderNotFound } from '../storage.errors';
 
 @Injectable()
 export class StorageProviderService {

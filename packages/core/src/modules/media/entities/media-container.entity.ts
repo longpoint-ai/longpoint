@@ -16,8 +16,8 @@ import {
 } from '../../../shared/selectors/media.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
-import { StorageUnitEntity } from '../../storage-unit/entities/storage-unit.entity';
-import { UrlSigningService } from '../../storage/services/url-signing.service';
+import { UrlSigningService } from '../../file-delivery';
+import { StorageUnitEntity } from '../../storage/entities/storage-unit.entity';
 import {
   MediaAssetDto,
   MediaAssetVariantsDto,

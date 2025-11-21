@@ -1,6 +1,6 @@
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { MediaContainerNotFound } from '@/modules/media';
-import { StorageUnitService } from '@/modules/storage-unit';
+import { StorageUnitService } from '@/modules/storage';
 import type { StorageProvider } from '@longpoint/devkit';
 import {
   getContentType,
@@ -14,7 +14,7 @@ import type {
   TransformParams,
   TransformParamsDto,
 } from '../dtos/transform-params.dto';
-import { FileNotFound, InvalidFilePath } from '../storage.errors';
+import { FileNotFound, InvalidFilePath } from '../file-delivery.errors';
 import { ImageTransformService } from './image-transform.service';
 import { UrlSigningService } from './url-signing.service';
 

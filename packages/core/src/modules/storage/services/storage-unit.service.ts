@@ -7,7 +7,7 @@ import { selectStorageUnit } from '../../../shared/selectors/storage-unit.select
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { CreateStorageUnitDto, ListStorageUnitsQueryDto } from '../dtos';
 import { StorageUnitEntity } from '../entities/storage-unit.entity';
-import { StorageUnitNotFound } from '../storage-unit.errors';
+import { StorageUnitNotFound } from '../storage.errors';
 import { StorageProviderConfigService } from './storage-provider-config.service';
 import { StorageProviderService } from './storage-provider.service';
 

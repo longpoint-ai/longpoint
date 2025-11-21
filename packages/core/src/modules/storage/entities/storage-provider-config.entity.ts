@@ -10,7 +10,7 @@ import { StorageProviderService } from '../services/storage-provider.service';
 import {
   StorageProviderConfigInUse,
   StorageProviderConfigNotFound,
-} from '../storage-unit.errors';
+} from '../storage.errors';
 
 export interface StorageProviderConfigEntityArgs {
   id: string;
