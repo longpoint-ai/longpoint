@@ -4,6 +4,7 @@ import {
   PluginRegistryService,
   PrismaService,
 } from '@/modules/common/services';
+import { selectStorageUnit } from '@/shared/selectors/storage-unit.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
 import { StorageProviderEntity } from '../entities';
@@ -91,19 +92,22 @@ export class StorageProviderService {
   ): Promise<StorageProviderEntity | null> {
     const storageUnit = await this.prismaService.storageUnit.findUnique({
       where: { id },
-      select: {
-        provider: true,
-        config: true,
-      },
+      select: selectStorageUnit(),
     });
 
     if (!storageUnit) {
       return null;
     }
 
-    const configValues = storageUnit.config as unknown as ConfigValues;
+    if (!storageUnit.storageProviderConfig) {
+      return null;
+    }
 
-    return this.getProviderById(storageUnit.provider, configValues);
+    const providerId = storageUnit.storageProviderConfig.provider;
+    const configValues =
+      (storageUnit.storageProviderConfig.config as ConfigValues) ?? {};
+
+    return this.getProviderById(providerId, configValues);
   }
 
   async getProviderByStorageUnitIdOrThrow(

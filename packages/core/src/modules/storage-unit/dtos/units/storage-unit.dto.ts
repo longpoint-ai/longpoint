@@ -2,7 +2,7 @@ import { SelectedStorageUnit } from '@/shared/selectors/storage-unit.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
-import { StorageProviderDto } from './storage-provider.dto';
+import { StorageProviderShortDto } from '../provider';
 
 export interface StorageUnitParams
   extends Pick<
@@ -10,7 +10,7 @@ export interface StorageUnitParams
     'id' | 'name' | 'isDefault' | 'createdAt' | 'updatedAt'
   > {
   config: ConfigValues | null;
-  provider: StorageProviderDto;
+  provider: StorageProviderShortDto;
 }
 
 @ApiSchema({ name: 'StorageUnit' })
@@ -30,8 +30,9 @@ export class StorageUnitDto {
 
   @ApiProperty({
     description: 'The storage provider',
+    type: StorageProviderShortDto,
   })
-  provider: StorageProviderDto;
+  provider: StorageProviderShortDto;
 
   @IsBoolean()
   @ApiProperty({

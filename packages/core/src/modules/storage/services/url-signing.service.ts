@@ -67,7 +67,7 @@ export class UrlSigningService {
       urlParams.set('h', h.toString());
     }
 
-    const finalPath = `/storage/${containerId}/${filename}?${urlParams.toString()}`;
+    const finalPath = `/m/${containerId}/${filename}?${urlParams.toString()}`;
     const url = new URL(finalPath, this.configService.get('server.baseUrl'))
       .href;
     return url;

@@ -7,7 +7,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { StorageProviderDto } from '../dtos';
 import { StorageProviderService } from '../services/storage-provider.service';
 
-@Controller('storage-providers')
+@Controller('storage/providers')
 @ApiSdkTag(SdkTag.Storage)
 @ApiBearerAuth()
 export class StorageProviderController {

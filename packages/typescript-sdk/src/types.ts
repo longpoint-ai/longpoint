@@ -272,7 +272,44 @@ export interface paths {
         patch: operations["updateVectorProviderConfig"];
         trace?: never;
     };
-    "/storage-providers": {
+    "/storage/configs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List storage provider configs */
+        get: operations["listStorageProviderConfigs"];
+        put?: never;
+        /** Create a storage provider config */
+        post: operations["createStorageProviderConfig"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/storage/configs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a storage provider config */
+        get: operations["getStorageProviderConfig"];
+        put?: never;
+        post?: never;
+        /** Delete a storage provider config */
+        delete: operations["deleteStorageProviderConfig"];
+        options?: never;
+        head?: never;
+        /** Update a storage provider config */
+        patch: operations["updateStorageProviderConfig"];
+        trace?: never;
+    };
+    "/storage/providers": {
         parameters: {
             query?: never;
             header?: never;
@@ -289,7 +326,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/storage-units": {
+    "/storage/units": {
         parameters: {
             query?: never;
             header?: never;
@@ -307,7 +344,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/storage-units/{storageUnitId}": {
+    "/storage/units/{storageUnitId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -842,12 +879,24 @@ export interface components {
              */
             vectorProviderId: string;
         };
-        CreateStorageUnit: {
+        CreateStorageProviderConfig: {
             /**
              * @description Provider-specific configuration
              * @example {}
              */
             config?: Record<string, never>;
+            /**
+             * @description The name of the storage provider config
+             * @example My S3 Config
+             */
+            name: string;
+            /**
+             * @description The storage provider ID
+             * @example s3
+             */
+            providerId: string;
+        };
+        CreateStorageUnit: {
             /**
              * @description Whether this should be the default storage unit
              * @default false
@@ -860,10 +909,18 @@ export interface components {
              */
             name: string;
             /**
-             * @description The storage provider ID
-             * @example local
+             * @description New config to create (required if not using existing config). Must include providerId and config.
+             * @example {
+             *       "providerId": "s3",
+             *       "config": {}
+             *     }
              */
-            providerId: string;
+            newConfig?: Record<string, never>;
+            /**
+             * @description The storage provider config ID to use (required if not creating new config)
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            storageProviderConfigId?: string;
         };
         DeleteMediaContainer: {
             /**
@@ -931,6 +988,12 @@ export interface components {
              */
             path: string;
         };
+        ListStorageUnitsResponse: {
+            /** @description The storage units in the response */
+            items: components["schemas"]["StorageUnitSummary"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
         MediaAsset: {
             /**
              * @description The aspect ratio of the media asset, if applicable
@@ -985,7 +1048,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-14T22:34:29.792Z
+             * @example 2025-11-21T16:15:56.444Z
              */
             createdAt: string;
             /**
@@ -1039,7 +1102,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-14T22:34:29.792Z
+             * @example 2025-11-21T16:15:56.444Z
              */
             createdAt: string;
             /**
@@ -1070,7 +1133,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-14T22:34:29.792Z
+             * @example 2025-11-21T16:15:56.444Z
              */
             createdAt: string;
             /**
@@ -1102,6 +1165,23 @@ export interface components {
              * @enum {string}
              */
             treeItemType: "MEDIA";
+        };
+        PaginationMetadata: {
+            /**
+             * @description The cursor to the next page
+             * @example jN1a2VuZHMA
+             */
+            nextCursor: string | null;
+            /**
+             * @description The link to the next page
+             * @example https://example.com/api/items?cursor=jN1a2VuZHMA
+             */
+            nextLink: string | null;
+            /**
+             * @description The number of items per page
+             * @example 100
+             */
+            pageSize: number;
         };
         SearchIndex: {
             /**
@@ -1215,6 +1295,79 @@ export interface components {
              * @example Local
              */
             name: string;
+        };
+        StorageProviderConfig: {
+            /**
+             * @description Provider-specific configuration (decrypted)
+             * @example {}
+             */
+            config: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description When the config was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the storage provider config
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description The name of the storage provider config
+             * @example My S3 Config
+             */
+            name: string;
+            /**
+             * @description The storage provider ID this config is for
+             * @example s3
+             */
+            provider: string;
+            /**
+             * Format: date-time
+             * @description When the config was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+            /**
+             * @description Number of storage units using this config
+             * @example 3
+             */
+            usageCount: number;
+        };
+        StorageProviderConfigSummary: {
+            /**
+             * Format: date-time
+             * @description When the config was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the storage provider config
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description The name of the storage provider config
+             * @example My S3 Config
+             */
+            name: string;
+            /**
+             * @description The storage provider ID this config is for
+             * @example s3
+             */
+            provider: string;
+            /**
+             * Format: date-time
+             * @description When the config was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+            /**
+             * @description Number of storage units using this config
+             * @example 3
+             */
+            usageCount: number;
         };
         StorageProviderShort: {
             /**
@@ -1349,12 +1502,24 @@ export interface components {
              */
             path?: string;
         };
-        UpdateStorageUnit: {
+        UpdateStorageProviderConfig: {
             /**
              * @description Provider-specific configuration
              * @example {}
              */
             config?: Record<string, never>;
+            /**
+             * @description The name of the storage provider config
+             * @example My S3 Config
+             */
+            name?: string;
+            /**
+             * @description The storage provider ID
+             * @example s3
+             */
+            providerId?: string;
+        };
+        UpdateStorageUnit: {
             /**
              * @description Whether this should be the default storage unit
              * @default false
@@ -1367,10 +1532,18 @@ export interface components {
              */
             name?: string;
             /**
-             * @description The storage provider ID
-             * @example local
+             * @description New config to create (required if not using existing config). Must include providerId and config.
+             * @example {
+             *       "providerId": "s3",
+             *       "config": {}
+             *     }
              */
-            providerId?: string;
+            newConfig?: Record<string, never>;
+            /**
+             * @description The storage provider config ID to use (required if not creating new config)
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            storageProviderConfigId?: string;
         };
         UpdateVectorProviderConfig: {
             /**
@@ -2071,6 +2244,188 @@ export interface operations {
             };
         };
     };
+    listStorageProviderConfigs: {
+        parameters: {
+            query: {
+                providerId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageProviderConfigSummary"][];
+                };
+            };
+        };
+    };
+    createStorageProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStorageProviderConfig"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageProviderConfig"];
+                };
+            };
+        };
+    };
+    getStorageProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageProviderConfig"];
+                };
+            };
+            /** @description Storage provider config not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Storage provider config with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteStorageProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The storage provider config was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Storage provider config not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Storage provider config with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+            /** @description Storage provider config is in use and cannot be deleted */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "INVALID_INPUT",
+                     *       "messages": [
+                     *         "Storage provider config mbjq36xe6397dsi6x9nq4ghc cannot be deleted because it is used by 2 storage unit(s)"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateStorageProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStorageProviderConfig"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageProviderConfig"];
+                };
+            };
+            /** @description Storage provider config not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Storage provider config with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
     listStorageProviders: {
         parameters: {
             query?: never;
@@ -2092,7 +2447,14 @@ export interface operations {
     };
     listStorageUnits: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description The ID of the storage provider config to filter by */
+                configId?: string;
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2104,7 +2466,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageUnitSummary"][];
+                    "application/json": components["schemas"]["ListStorageUnitsResponse"];
                 };
             };
         };

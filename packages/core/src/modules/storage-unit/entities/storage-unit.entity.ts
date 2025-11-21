@@ -1,9 +1,11 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
-import { StorageUnitSummaryDto } from '../dtos/storage-unit-summary.dto';
-import { StorageUnitDto } from '../dtos/storage-unit.dto';
-import { UpdateStorageUnitDto } from '../dtos/update-storage-unit.dto';
+import {
+  StorageUnitDto,
+  StorageUnitSummaryDto,
+  UpdateStorageUnitDto,
+} from '../dtos';
 import { StorageProviderService } from '../services/storage-provider.service';
 import { StorageUnitService } from '../services/storage-unit.service';
 import {
@@ -59,7 +61,9 @@ export class StorageUnitEntity {
 
   /**
    * Updates the storage unit.
-   * @param data - The update data (config should be in decrypted form)
+   * @param data - The update data
+   * Note: Config updates should be done through the StorageProviderConfig management, not here.
+   * This method only supports switching to a different config via storageProviderConfigId.
    */
   async update(data: UpdateStorageUnitDto): Promise<void> {
     try {
@@ -67,15 +71,11 @@ export class StorageUnitEntity {
         await this.storageUnitService.ensureSingleDefault(this.id);
       }
 
-      let configForDb: ConfigValues | null = null;
-      if (data.config !== undefined) {
-        const provider = await this.getProvider();
-        configForDb = await provider.processConfig(data.config);
-      }
-
       const updateData: {
         name?: string;
         isDefault?: boolean;
+        storageConfigId?: string | null;
+        provider?: string;
         config?: ConfigValues;
       } = {};
 
@@ -85,8 +85,19 @@ export class StorageUnitEntity {
       if (data.isDefault !== undefined) {
         updateData.isDefault = data.isDefault;
       }
-      if (configForDb) {
-        updateData.config = configForDb;
+      if (data.storageConfigId !== undefined) {
+        if (data.storageConfigId) {
+          const config =
+            await this.storageProviderService.getProviderByStorageUnitId(
+              this.id
+            );
+          if (!config) {
+            throw new Error('Could not load current provider');
+          }
+          updateData.storageConfigId = data.storageConfigId;
+        } else {
+          updateData.storageConfigId = null;
+        }
       }
 
       const updated = await this.prismaService.storageUnit.update({
@@ -97,7 +108,15 @@ export class StorageUnitEntity {
 
       this._name = updated.name;
       this._isDefault = updated.isDefault;
-      this.configFromDb = updateData.config ?? null;
+
+      const configRelation = updated.storageProviderConfig as
+        | { config: unknown }
+        | null
+        | undefined;
+      if (configRelation) {
+        this.configFromDb = configRelation.config as ConfigValues | null;
+      }
+
       this._updatedAt = updated.updatedAt;
 
       // Evict from cache so the entity is recreated with updated data
@@ -174,7 +193,7 @@ export class StorageUnitEntity {
     return new StorageUnitDto({
       id: this.id,
       name: this._name,
-      provider: provider.toDto(),
+      provider: provider.toShortDto(),
       isDefault: this._isDefault,
       config: await provider.processConfigFromDb(this.configFromDb ?? {}),
       createdAt: this.createdAt,

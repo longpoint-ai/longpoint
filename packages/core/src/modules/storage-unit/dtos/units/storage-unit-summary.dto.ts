@@ -1,5 +1,5 @@
 import { ApiProperty, ApiSchema, PickType } from '@nestjs/swagger';
-import { StorageProviderShortDto } from './storage-provider-short.dto';
+import { StorageProviderShortDto } from '../provider';
 import { StorageUnitDto, StorageUnitParams } from './storage-unit.dto';
 
 export type StorageUnitSummaryParams = Pick<

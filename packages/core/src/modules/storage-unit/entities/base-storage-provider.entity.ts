@@ -55,7 +55,6 @@ export class BaseStorageProviderEntity {
     return new StorageProviderShortDto({
       id: this.id,
       name: this.displayName,
-      image: this.image,
     });
   }
 }

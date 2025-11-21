@@ -10,6 +10,7 @@ import { Library } from '../pages/dashboard/library';
 import { MediaDetail } from '../pages/dashboard/media-detail';
 import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
+import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,
@@ -98,6 +99,18 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <Settings />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/settings/storage/configs/:configId"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <StorageProviderConfigDetail />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

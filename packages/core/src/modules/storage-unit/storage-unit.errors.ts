@@ -78,3 +78,41 @@ export const ApiStorageProviderNotFoundResponse = () => {
     })
   );
 };
+
+export class StorageProviderConfigNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Storage provider config', id, 'id');
+  }
+}
+export const storageProviderConfigNotFoundDoc = apiErrorDoc(
+  new StorageProviderConfigNotFound('mbjq36xe6397dsi6x9nq4ghc')
+);
+export const ApiStorageProviderConfigNotFoundResponse = () => {
+  return applyDecorators(
+    ApiNotFoundResponse({
+      description: 'Storage provider config not found',
+      ...storageProviderConfigNotFoundDoc,
+    })
+  );
+};
+
+export class StorageProviderConfigInUse extends BaseError {
+  constructor(id: string, count: number) {
+    super(
+      ErrorCode.INVALID_INPUT,
+      `Storage provider config ${id} cannot be deleted because it is used by ${count} storage unit(s)`,
+      HttpStatus.BAD_REQUEST
+    );
+  }
+}
+export const storageProviderConfigInUseDoc = apiErrorDoc(
+  new StorageProviderConfigInUse('mbjq36xe6397dsi6x9nq4ghc', 2)
+);
+export const ApiStorageProviderConfigInUseResponse = () => {
+  return applyDecorators(
+    ApiConflictResponse({
+      description: 'Storage provider config is in use and cannot be deleted',
+      ...storageProviderConfigInUseDoc,
+    })
+  );
+};

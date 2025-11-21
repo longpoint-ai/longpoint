@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -18,8 +19,9 @@ import {
 } from '@nestjs/swagger';
 import {
   CreateStorageUnitDto,
+  ListStorageUnitsQueryDto,
+  ListStorageUnitsResponseDto,
   StorageUnitDto,
-  StorageUnitSummaryDto,
   UpdateStorageUnitDto,
 } from '../dtos';
 import { StorageUnitService } from '../services/storage-unit.service';
@@ -29,7 +31,7 @@ import {
   ApiStorageUnitNotFoundResponse,
 } from '../storage-unit.errors';
 
-@Controller('storage-units')
+@Controller('storage/units')
 @ApiSdkTag(SdkTag.Storage)
 @ApiBearerAuth()
 export class StorageUnitController {
@@ -53,10 +55,14 @@ export class StorageUnitController {
     summary: 'List storage units',
     operationId: 'listStorageUnits',
   })
-  @ApiOkResponse({ type: [StorageUnitSummaryDto] })
-  async listStorageUnits() {
-    const storageUnits = await this.storageUnitService.listStorageUnits();
-    return Promise.all(storageUnits.map((unit) => unit.toSummaryDto()));
+  @ApiOkResponse({ type: ListStorageUnitsResponseDto })
+  async listStorageUnits(@Query() query: ListStorageUnitsQueryDto) {
+    const storageUnits = await this.storageUnitService.listStorageUnits(query);
+    return new ListStorageUnitsResponseDto({
+      query,
+      items: await Promise.all(storageUnits.map((unit) => unit.toSummaryDto())),
+      path: '/storage-units',
+    });
   }
 
   @Get(':storageUnitId')
@@ -109,22 +115,4 @@ export class StorageUnitController {
     );
     await storageUnit.delete();
   }
-
-  // @Get('provider-config-schemas')
-  // @RequirePermission(Permission.STORAGE_UNIT_READ)
-  // @ApiOperation({
-  //   summary: 'Get provider configuration schemas',
-  //   operationId: 'getProviderConfigSchemas',
-  //   description: 'Returns the configuration schemas for all storage providers',
-  // })
-  // @ApiOkResponse({
-  //   description: 'Provider configuration schemas',
-  //   schema: {
-  //     type: 'object',
-  //     additionalProperties: true,
-  //   },
-  // })
-  // async getProviderConfigSchemas() {
-  //   return STORAGE_PROVIDER_UI_CONFIG_SCHEMAS;
-  // }
 }

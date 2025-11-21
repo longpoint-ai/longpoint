@@ -5,9 +5,10 @@ import LocalStorageConfig from 'longpoint-storage-local';
 import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
-import { CreateStorageUnitDto } from '../dtos/create-storage-unit.dto';
+import { CreateStorageUnitDto, ListStorageUnitsQueryDto } from '../dtos';
 import { StorageUnitEntity } from '../entities/storage-unit.entity';
 import { StorageUnitNotFound } from '../storage-unit.errors';
+import { StorageProviderConfigService } from './storage-provider-config.service';
 import { StorageProviderService } from './storage-provider.service';
 
 /**
@@ -22,7 +23,8 @@ export class StorageUnitService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly storageProviderService: StorageProviderService
+    private readonly storageProviderService: StorageProviderService,
+    private readonly storageProviderConfigService: StorageProviderConfigService
   ) {}
 
   /**
@@ -126,14 +128,24 @@ export class StorageUnitService {
       return cachedEntity;
     }
 
+    if (!storageUnit.storageProviderConfig) {
+      throw new Error(
+        `Storage unit ${storageUnit.id} does not have a storage provider config`
+      );
+    }
+
+    const providerId = storageUnit.storageProviderConfig.provider;
+    const configFromDb = storageUnit.storageProviderConfig
+      .config as ConfigValues | null;
+
     const entity = new StorageUnitEntity({
       id: storageUnit.id,
       name: storageUnit.name,
       isDefault: storageUnit.isDefault,
       createdAt: storageUnit.createdAt,
       updatedAt: storageUnit.updatedAt,
-      providerId: storageUnit.provider,
-      configFromDb: storageUnit.config as ConfigValues,
+      providerId,
+      configFromDb,
       storageProviderService: this.storageProviderService,
       prismaService: this.prismaService,
       storageUnitService: this,
@@ -148,20 +160,24 @@ export class StorageUnitService {
    * Create a default local storage unit if none exists.
    */
   private async createDefaultStorageUnit(): Promise<SelectedStorageUnit> {
-    const providerId = LocalStorageConfig.manifest.id;
+    const providerId = 'storage-local';
     const config: ConfigValues<
       typeof LocalStorageConfig.manifest.configSchema
     > = {};
+
+    // Create a default config first
+    const defaultConfig = await this.storageProviderConfigService.createConfig({
+      name: 'Default Config',
+      providerId,
+      config,
+    });
 
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
         name: 'Default',
         provider: providerId,
         isDefault: true,
-        config: await this.storageProviderService.processConfigForDb(
-          providerId,
-          config
-        ),
+        storageProviderConfigId: defaultConfig.id,
       },
       select: selectStorageUnit(),
     });
@@ -181,20 +197,21 @@ export class StorageUnitService {
       await this.ensureSingleDefault();
     }
 
-    let inboundConfig: ConfigValues | null = null;
-    if (data.config !== undefined) {
-      inboundConfig = await this.storageProviderService.processConfigForDb(
-        data.providerId,
-        data.config
-      );
-    }
+    let storageProviderConfigId: string;
+    let providerId: string;
+
+    const config = await this.storageProviderConfigService.getConfigByIdOrThrow(
+      data.storageConfigId
+    );
+    storageProviderConfigId = config.id;
+    providerId = config.provider;
 
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
         name: data.name,
-        provider: data.providerId,
+        provider: providerId,
         isDefault: data.isDefault ?? false,
-        config: inboundConfig ?? Prisma.JsonNull,
+        storageProviderConfigId,
       },
       select: selectStorageUnit(),
     });
@@ -203,15 +220,30 @@ export class StorageUnitService {
   }
 
   /**
-   * Lists all storage units.
+   * Lists storage units with optional pagination and filtering.
+   * @param query - Optional pagination query
+   * @param storageProviderConfigId - Optional filter by storage provider config ID
    * @returns Array of storage unit entities
    */
-  async listStorageUnits(): Promise<StorageUnitEntity[]> {
+  async listStorageUnits(
+    query?: ListStorageUnitsQueryDto
+  ): Promise<StorageUnitEntity[]> {
+    const where: Prisma.StorageUnitWhereInput = {};
+    if (query?.configId) {
+      where.storageProviderConfigId = query.configId;
+    }
+
+    const paginationOptions = query?.toPrisma() ?? {
+      take: 100,
+      skip: 0,
+      cursor: undefined,
+      orderBy: { id: 'desc' },
+    };
+
     const storageUnits = await this.prismaService.storageUnit.findMany({
+      where,
       select: selectStorageUnit(),
-      orderBy: {
-        createdAt: 'asc',
-      },
+      ...paginationOptions,
     });
 
     return Promise.all(

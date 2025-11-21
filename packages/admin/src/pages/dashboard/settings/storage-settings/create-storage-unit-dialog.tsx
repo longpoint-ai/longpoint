@@ -38,8 +38,10 @@ import * as z from 'zod';
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   provider: z.string().min(1, 'Provider is required'),
-  isDefault: z.boolean().optional(),
+  storageProviderConfigId: z.string().optional(),
+  newConfigName: z.string().optional(),
   config: z.record(z.string(), z.any()).optional(),
+  isDefault: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -66,14 +68,31 @@ export function CreateStorageUnitDialog({
     defaultValues: {
       name: '',
       provider: undefined as any,
+      storageProviderConfigId: undefined,
+      newConfigName: '',
       isDefault: false,
       config: {},
     },
   });
 
   const selectedProviderId = form.watch('provider');
+  const storageProviderConfigId = form.watch('storageProviderConfigId');
   const selectedProvider = providers?.find((p) => p.id === selectedProviderId);
   const configSchema = selectedProvider?.configSchema || {};
+  const hasConfigSchema = Object.keys(configSchema).length > 0;
+  const isCreatingNewConfig = storageProviderConfigId === '__create_new__';
+
+  // Fetch existing configs for the selected provider
+  const { data: existingConfigs, isLoading: isLoadingConfigs } = useQuery({
+    queryKey: ['storage-provider-configs', selectedProviderId],
+    queryFn: () =>
+      selectedProviderId
+        ? client.storage.listStorageProviderConfigs({
+            providerId: selectedProviderId,
+          })
+        : Promise.resolve([]),
+    enabled: open && !!selectedProviderId && hasConfigSchema,
+  });
 
   // Set default provider when providers load
   React.useEffect(() => {
@@ -88,35 +107,60 @@ export function CreateStorageUnitDialog({
       form.reset({
         name: '',
         provider: undefined as any,
+        storageProviderConfigId: undefined,
+        newConfigName: '',
         isDefault: false,
         config: {},
       });
     }
   }, [open, form]);
 
-  // Initialize config defaults when provider changes
+  // Initialize config defaults when creating new config
   React.useEffect(() => {
-    if (configSchema && Object.keys(configSchema).length > 0) {
+    if (isCreatingNewConfig && hasConfigSchema) {
       const defaults: Record<string, any> = {};
       Object.entries(configSchema).forEach(([key, value]: [string, any]) => {
         defaults[key] = getDefaultValueForType(value);
       });
       form.setValue('config', defaults);
     }
-  }, [selectedProviderId, configSchema, form]);
+  }, [isCreatingNewConfig, configSchema, hasConfigSchema, form]);
+
+  // Reset config selection when provider changes
+  React.useEffect(() => {
+    if (selectedProviderId) {
+      form.setValue('storageProviderConfigId', undefined);
+      form.setValue('newConfigName', '');
+      form.setValue('config', {});
+    }
+  }, [selectedProviderId, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return client.storage.createStorageUnit({
-        name: data.name,
-        providerId: data.provider,
-        isDefault: data.isDefault ?? false,
-        config: data.config as any,
-      });
+      if (data.storageProviderConfigId && data.storageProviderConfigId !== '__create_new__') {
+        // Use existing config
+        return client.storage.createStorageUnit({
+          name: data.name,
+          storageProviderConfigId: data.storageProviderConfigId,
+          isDefault: data.isDefault ?? false,
+        });
+      } else {
+        // Create new config
+        return client.storage.createStorageUnit({
+          name: data.name,
+          newConfig: {
+            providerId: data.provider,
+            name: data.newConfigName || `${data.name} Config`,
+            config: data.config as any,
+          },
+          isDefault: data.isDefault ?? false,
+        });
+      }
     },
     onSuccess: () => {
       toast.success('Storage unit created successfully');
       queryClient.invalidateQueries({ queryKey: ['storage-units'] });
+      queryClient.invalidateQueries({ queryKey: ['storage-provider-configs'] });
       form.reset();
       onOpenChange(false);
     },
@@ -218,14 +262,94 @@ export function CreateStorageUnitDialog({
               )}
             />
 
-            {Object.keys(configSchema).length > 0 && (
-              <ConfigSchemaForm
-                schema={configSchema as any}
+            {selectedProviderId && hasConfigSchema && (
+              <Controller
+                name="storageProviderConfigId"
                 control={form.control}
-                namePrefix="config"
-                setError={form.setError}
-                allowImmutableFields={true}
+                rules={{ required: 'Please select a configuration' }}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="storage-provider-config">
+                      Configuration
+                    </FieldLabel>
+                    <Select
+                      value={field.value || undefined}
+                      onValueChange={field.onChange}
+                      disabled={isLoadingConfigs}
+                    >
+                      <SelectTrigger id="storage-provider-config">
+                        <SelectValue placeholder="Select configuration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isLoadingConfigs ? (
+                          <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                            Loading configurations...
+                          </div>
+                        ) : (
+                          <>
+                            <SelectItem value="__create_new__">
+                              Create new configuration
+                            </SelectItem>
+                            {existingConfigs && existingConfigs.length > 0 && (
+                              <>
+                                {existingConfigs.map((config) => (
+                                  <SelectItem key={config.id} value={config.id}>
+                                    {config.name}
+                                    {config.usageCount !== undefined &&
+                                      config.usageCount > 0 && (
+                                        <span className="ml-2 text-xs text-muted-foreground">
+                                          ({config.usageCount} unit
+                                          {config.usageCount !== 1 ? 's' : ''})
+                                        </span>
+                                      )}
+                                  </SelectItem>
+                                ))}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                    <FieldDescription>
+                      Select an existing configuration or create a new one.
+                    </FieldDescription>
+                  </Field>
+                )}
               />
+            )}
+
+            {isCreatingNewConfig && hasConfigSchema && (
+              <div className="space-y-4">
+                <Controller
+                  name="newConfigName"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel htmlFor="new-config-name">
+                        Configuration Name
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        id="new-config-name"
+                        placeholder="My Config"
+                      />
+                      <FieldDescription>
+                        Optional. If not provided, will use "{form.watch('name')} Config"
+                      </FieldDescription>
+                    </Field>
+                  )}
+                />
+                <ConfigSchemaForm
+                  schema={configSchema as any}
+                  control={form.control}
+                  namePrefix="config"
+                  setError={form.setError}
+                  allowImmutableFields={true}
+                />
+              </div>
             )}
 
             <Controller

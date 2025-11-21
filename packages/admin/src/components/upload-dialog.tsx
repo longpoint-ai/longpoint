@@ -61,7 +61,7 @@ export function UploadDialog() {
     queryFn: () => client.storage.listStorageUnits(),
   });
 
-  const defaultStorageUnit = storageUnits?.find((unit) => unit.isDefault);
+  const defaultStorageUnit = storageUnits?.items.find((unit) => unit.isDefault);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -205,7 +205,7 @@ export function UploadDialog() {
                   <SelectValue placeholder="Use default storage unit" />
                 </SelectTrigger>
                 <SelectContent>
-                  {storageUnits?.map((unit) => (
+                  {storageUnits?.items.map((unit) => (
                     <SelectItem key={unit.id} value={unit.id}>
                       {unit.name}
                       {unit.isDefault && ' (Default)'}

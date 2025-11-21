@@ -1,4 +1,3 @@
-import { ConfigSchemaForm } from '@/components/config-schema';
 import { useClient } from '@/hooks/common/use-client';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -168,14 +167,6 @@ export function EditStorageUnitDialog({
               )}
             />
 
-            {Object.keys(configSchema).length > 0 && (
-              <ConfigSchemaForm
-                schema={configSchema as any}
-                control={form.control}
-                namePrefix="config"
-                setError={form.setError}
-              />
-            )}
 
             <Controller
               name="isDefault"

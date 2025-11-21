@@ -5,23 +5,25 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 @ApiSchema({ name: 'PaginationQuery' })
 export class PaginationQueryDto {
-  /**
-   * The cursor to the next page.
-   */
   @Transform(({ value }) =>
     value !== undefined && value !== '' ? base64Decode(value) : undefined
   )
   @IsString()
   @IsOptional()
+  @ApiPropertyOptional({
+    type: 'string',
+    description: 'The cursor to the next page',
+  })
   cursor?: string;
 
-  /**
-   * The number of items per page.
-   * @example 100
-   */
   @IsNumber()
   @IsOptional()
-  @ApiPropertyOptional({ default: 100 })
+  @Transform(({ value }) => Number(value))
+  @ApiPropertyOptional({
+    description: 'The number of items per page',
+    default: 100,
+    type: 'number',
+  })
   pageSize = 100;
 
   /**

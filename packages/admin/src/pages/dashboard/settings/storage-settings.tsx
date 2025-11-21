@@ -11,154 +11,109 @@ import {
 } from '@longpoint/ui/components/empty';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { BoxIcon, Plus } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 import { useState } from 'react';
-import { CreateStorageUnitDialog } from './storage-settings/create-storage-unit-dialog';
-import { DeleteStorageUnitDialog } from './storage-settings/delete-storage-unit-dialog';
-import { EditStorageUnitDialog } from './storage-settings/edit-storage-unit-dialog';
-import { StorageUnitCard } from './storage-settings/storage-unit-card';
+import { CreateStorageProviderConfigDialog } from './storage-settings/create-storage-provider-config-dialog';
+import { StorageProviderConfigCard } from './storage-settings/storage-provider-config-card';
 
 export function StorageSettings() {
   const client = useClient();
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedStorageUnit, setSelectedStorageUnit] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [createConfigDialogOpen, setCreateConfigDialogOpen] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['storage-units'],
-    queryFn: () => client.storage.listStorageUnits(),
+  const {
+    data: configs,
+    isLoading: isLoadingConfigs,
+    error: configsError,
+  } = useQuery({
+    queryKey: ['storage-provider-configs'],
+    queryFn: () => client.storage.listStorageProviderConfigs(),
   });
 
-  const handleEdit = (id: string, name: string) => {
-    setSelectedStorageUnit({ id, name });
-    setEditDialogOpen(true);
-  };
+  const configsList = configs || [];
+  const configsEmpty = configsList.length === 0;
 
-  const handleDelete = (id: string, name: string) => {
-    setSelectedStorageUnit({ id, name });
-    setDeleteDialogOpen(true);
-  };
-
-  if (isLoading) {
-    return (
+  return (
+    <div className="space-y-8">
+      {/* Storage Provider Configs Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-semibold">Storage Units</h3>
+            <h3 className="text-2xl font-semibold">Storage Provider Configs</h3>
             <p className="text-muted-foreground mt-1">
-              Manage storage units for your media containers
+              Manage shared storage provider configurations
             </p>
           </div>
+          <Button onClick={() => setCreateConfigDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Config
+          </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-24 mt-2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+
+        {isLoadingConfigs ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-24 mt-2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : configsError ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-destructive">
+                Failed to load storage provider configs:{' '}
+                {configsError instanceof Error
+                  ? configsError.message
+                  : 'Unknown error'}
+              </p>
+            </CardContent>
+          </Card>
+        ) : configsEmpty ? (
+          <div className="py-12">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Settings className="h-12 w-12" />
+                </EmptyMedia>
+                <EmptyTitle className="text-2xl">
+                  No storage provider configs created yet
+                </EmptyTitle>
+                <EmptyDescription className="text-base">
+                  Storage provider configs define shared configurations that can
+                  be used by multiple storage units. Get started by creating
+                  your first config.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  onClick={() => setCreateConfigDialogOpen(true)}
+                  size="lg"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Your First Config
+                </Button>
+              </EmptyContent>
+            </Empty>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {configsList.map((config: any) => (
+              <StorageProviderConfigCard key={config.id} config={config} />
+            ))}
+          </div>
+        )}
       </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-destructive">
-            Failed to load storage units:{' '}
-            {error instanceof Error ? error.message : 'Unknown error'}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const storageUnits = data || [];
-  const isEmpty = storageUnits.length === 0;
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-2xl font-semibold">Storage Units</h3>
-          <p className="text-muted-foreground mt-1">
-            Manage storage units for your media containers
-          </p>
-        </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Create Storage Unit
-        </Button>
-      </div>
-
-      {isEmpty ? (
-        <div className="py-12">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <BoxIcon className="h-12 w-12" />
-              </EmptyMedia>
-              <EmptyTitle className="text-2xl">
-                No storage units created yet
-              </EmptyTitle>
-              <EmptyDescription className="text-base">
-                Storage units define where your media containers are stored. Get
-                started by creating your first storage unit.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={() => setCreateDialogOpen(true)} size="lg">
-                <Plus className="h-5 w-5 mr-2" />
-                Create Your First Storage Unit
-              </Button>
-            </EmptyContent>
-          </Empty>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {storageUnits.map((unit: any) => (
-            <StorageUnitCard
-              key={unit.id}
-              storageUnit={unit}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
-
-      <CreateStorageUnitDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+      <CreateStorageProviderConfigDialog
+        open={createConfigDialogOpen}
+        onOpenChange={setCreateConfigDialogOpen}
       />
-
-      {selectedStorageUnit && (
-        <>
-          <EditStorageUnitDialog
-            open={editDialogOpen}
-            onOpenChange={setEditDialogOpen}
-            storageUnitId={selectedStorageUnit.id}
-            storageUnitName={selectedStorageUnit.name}
-          />
-          <DeleteStorageUnitDialog
-            open={deleteDialogOpen}
-            onOpenChange={setDeleteDialogOpen}
-            storageUnitId={selectedStorageUnit.id}
-            storageUnitName={selectedStorageUnit.name}
-          />
-        </>
-      )}
     </div>
   );
 }

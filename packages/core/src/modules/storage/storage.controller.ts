@@ -5,7 +5,7 @@ import type { Request, Response } from 'express';
 import { TransformParamsDto } from './dtos/transform-params.dto';
 import { FileDeliveryService } from './services/file-delivery.service';
 
-@Controller('storage')
+@Controller('m')
 @Public()
 @ApiExcludeController()
 export class StorageController {
