@@ -26,7 +26,7 @@ export class SearchController {
       return new SearchResultsDto([]);
     }
 
-    const results = await activeIndex.query(body.query, body.limit ?? 10);
+    const results = await activeIndex.query(body.query);
 
     return new SearchResultsDto(results);
   }

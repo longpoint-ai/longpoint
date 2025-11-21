@@ -10,9 +10,6 @@
   },
   "references": [
     {
-      "path": "../devkit"
-    },
-    {
       "path": "../config-schema"
     },
     {

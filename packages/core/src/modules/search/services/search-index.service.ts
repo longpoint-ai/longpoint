@@ -33,8 +33,7 @@ export class SearchIndexService {
       );
     const vectorProvider =
       await this.vectorProviderService.getProviderByIdOrThrow(
-        data.vectorProviderId,
-        indexConfigForDb
+        data.vectorProviderId
       );
 
     let embeddingModelId = data.embeddingModelId;

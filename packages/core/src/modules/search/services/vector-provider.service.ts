@@ -5,28 +5,17 @@ import {
 } from '@/modules/common/services';
 import { InvalidInput, InvalidProviderConfig } from '@/shared/errors';
 import { ConfigValues } from '@longpoint/config-schema';
-import {
-  VectorPluginManifest,
-  VectorProviderPlugin,
-  VectorProviderPluginArgs,
-} from '@longpoint/devkit';
+import { VectorProviderPlugin } from '@longpoint/devkit';
 import { Injectable } from '@nestjs/common';
 import { BaseVectorProviderEntity } from '../entities/base-vector-provider.entity';
 import { VectorProviderEntity } from '../entities/vector-provider.entity';
 import { SearchIndexNotFound, VectorProviderNotFound } from '../search.errors';
 
-interface ProviderPluginRegistryEntry {
-  VectorProviderClass: new (
-    args: VectorProviderPluginArgs
-  ) => VectorProviderPlugin;
-  manifest: VectorPluginManifest;
-}
-
 @Injectable()
 export class VectorProviderService {
-  private readonly providerPluginRegistry = new Map<
+  private readonly providerEntityCache = new Map<
     string,
-    ProviderPluginRegistryEntry
+    VectorProviderEntity
   >();
 
   constructor(
@@ -35,35 +24,17 @@ export class VectorProviderService {
     private readonly pluginRegistryService: PluginRegistryService
   ) {}
 
-  private buildProviderRegistry() {
-    const plugins = this.pluginRegistryService.listPlugins('vector');
-
-    for (const registryEntry of plugins) {
-      this.providerPluginRegistry.set(registryEntry.derivedId, {
-        VectorProviderClass: registryEntry.provider,
-        manifest: registryEntry.manifest,
-      });
-    }
-  }
-
-  private ensureRegistryBuilt() {
-    if (this.providerPluginRegistry.size === 0) {
-      this.buildProviderRegistry();
-    }
-  }
-
   /**
    * List all installed vector providers.
    * @returns A list of base vector provider entities.
    */
   async listProviders() {
-    this.ensureRegistryBuilt();
-    const regEntries = Array.from(this.providerPluginRegistry.entries());
+    const plugins = this.pluginRegistryService.listPlugins('vector');
     const providerConfigs =
       await this.prismaService.vectorProviderConfig.findMany({
         where: {
           providerId: {
-            in: regEntries.map(([derivedId]) => derivedId),
+            in: plugins.map((p) => p.derivedId),
           },
         },
         select: {
@@ -71,34 +42,43 @@ export class VectorProviderService {
           config: true,
         },
       });
+
     return Promise.all(
-      providerConfigs.map(async ({ providerId, config }) => {
-        const regEntry = this.providerPluginRegistry.get(providerId);
-        if (!regEntry) {
-          throw new VectorProviderNotFound(providerId);
-        }
-        const providerConfigValues = await this.configSchemaService
-          .get(regEntry.manifest.providerConfigSchema)
-          .processOutboundValues(config as ConfigValues);
+      plugins.map(async (registryEnty) => {
+        const providerConfig = providerConfigs.find(
+          (pc) => pc.providerId === registryEnty.derivedId
+        );
+
+        const providerConfigValues = providerConfig?.config
+          ? await this.configSchemaService
+              .get(registryEnty.manifest.providerConfigSchema)
+              .processOutboundValues(providerConfig.config as ConfigValues)
+          : {};
+
         return new BaseVectorProviderEntity({
-          id: providerId, // Use derived ID
-          name: regEntry.manifest.name,
-          image: regEntry.manifest.image,
-          supportsEmbedding: regEntry.manifest.supportsEmbedding ?? false,
-          providerConfigSchema: regEntry.manifest.providerConfigSchema,
-          providerConfigValues,
+          id: registryEnty.derivedId,
+          displayName: registryEnty.manifest.displayName,
+          image: registryEnty.manifest.image,
           configSchemaService: this.configSchemaService,
-          indexConfigSchema: regEntry.manifest.indexConfigSchema,
+          supportsEmbedding: registryEnty.manifest.supportsEmbedding ?? false,
+          providerConfigSchema: registryEnty.manifest.providerConfigSchema,
+          providerConfigValues,
+          indexConfigSchema: registryEnty.manifest.indexConfigSchema,
         });
       })
     );
   }
 
-  async getProviderById(id: string, indexConfigFromDb: ConfigValues) {
-    this.ensureRegistryBuilt();
-    const pluginRegistryEntry = this.providerPluginRegistry.get(id);
-    if (!pluginRegistryEntry) {
+  async getProviderById(id: string) {
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'vector'>(id);
+    if (!registryEntry) {
       return null;
+    }
+
+    const cached = this.providerEntityCache.get(id);
+    if (cached) {
+      return cached;
     }
 
     const configFromDb =
@@ -115,20 +95,21 @@ export class VectorProviderService {
 
     try {
       const providerConfigValues = await this.configSchemaService
-        .get(pluginRegistryEntry.manifest.providerConfigSchema)
+        .get(registryEntry.manifest.providerConfigSchema)
         .processOutboundValues(configValuesFromDb);
-      const indexConfigValues = await this.configSchemaService
-        .get(pluginRegistryEntry.manifest.indexConfigSchema)
-        .processOutboundValues(indexConfigFromDb);
 
-      return new VectorProviderEntity({
-        plugin: new pluginRegistryEntry.VectorProviderClass({
-          providerConfigValues,
-          indexConfigValues,
-          manifest: pluginRegistryEntry.manifest,
-        }),
+      const pluginInstance = new registryEntry.provider({
+        providerConfigValues,
+      }) as VectorProviderPlugin;
+
+      const entity = new VectorProviderEntity({
+        pluginRegistryEntry: registryEntry,
+        plugin: pluginInstance,
         configSchemaService: this.configSchemaService,
       });
+
+      this.providerEntityCache.set(id, entity);
+      return entity;
     } catch (e) {
       if (e instanceof InvalidInput) {
         throw new InvalidProviderConfig('vector', id, e.getMessages());
@@ -137,8 +118,8 @@ export class VectorProviderService {
     }
   }
 
-  async getProviderByIdOrThrow(id: string, indexConfigFromDb: ConfigValues) {
-    const provider = await this.getProviderById(id, indexConfigFromDb);
+  async getProviderByIdOrThrow(id: string) {
+    const provider = await this.getProviderById(id);
     if (!provider) {
       throw new VectorProviderNotFound(id);
     }
@@ -148,15 +129,12 @@ export class VectorProviderService {
   async getProviderBySearchIndexId(indexId: string) {
     const index = await this.prismaService.searchIndex.findUnique({
       where: { id: indexId },
-      select: { vectorProviderId: true, config: true },
+      select: { vectorProviderId: true },
     });
     if (!index) {
       throw new SearchIndexNotFound(indexId);
     }
-    return await this.getProviderById(
-      index.vectorProviderId,
-      index.config as ConfigValues
-    );
+    return await this.getProviderById(index.vectorProviderId);
   }
 
   async getProviderBySearchIndexIdOrThrow(indexId: string) {
@@ -171,16 +149,16 @@ export class VectorProviderService {
    * Update the configuration values for a provider.
    * @param providerId - The ID of the provider to update.
    * @param configValues - The configuration values to update.
-   * @returns A vector provider entity with the updated configuration.
+   * @returns A base vector provider entity with the updated configuration.
    */
   async updateProviderConfig(providerId: string, configValues: ConfigValues) {
-    this.ensureRegistryBuilt();
-    const regEntry = this.providerPluginRegistry.get(providerId);
-    if (!regEntry) {
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'vector'>(providerId);
+    if (!registryEntry) {
       throw new VectorProviderNotFound(providerId);
     }
 
-    const schemaObj = regEntry.manifest.providerConfigSchema;
+    const schemaObj = registryEntry.manifest.providerConfigSchema;
     if (!schemaObj) {
       throw new InvalidInput('Provider does not support configuration');
     }
@@ -195,20 +173,43 @@ export class VectorProviderService {
       create: { providerId, config: inboundConfig },
     });
 
-    return await this.getProviderByIdOrThrow(providerId, inboundConfig);
+    // Evict cached entity for this provider
+    this.evictProviderCache(providerId);
+
+    const providerConfigValues = await this.configSchemaService
+      .get(registryEntry.manifest.providerConfigSchema)
+      .processOutboundValues(inboundConfig);
+
+    return new BaseVectorProviderEntity({
+      id: providerId,
+      displayName: registryEntry.manifest.displayName,
+      image: registryEntry.manifest.image,
+      supportsEmbedding: registryEntry.manifest.supportsEmbedding ?? false,
+      providerConfigSchema: registryEntry.manifest.providerConfigSchema,
+      providerConfigValues,
+      configSchemaService: this.configSchemaService,
+      indexConfigSchema: registryEntry.manifest.indexConfigSchema,
+    });
   }
 
   async processIndexConfigForDb(
     providerId: string,
     configValues: ConfigValues
   ) {
-    this.ensureRegistryBuilt();
-    const regEntry = this.providerPluginRegistry.get(providerId);
-    if (!regEntry) {
+    const registryEntry =
+      this.pluginRegistryService.getPluginById<'vector'>(providerId);
+    if (!registryEntry) {
       throw new VectorProviderNotFound(providerId);
     }
     return await this.configSchemaService
-      .get(regEntry.manifest.indexConfigSchema)
+      .get(registryEntry.manifest.indexConfigSchema)
       .processInboundValues(configValues);
+  }
+
+  /**
+   * Evict provider entities from cache.
+   */
+  private evictProviderCache(providerId: string): void {
+    this.providerEntityCache.delete(providerId);
   }
 }
