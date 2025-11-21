@@ -1,6 +1,6 @@
+import { ConfigValues } from '@longpoint/config-schema';
 import {
   EmbedAndUpsertDocument,
-  SearchOptions,
   SearchResult,
   VectorDocument,
   VectorMetadata,
@@ -8,26 +8,25 @@ import {
   VectorProviderPluginArgs,
 } from '@longpoint/devkit';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { manifest } from './manifest.js';
+import { manifest, PineconeVectorPluginManifest } from './manifest.js';
 
-export class PineconeVectorProvider extends VectorProviderPlugin<
-  typeof manifest
-> {
+export class PineconeVectorProvider extends VectorProviderPlugin<PineconeVectorPluginManifest> {
   private readonly client: Pinecone;
 
-  constructor(args: VectorProviderPluginArgs<typeof manifest>) {
+  constructor(args: VectorProviderPluginArgs<PineconeVectorPluginManifest>) {
     super({
-      manifest: args.manifest,
       providerConfigValues: args.providerConfigValues,
-      indexConfigValues: args.indexConfigValues,
     });
     this.client = new Pinecone({
       apiKey: this.providerConfigValues.apiKey,
     });
   }
 
-  async upsert(documents: VectorDocument[]): Promise<void> {
-    await this.client.index(this.indexName).upsert(
+  async upsert(
+    documents: VectorDocument[],
+    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+  ): Promise<void> {
+    await this.client.index(indexConfigValues.name).upsert(
       documents.map((d) => ({
         id: d.id,
         values: d.embedding,
@@ -37,9 +36,10 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
   }
 
   override async embedAndUpsert(
-    documents: EmbedAndUpsertDocument[]
+    documents: EmbedAndUpsertDocument[],
+    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
   ): Promise<void> {
-    await this.client.index(this.indexName).upsertRecords(
+    await this.client.index(indexConfigValues.name).upsertRecords(
       documents.map((d) => ({
         id: d.id,
         text: d.text,
@@ -48,21 +48,27 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
     );
   }
 
-  async delete(documentIds: string[]): Promise<void> {
-    await this.client.index(this.indexName).deleteMany(documentIds);
+  async delete(
+    documentIds: string[],
+    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+  ): Promise<void> {
+    await this.client.index(indexConfigValues.name).deleteMany(documentIds);
   }
 
-  async dropIndex(): Promise<void> {
-    await this.client.index(this.indexName).deleteAll();
+  async dropIndex(
+    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+  ): Promise<void> {
+    await this.client.index(indexConfigValues.name).deleteAll();
   }
 
   async search(
     queryVector: number[],
-    options?: SearchOptions
+    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
   ): Promise<SearchResult[]> {
-    const result = await this.client.index(this.indexName).query({
+    const limit = indexConfigValues.limit ?? 10;
+    const result = await this.client.index(indexConfigValues.name).query({
       vector: queryVector,
-      topK: options?.limit ?? 10,
+      topK: limit,
     });
     return result.matches.map((m) => ({
       id: m.id,
@@ -73,20 +79,22 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
 
   override async embedAndSearch(
     queryText: string,
-    options?: SearchOptions
+    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
   ): Promise<SearchResult[]> {
-    const top = options?.limit ?? 10;
-    const result = await this.client.index(this.indexName).searchRecords({
-      query: {
-        topK: top,
-        inputs: { text: queryText },
-      },
-      // rerank: {
-      //   model: 'bge-reranker-v2-m3',
-      //   rankFields: ['chunk_text'],
-      //   topN: top,
-      // },
-    });
+    const limit = indexConfigValues.limit ?? 10;
+    const result = await this.client
+      .index(indexConfigValues.name)
+      .searchRecords({
+        query: {
+          topK: limit,
+          inputs: { text: queryText },
+        },
+        // rerank: {
+        //   model: 'bge-reranker-v2-m3',
+        //   rankFields: ['chunk_text'],
+        //   topN: limit,
+        // },
+      });
     return result.result.hits.map((h) => {
       const { _id, _score, fields } = h;
       return {
@@ -95,9 +103,5 @@ export class PineconeVectorProvider extends VectorProviderPlugin<
         metadata: fields as VectorMetadata,
       };
     });
-  }
-
-  private get indexName(): string {
-    return this.indexConfigValues.name;
   }
 }

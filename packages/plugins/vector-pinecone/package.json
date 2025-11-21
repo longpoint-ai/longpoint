@@ -22,6 +22,10 @@
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.3",
     "@longpoint/devkit": "*",
+    "@longpoint/config-schema": "*",
     "tslib": "^2.3.0"
+  },
+  "nx": {
+    "name": "vector-pinecone"
   }
 }

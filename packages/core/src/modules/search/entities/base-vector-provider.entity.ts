@@ -6,13 +6,13 @@ import { VectorProviderDto, VectorProviderShortDto } from '../dtos';
 export interface BaseVectorProviderEntityArgs
   extends Pick<
     VectorPluginManifest,
-    | 'id'
-    | 'name'
+    | 'displayName'
     | 'image'
     | 'supportsEmbedding'
     | 'providerConfigSchema'
     | 'indexConfigSchema'
   > {
+  id: string;
   providerConfigValues: ConfigValues<
     VectorPluginManifest['providerConfigSchema']
   >;
@@ -21,7 +21,7 @@ export interface BaseVectorProviderEntityArgs
 
 export class BaseVectorProviderEntity {
   readonly id: string;
-  readonly name: string;
+  readonly displayName: string;
   readonly image?: string;
   readonly supportsEmbedding: boolean;
   readonly indexConfigSchema: VectorPluginManifest['indexConfigSchema'];
@@ -33,7 +33,7 @@ export class BaseVectorProviderEntity {
 
   constructor(args: BaseVectorProviderEntityArgs) {
     this.id = args.id;
-    this.name = args.name ?? this.id;
+    this.displayName = args.displayName ?? this.id;
     this.image = args.image;
     this.supportsEmbedding = args.supportsEmbedding ?? false;
     this.providerConfigSchema = args.providerConfigSchema;
@@ -57,7 +57,7 @@ export class BaseVectorProviderEntity {
   toDto() {
     return new VectorProviderDto({
       id: this.id,
-      name: this.name,
+      name: this.displayName,
       image: this.image,
       supportsEmbedding: this.supportsEmbedding,
       config: this.providerConfigValues,
@@ -69,8 +69,21 @@ export class BaseVectorProviderEntity {
   toShortDto() {
     return new VectorProviderShortDto({
       id: this.id,
-      name: this.name,
+      name: this.displayName,
       image: this.image,
     });
+  }
+
+  get needsConfig(): boolean {
+    const configSchema = this.providerConfigSchema;
+
+    if (!configSchema) {
+      return false;
+    }
+
+    const result = this.configSchemaService
+      .get(configSchema)
+      .validate(this.providerConfigValues);
+    return !result.valid;
   }
 }

@@ -66,16 +66,14 @@ export class SearchIndexEntity {
   /**
    * Queries the search index with a text query and returns matching media containers.
    * @param queryText The search query text
-   * @param limit Optional limit on the number of results (default: 10)
    * @returns Array of MediaContainerSummaryDto matching the query
    */
-  async query(
-    queryText: string,
-    limit = 10
-  ): Promise<MediaContainerSummaryDto[]> {
-    const searchResults = await this.vectorProvider.embedAndSearch(queryText, {
-      limit,
-    });
+  async query(queryText: string): Promise<MediaContainerSummaryDto[]> {
+    const indexConfigValues = await this.getIndexConfigValues();
+    const searchResults = await this.vectorProvider.embedAndSearch(
+      queryText,
+      indexConfigValues
+    );
 
     if (searchResults.length === 0) {
       return [];
@@ -194,7 +192,8 @@ export class SearchIndexEntity {
    */
   async delete(): Promise<void> {
     try {
-      await this.vectorProvider.dropIndex();
+      const indexConfigValues = await this.getIndexConfigValues();
+      await this.vectorProvider.dropIndex(indexConfigValues);
     } catch (error) {
       this.logger.warn(
         `Failed to delete index from vector store: ${
@@ -242,7 +241,8 @@ export class SearchIndexEntity {
 
       // Delete from vector store first, then from database
       try {
-        await this.vectorProvider.delete(externalIds);
+        const indexConfigValues = await this.getIndexConfigValues();
+        await this.vectorProvider.delete(externalIds, indexConfigValues);
       } catch (error) {
         this.logger.warn(
           `Failed to delete null items from vector store: ${
@@ -342,7 +342,8 @@ export class SearchIndexEntity {
 
       if (missingItemIds.length > 0) {
         try {
-          await this.vectorProvider.delete(missingItemIds);
+          const indexConfigValues = await this.getIndexConfigValues();
+          await this.vectorProvider.delete(missingItemIds, indexConfigValues);
         } catch (error) {
           this.logger.warn(
             `Failed to delete missing containers from vector store: ${
@@ -398,7 +399,8 @@ export class SearchIndexEntity {
       });
 
       if (!this.embeddingModel) {
-        await this.vectorProvider.embedAndUpsert(documents);
+        const indexConfigValues = await this.getIndexConfigValues();
+        await this.vectorProvider.embedAndUpsert(documents, indexConfigValues);
       } else {
         // TODO: Handle after embedding model is implemented
       }
@@ -420,7 +422,11 @@ export class SearchIndexEntity {
       // Delete from vector store first
       if (externalIdsToDelete.length > 0) {
         try {
-          await this.vectorProvider.delete(externalIdsToDelete);
+          const indexConfigValues = await this.getIndexConfigValues();
+          await this.vectorProvider.delete(
+            externalIdsToDelete,
+            indexConfigValues
+          );
         } catch (deleteError) {
           this.logger.warn(
             `Failed to delete external IDs from vector store during error cleanup: ${
@@ -477,5 +483,11 @@ export class SearchIndexEntity {
 
   get name(): string {
     return this._name;
+  }
+
+  private async getIndexConfigValues(): Promise<ConfigValues> {
+    return await this.vectorProvider.processIndexConfigFromDb(
+      this._configFromDb
+    );
   }
 }
