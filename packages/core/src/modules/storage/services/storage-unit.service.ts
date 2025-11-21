@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import LocalStorageConfig from 'longpoint-storage-local';
 import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
-import { PrismaService } from '../../common/services/prisma/prisma.service';
+import { ConfigService, PrismaService } from '../../common/services';
 import { CreateStorageUnitDto, ListStorageUnitsQueryDto } from '../dtos';
 import { StorageUnitEntity } from '../entities/storage-unit.entity';
 import { StorageUnitNotFound } from '../storage.errors';
@@ -24,7 +24,8 @@ export class StorageUnitService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly storageProviderService: StorageProviderService,
-    private readonly storageProviderConfigService: StorageProviderConfigService
+    private readonly storageProviderConfigService: StorageProviderConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   /**
@@ -138,6 +139,7 @@ export class StorageUnitService {
     const configFromDb = storageUnit.storageProviderConfig
       .config as ConfigValues | null;
 
+    const pathPrefix = this.configService.get('storage.pathPrefix');
     const entity = new StorageUnitEntity({
       id: storageUnit.id,
       name: storageUnit.name,
@@ -146,6 +148,7 @@ export class StorageUnitService {
       updatedAt: storageUnit.updatedAt,
       providerId,
       configFromDb,
+      pathPrefix,
       storageProviderService: this.storageProviderService,
       prismaService: this.prismaService,
       storageUnitService: this,
@@ -196,20 +199,15 @@ export class StorageUnitService {
       await this.ensureSingleDefault();
     }
 
-    let storageProviderConfigId: string;
-    let providerId: string;
-
     const config = await this.storageProviderConfigService.getConfigByIdOrThrow(
       data.storageConfigId
     );
-    storageProviderConfigId = config.id;
-    providerId = config.provider.id;
 
     const storageUnit = await this.prismaService.storageUnit.create({
       data: {
         name: data.name,
         isDefault: data.isDefault ?? false,
-        storageProviderConfigId,
+        storageProviderConfigId: config.id,
       },
       select: selectStorageUnit(),
     });

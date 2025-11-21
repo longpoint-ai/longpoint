@@ -59,9 +59,9 @@ export function DeleteStorageUnitDialog({
           <DialogTitle>Delete Storage Unit</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete the storage unit{' '}
-            <span className="font-semibold">{storageUnitName}</span>? This
-            action cannot be undone. Storage units with media containers cannot
-            be deleted.
+            <span className="font-semibold">{storageUnitName}</span>? This will
+            permanently delete the storage unit and all associated media
+            containers and their files. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

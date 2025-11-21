@@ -1,4 +1,5 @@
 import { ConfigValues } from '@longpoint/config-schema';
+import { join } from 'path';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import {
@@ -10,7 +11,6 @@ import { StorageProviderService } from '../services/storage-provider.service';
 import { StorageUnitService } from '../services/storage-unit.service';
 import {
   CannotDeleteDefaultStorageUnit,
-  StorageUnitInUse,
   StorageUnitNotFound,
 } from '../storage.errors';
 import { StorageProviderEntity } from './storage-provider.entity';
@@ -23,6 +23,7 @@ export interface StorageUnitEntityArgs {
   updatedAt: Date;
   configFromDb: ConfigValues | null;
   providerId: string;
+  pathPrefix: string;
   prismaService: PrismaService;
   storageUnitService: StorageUnitService;
   storageProviderService: StorageProviderService;
@@ -45,6 +46,7 @@ export class StorageUnitEntity {
   private readonly prismaService: PrismaService;
   private readonly storageUnitService: StorageUnitService;
   private readonly storageProviderService: StorageProviderService;
+  private readonly pathPrefix: string;
 
   constructor(args: StorageUnitEntityArgs) {
     this.id = args.id;
@@ -54,6 +56,7 @@ export class StorageUnitEntity {
     this.configFromDb = args.configFromDb;
     this.providerId = args.providerId;
     this._isDefault = args.isDefault;
+    this.pathPrefix = args.pathPrefix;
     this.prismaService = args.prismaService;
     this.storageUnitService = args.storageUnitService;
     this.storageProviderService = args.storageProviderService;
@@ -130,21 +133,12 @@ export class StorageUnitEntity {
   }
 
   /**
-   * Deletes the storage unit.
-   * @throws {StorageUnitInUse} If the storage unit has media containers
+   * Deletes the storage unit, including all associated media containers and their files.
    * @throws {CannotDeleteDefaultStorageUnit} If trying to delete the last default storage unit
+   * @throws {StorageUnitNotFound} If the storage unit doesn't exist
    */
   async delete(): Promise<void> {
-    const containerCount = await this.prismaService.mediaContainer.count({
-      where: {
-        storageUnitId: this.id,
-      },
-    });
-
-    if (containerCount > 0) {
-      throw new StorageUnitInUse(this.id);
-    }
-
+    // Check if this is the last default storage unit
     if (this._isDefault) {
       const defaultCount = await this.prismaService.storageUnit.count({
         where: {
@@ -158,6 +152,20 @@ export class StorageUnitEntity {
     }
 
     try {
+      // Delete all media containers for this storage unit
+      // Prisma cascade will handle MediaAssets, UploadTokens, and other related records
+      await this.prismaService.mediaContainer.deleteMany({
+        where: {
+          storageUnitId: this.id,
+        },
+      });
+
+      // Get the storage provider and delete all files for this storage unit
+      const provider = await this.getProvider();
+      const storageUnitPath = join(this.pathPrefix, this.id);
+      await provider.deleteDirectory(storageUnitPath);
+
+      // Delete the storage unit from the database
       await this.prismaService.storageUnit.delete({
         where: { id: this.id },
       });

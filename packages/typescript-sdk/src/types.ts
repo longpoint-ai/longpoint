@@ -1040,7 +1040,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T18:03:23.282Z
+             * @example 2025-11-21T18:50:49.488Z
              */
             createdAt: string;
             /**
@@ -1094,7 +1094,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T18:03:23.282Z
+             * @example 2025-11-21T18:50:49.488Z
              */
             createdAt: string;
             /**
@@ -1125,7 +1125,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T18:03:23.282Z
+             * @example 2025-11-21T18:50:49.488Z
              */
             createdAt: string;
             /**
@@ -2547,7 +2547,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Storage unit is in use and cannot be deleted */
+            /** @description Cannot delete the default storage unit */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2556,7 +2556,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "INVALID_INPUT",
                      *       "messages": [
-                     *         "Storage unit mbjq36xe6397dsi6x9nq4ghc cannot be deleted because it has media containers"
+                     *         "Cannot delete default storage unit mbjq36xe6397dsi6x9nq4ghc. There must be at least one default storage unit."
                      *       ]
                      *     } */
                     "application/json": {
