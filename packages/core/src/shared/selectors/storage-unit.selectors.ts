@@ -4,9 +4,18 @@ export const selectStorageUnit = () => {
   return {
     id: true,
     name: true,
-    provider: true,
     isDefault: true,
-    config: true,
+    storageProviderConfigId: true,
+    storageProviderConfig: {
+      select: {
+        id: true,
+        name: true,
+        provider: true,
+        config: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    },
     createdAt: true,
     updatedAt: true,
   } satisfies Prisma.StorageUnitSelect;

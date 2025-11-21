@@ -39,19 +39,6 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        // Prisma engines
-        {
-          from: join(__dirname, './src/database/generated/prisma/*.node'),
-          to: 'generated/prisma/[name][ext]',
-        },
-        // Prisma schema
-        {
-          from: join(
-            __dirname,
-            './src/database/generated/prisma/schema.prisma'
-          ),
-          to: 'generated/prisma/schema.prisma',
-        },
         // static assets
         {
           from: join(__dirname, './src/admin-placeholder'),

@@ -1,14 +1,22 @@
 import { Module } from '@nestjs/common';
-import { StorageUnitModule } from '../storage-unit';
-import { FileDeliveryService } from './services/file-delivery.service';
-import { ImageTransformService } from './services/image-transform.service';
-import { UrlSigningService } from './services/url-signing.service';
-import { StorageController } from './storage.controller';
+import { StorageConfigController } from './controllers/storage-config.controller';
+import { StorageProviderController } from './controllers/storage-provider.controller';
+import { StorageUnitController } from './controllers/storage-unit.controller';
+import { StorageProviderConfigService } from './services/storage-provider-config.service';
+import { StorageProviderService } from './services/storage-provider.service';
+import { StorageUnitService } from './services/storage-unit.service';
 
 @Module({
-  imports: [StorageUnitModule],
-  controllers: [StorageController],
-  providers: [FileDeliveryService, ImageTransformService, UrlSigningService],
-  exports: [UrlSigningService],
+  controllers: [
+    StorageUnitController,
+    StorageProviderController,
+    StorageConfigController,
+  ],
+  providers: [
+    StorageUnitService,
+    StorageProviderService,
+    StorageProviderConfigService,
+  ],
+  exports: [StorageUnitService, StorageProviderConfigService],
 })
 export class StorageModule {}

@@ -4,6 +4,7 @@ import {
   HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
+  PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3';
 import {
@@ -35,13 +36,22 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
   ): Promise<boolean> {
     const key = this.normalizeS3Key(path);
 
-    await this.s3Client.send(
-      new PutObjectCommand({
-        Bucket: this.configValues.bucket,
-        Key: key,
-        Body: body,
-      })
-    );
+    const commandParams: PutObjectCommandInput = {
+      Bucket: this.configValues.bucket,
+      Key: key,
+      Body: body,
+    };
+
+    // Try to extract the content length from the request headers
+    if (body && typeof body === 'object' && 'headers' in body) {
+      const req = body as any;
+      const contentLength = req.headers?.['content-length'];
+      if (contentLength) {
+        commandParams.ContentLength = parseInt(contentLength, 10);
+      }
+    }
+
+    await this.s3Client.send(new PutObjectCommand(commandParams));
 
     return true;
   }

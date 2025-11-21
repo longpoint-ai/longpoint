@@ -11,8 +11,8 @@ import {
 import { MediaContainerEntity } from '../../common/entities';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
-import { StorageUnitService } from '../../storage-unit/services/storage-unit.service';
-import { UrlSigningService } from '../../storage/services/url-signing.service';
+import { UrlSigningService } from '../../file-delivery/services/url-signing.service';
+import { StorageUnitService } from '../../storage/services/storage-unit.service';
 import { CreateMediaContainerDto } from '../dtos';
 import {
   MediaAssetNotFound,

@@ -5,7 +5,7 @@ import {
   Prisma,
 } from '@/database';
 import { ConfigService, PrismaService } from '@/modules/common/services';
-import { StorageUnitService } from '@/modules/storage-unit';
+import { StorageUnitService } from '@/modules/storage';
 import type { StorageProvider } from '@longpoint/devkit';
 import { SupportedMimeType } from '@longpoint/types';
 import {
@@ -18,7 +18,7 @@ import { isAfter } from 'date-fns';
 import { Request } from 'express';
 import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
 import { EventPublisher } from '../event';
-import { UrlSigningService } from '../storage/services/url-signing.service';
+import { UrlSigningService } from '../file-delivery/services/url-signing.service';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { TokenExpired } from './upload.errors';
 
