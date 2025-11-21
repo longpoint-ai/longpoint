@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '../common/services';
-import { MediaContainerService } from '../media';
+import { ConfigService } from '../../common/services';
 import {
   DirectoryTreeItemDto,
   DirectoryTreeItemParams,
   GetLibraryTreeQueryDto,
   LibraryTreeDto,
+  MediaContainerTreeItemDto,
   TreeItemDto,
-} from './dtos';
-import { MediaContainerTreeItemDto } from './dtos/media-container-tree-item.dto';
-import { PathNotFound } from './library.errors';
-import { TreeItemType } from './library.types';
+} from '../dtos';
+import { TreePathNotFound } from '../media.errors';
+import { TreeItemType } from '../media.types';
+import { MediaContainerService } from './media-container.service';
 
 @Injectable()
-export class LibraryService {
+export class MediaTreeService {
   constructor(
     private readonly configService: ConfigService,
     private readonly mediaContainerService: MediaContainerService
@@ -95,7 +95,7 @@ export class LibraryService {
 
     // If no items found, throw exception
     if (allItems.length === 0) {
-      throw new PathNotFound(normalizedPath);
+      throw new TreePathNotFound(normalizedPath);
     }
 
     return new LibraryTreeDto({

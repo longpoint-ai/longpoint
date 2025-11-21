@@ -1,6 +1,6 @@
 import { MediaAssetVariant } from '@/database';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { type SelectedMediaContainer } from '../../../shared/selectors/media.selectors';
+import { type SelectedMediaContainer } from '../../../../shared/selectors/media.selectors';
 import { MediaAssetDto } from './media-asset.dto';
 
 export type MediaAssetVariantsParams = SelectedMediaContainer['assets'];

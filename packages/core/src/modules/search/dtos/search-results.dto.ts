@@ -1,4 +1,4 @@
-import { MediaContainerSummaryDto } from '@/modules/media/dtos/media-container-summary.dto';
+import { MediaContainerSummaryDto } from '@/modules/media/dtos/containers/media-container-summary.dto';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({ name: 'SearchResults' })

@@ -80,3 +80,13 @@ export class MediaContainerNotEmbeddable extends BaseError {
     );
   }
 }
+
+export class TreePathNotFound extends BaseError {
+  constructor(path: string) {
+    super(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      `Tree path not found: ${path}`,
+      HttpStatus.NOT_FOUND
+    );
+  }
+}

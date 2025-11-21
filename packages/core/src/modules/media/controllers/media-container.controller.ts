@@ -22,17 +22,17 @@ import {
   DeleteMediaContainerDto,
   MediaContainerDto,
   UpdateMediaContainerDto,
-} from './dtos';
+} from '../dtos';
 import {
   ApiMediaContainerAlreadyExistsResponse,
   ApiMediaContainerNotFoundResponse,
-} from './media.errors';
-import { MediaContainerService } from './services/media-container.service';
+} from '../media.errors';
+import { MediaContainerService } from '../services/media-container.service';
 
 @Controller('media/containers')
 @ApiSdkTag(SdkTag.Media)
 @ApiBearerAuth()
-export class MediaController {
+export class MediaContainerController {
   constructor(private readonly mediaContainerService: MediaContainerService) {}
 
   @Post()
