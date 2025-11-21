@@ -3,7 +3,7 @@ import {
   MediaAssetVariant,
   MediaContainerStatus,
   MediaType,
-} from '@/database/generated/prisma';
+} from '@/database';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
 import {

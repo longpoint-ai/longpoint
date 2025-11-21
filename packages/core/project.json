@@ -65,7 +65,7 @@
     "docker:build": {
       "dependsOn": ["build"]
     },
-    "db:gen": {
+    "db:generate": {
       "executor": "nx:run-commands",
       "options": {
         "command": "prisma generate",
