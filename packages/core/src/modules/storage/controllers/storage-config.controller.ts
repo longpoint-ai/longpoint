@@ -18,11 +18,11 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import {
-  CreateStorageProviderConfigDto,
+  CreateStorageConfigDto,
   StorageConfigDto,
-  StorageProviderConfigSummaryDto,
-  UpdateStorageProviderConfigDto,
-} from '../dtos/config/storage-config.dto';
+  StorageConfigSummaryDto,
+  UpdateStorageConfigDto,
+} from '../dtos';
 import { StorageProviderConfigService } from '../services/storage-provider-config.service';
 import {
   ApiStorageProviderConfigInUseResponse,
@@ -32,7 +32,7 @@ import {
 @Controller('storage/configs')
 @ApiSdkTag(SdkTag.Storage)
 @ApiBearerAuth()
-export class StorageProviderConfigController {
+export class StorageConfigController {
   constructor(
     private readonly storageProviderConfigService: StorageProviderConfigService
   ) {}
@@ -41,12 +41,10 @@ export class StorageProviderConfigController {
   @RequirePermission(Permission.STORAGE_UNIT_CREATE)
   @ApiOperation({
     summary: 'Create a storage provider config',
-    operationId: 'createStorageProviderConfig',
+    operationId: 'createStorageConfig',
   })
   @ApiCreatedResponse({ type: StorageConfigDto })
-  async createStorageProviderConfig(
-    @Body() body: CreateStorageProviderConfigDto
-  ) {
+  async createStorageConfig(@Body() body: CreateStorageConfigDto) {
     const config = await this.storageProviderConfigService.createConfig(body);
     return config.toDto();
   }
@@ -54,11 +52,11 @@ export class StorageProviderConfigController {
   @Get()
   @RequirePermission(Permission.STORAGE_UNIT_READ)
   @ApiOperation({
-    summary: 'List storage provider configs',
-    operationId: 'listStorageProviderConfigs',
+    summary: 'List storage configs',
+    operationId: 'listStorageConfigs',
   })
-  @ApiOkResponse({ type: [StorageProviderConfigSummaryDto] })
-  async listStorageProviderConfigs(@Query('providerId') providerId?: string) {
+  @ApiOkResponse({ type: [StorageConfigSummaryDto] })
+  async listStorageConfigs(@Query('providerId') providerId?: string) {
     const configs = await this.storageProviderConfigService.listConfigs(
       providerId
     );
@@ -68,12 +66,12 @@ export class StorageProviderConfigController {
   @Get(':id')
   @RequirePermission(Permission.STORAGE_UNIT_READ)
   @ApiOperation({
-    summary: 'Get a storage provider config',
-    operationId: 'getStorageProviderConfig',
+    summary: 'Get a storage config',
+    operationId: 'getStorageConfig',
   })
   @ApiOkResponse({ type: StorageConfigDto })
   @ApiStorageProviderConfigNotFoundResponse()
-  async getStorageProviderConfig(@Param('id') id: string) {
+  async getStorageConfig(@Param('id') id: string) {
     const config = await this.storageProviderConfigService.getConfigByIdOrThrow(
       id
     );
@@ -83,14 +81,14 @@ export class StorageProviderConfigController {
   @Patch(':id')
   @RequirePermission(Permission.STORAGE_UNIT_UPDATE)
   @ApiOperation({
-    summary: 'Update a storage provider config',
-    operationId: 'updateStorageProviderConfig',
+    summary: 'Update a storage config',
+    operationId: 'updateStorageConfig',
   })
   @ApiOkResponse({ type: StorageConfigDto })
   @ApiStorageProviderConfigNotFoundResponse()
-  async updateStorageProviderConfig(
+  async updateStorageConfig(
     @Param('id') id: string,
-    @Body() body: UpdateStorageProviderConfigDto
+    @Body() body: UpdateStorageConfigDto
   ) {
     const config = await this.storageProviderConfigService.updateConfig(
       id,
@@ -102,13 +100,13 @@ export class StorageProviderConfigController {
   @Delete(':id')
   @RequirePermission(Permission.STORAGE_UNIT_DELETE)
   @ApiOperation({
-    summary: 'Delete a storage provider config',
-    operationId: 'deleteStorageProviderConfig',
+    summary: 'Delete a storage config',
+    operationId: 'deleteStorageConfig',
   })
-  @ApiOkResponse({ description: 'The storage provider config was deleted' })
+  @ApiOkResponse({ description: 'The storage config was deleted' })
   @ApiStorageProviderConfigNotFoundResponse()
   @ApiStorageProviderConfigInUseResponse()
-  async deleteStorageProviderConfig(@Param('id') id: string) {
+  async deleteStorageConfig(@Param('id') id: string) {
     await this.storageProviderConfigService.deleteConfig(id);
   }
 }

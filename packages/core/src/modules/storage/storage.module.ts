@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { StorageProviderConfigController } from './controllers/storage-provider-config.controller';
+import { StorageConfigController } from './controllers/storage-config.controller';
 import { StorageProviderController } from './controllers/storage-provider.controller';
 import { StorageUnitController } from './controllers/storage-unit.controller';
 import { StorageProviderConfigService } from './services/storage-provider-config.service';
@@ -10,7 +10,7 @@ import { StorageUnitService } from './services/storage-unit.service';
   controllers: [
     StorageUnitController,
     StorageProviderController,
-    StorageProviderConfigController,
+    StorageConfigController,
   ],
   providers: [
     StorageUnitService,

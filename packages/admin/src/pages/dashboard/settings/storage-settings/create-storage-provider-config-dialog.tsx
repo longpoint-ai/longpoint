@@ -103,7 +103,7 @@ export function CreateStorageProviderConfigDialog({
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return client.storage.createStorageProviderConfig({
+      return client.storage.createStorageConfig({
         name: data.name,
         providerId: data.providerId,
         config: data.config as any,
@@ -147,11 +147,7 @@ export function CreateStorageProviderConfigDialog({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="config-name">Name</FieldLabel>
-                  <Input
-                    {...field}
-                    id="config-name"
-                    placeholder="My Config"
-                  />
+                  <Input {...field} id="config-name" placeholder="My Config" />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -245,4 +241,3 @@ export function CreateStorageProviderConfigDialog({
     </Dialog>
   );
 }
-

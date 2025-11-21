@@ -1,3 +1,4 @@
+import { components } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
 import {
   Card,
@@ -7,16 +8,11 @@ import {
   CardTitle,
 } from '@longpoint/ui/components/card';
 import { cn } from '@longpoint/ui/utils';
-import { HardDrive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { StorageProviderIcon } from './storage-provider-icon';
 
 interface StorageProviderConfigCardProps {
-  config: {
-    id: string;
-    name: string;
-    provider: string;
-    usageCount?: number;
-  };
+  config: components['schemas']['StorageConfigSummary'];
 }
 
 export function StorageProviderConfigCard({
@@ -39,10 +35,10 @@ export function StorageProviderConfigCard({
             <CardTitle className="flex items-center gap-2">
               {config.name}
             </CardTitle>
-            <CardDescription className="mt-1">
+            <CardDescription className="mt-2">
               <div className="flex items-center gap-2">
-                <HardDrive className="h-4 w-4" />
-                <span>{config.provider}</span>
+                <StorageProviderIcon image={config.provider.image} />
+                <span>{config.provider.name}</span>
               </div>
             </CardDescription>
           </div>
@@ -50,9 +46,10 @@ export function StorageProviderConfigCard({
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-2">
-          {config.usageCount !== undefined && (
+          {config.storageUnitCount !== undefined && (
             <Badge variant="secondary">
-              {config.usageCount} unit{config.usageCount !== 1 ? 's' : ''}
+              {config.storageUnitCount} unit
+              {config.storageUnitCount !== 1 ? 's' : ''}
             </Badge>
           )}
         </div>

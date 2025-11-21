@@ -2,20 +2,21 @@ import { ConfigValues } from '@longpoint/config-schema';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import {
   StorageConfigDto,
-  StorageProviderConfigSummaryDto,
-  UpdateStorageProviderConfigDto,
-} from '../dtos/config/storage-config.dto';
+  StorageConfigSummaryDto,
+  UpdateStorageConfigDto,
+} from '../dtos';
 import { StorageProviderConfigService } from '../services/storage-provider-config.service';
 import { StorageProviderService } from '../services/storage-provider.service';
 import {
   StorageProviderConfigInUse,
   StorageProviderConfigNotFound,
 } from '../storage.errors';
+import { StorageProviderEntity } from './storage-provider.entity';
 
 export interface StorageProviderConfigEntityArgs {
   id: string;
   name: string;
-  provider: string;
+  provider: StorageProviderEntity;
   configFromDb: ConfigValues | null;
   createdAt: Date;
   updatedAt: Date;
@@ -32,7 +33,7 @@ export class StorageProviderConfigEntity {
   readonly id: string;
   readonly createdAt: Date;
   private _name: string;
-  private _provider: string;
+  private _provider: StorageProviderEntity;
   private _updatedAt: Date;
   private configFromDb: ConfigValues | null;
 
@@ -56,12 +57,12 @@ export class StorageProviderConfigEntity {
    * Updates the storage provider config.
    * @param data - The update data (config should be in decrypted form)
    */
-  async update(data: UpdateStorageProviderConfigDto): Promise<void> {
+  async update(data: UpdateStorageConfigDto): Promise<void> {
     try {
       let configForDb: ConfigValues | null = null;
       if (data.config !== undefined) {
         configForDb = await this.storageProviderService.processConfigForDb(
-          this._provider,
+          this._provider.id,
           data.config
         );
       }
@@ -139,36 +140,30 @@ export class StorageProviderConfigEntity {
    * @returns The decrypted config values
    */
   async getConfig(): Promise<ConfigValues> {
-    const provider = await this.storageProviderService.getProviderByIdOrThrow(
-      this._provider,
-      this.configFromDb ?? {}
-    );
-    return await provider.processConfigFromDb(this.configFromDb ?? {});
+    return await this._provider.processConfigFromDb(this.configFromDb ?? {});
   }
 
   async toDto(): Promise<StorageConfigDto> {
     const config = await this.getConfig();
-    const usageCount = await this.getUsageCount();
+    const storageUnitCount = await this.getUsageCount();
     return new StorageConfigDto({
       id: this.id,
       name: this._name,
-      provider: this._provider,
+      provider: this._provider.toSummaryDto(),
       config,
-      usageCount,
+      storageUnitCount,
       createdAt: this.createdAt,
       updatedAt: this._updatedAt,
     });
   }
 
-  async toSummaryDto(): Promise<StorageProviderConfigSummaryDto> {
-    const usageCount = await this.getUsageCount();
-    return new StorageProviderConfigSummaryDto({
+  async toSummaryDto(): Promise<StorageConfigSummaryDto> {
+    const storageUnitCount = await this.getUsageCount();
+    return new StorageConfigSummaryDto({
       id: this.id,
       name: this._name,
-      provider: this._provider,
-      usageCount,
-      createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      provider: this._provider.toSummaryDto(),
+      storageUnitCount,
     });
   }
 
@@ -184,9 +179,9 @@ export class StorageProviderConfigEntity {
     return this._name;
   }
 
-  get provider(): string {
-    return this._provider;
-  }
+  // get provider(): string {
+  //   return this._provider;
+  // }
 
   get updatedAt(): Date {
     return this._updatedAt;

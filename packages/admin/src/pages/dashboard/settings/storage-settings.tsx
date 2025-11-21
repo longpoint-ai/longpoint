@@ -26,7 +26,7 @@ export function StorageSettings() {
     error: configsError,
   } = useQuery({
     queryKey: ['storage-provider-configs'],
-    queryFn: () => client.storage.listStorageProviderConfigs(),
+    queryFn: () => client.storage.listStorageConfigs(),
   });
 
   const configsList = configs || [];
@@ -38,9 +38,9 @@ export function StorageSettings() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-semibold">Storage Provider Configs</h3>
+            <h3 className="text-2xl font-semibold">Configurations</h3>
             <p className="text-muted-foreground mt-1">
-              Manage shared storage provider configurations
+              Manage storage provider connections
             </p>
           </div>
           <Button onClick={() => setCreateConfigDialogOpen(true)}>
@@ -103,7 +103,7 @@ export function StorageSettings() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {configsList.map((config: any) => (
+            {configsList.map((config) => (
               <StorageProviderConfigCard key={config.id} config={config} />
             ))}
           </div>

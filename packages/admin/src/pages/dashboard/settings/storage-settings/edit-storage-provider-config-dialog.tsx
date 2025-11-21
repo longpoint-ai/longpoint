@@ -58,7 +58,7 @@ export function EditStorageProviderConfigDialog({
 
   const { data: config, isLoading } = useQuery({
     queryKey: ['storage-provider-config', configId],
-    queryFn: () => client.storage.getStorageProviderConfig(configId),
+    queryFn: () => client.storage.getStorageConfig(configId),
     enabled: open && !!configId,
   });
 
@@ -67,7 +67,9 @@ export function EditStorageProviderConfigDialog({
     queryFn: () => client.storage.listStorageProviders(),
   });
 
-  const selectedProvider = providers?.find((p) => p.id === config?.provider);
+  const selectedProvider = providers?.find(
+    (p) => p.id === config?.provider?.id
+  );
   const configSchema = selectedProvider?.configSchema || {};
 
   const form = useForm<FormData>({
@@ -100,7 +102,7 @@ export function EditStorageProviderConfigDialog({
 
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return client.storage.updateStorageProviderConfig(configId, {
+      return client.storage.updateStorageConfig(configId, {
         name: data.name,
         config: data.config as any,
       });
@@ -126,7 +128,7 @@ export function EditStorageProviderConfigDialog({
   });
 
   const handleSubmit = form.handleSubmit((data) => {
-    if (config && config.usageCount && config.usageCount > 0) {
+    if (config && config.storageUnitCount && config.storageUnitCount > 0) {
       setShowWarning(true);
     } else {
       updateMutation.mutate(data);
@@ -219,9 +221,9 @@ export function EditStorageProviderConfigDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Update Shared Configuration</AlertDialogTitle>
             <AlertDialogDescription>
-              This configuration is currently used by {config.usageCount}{' '}
-              storage unit{config.usageCount !== 1 ? 's' : ''}. Updating it will
-              affect all of them. Are you sure you want to continue?
+              This configuration is currently used by {config.storageUnitCount}{' '}
+              storage unit{config.storageUnitCount !== 1 ? 's' : ''}. Updating
+              it will affect all of them. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

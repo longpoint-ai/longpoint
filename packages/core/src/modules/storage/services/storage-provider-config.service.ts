@@ -8,16 +8,11 @@ import {
   StorageProviderConfigNotFound,
   StorageProviderNotFound,
 } from '../storage.errors';
+import {
+  SelectedStorageProviderConfig,
+  selectStorageProviderConfig,
+} from '../storage.selectors';
 import { StorageProviderService } from './storage-provider.service';
-
-type SelectedStorageProviderConfig = {
-  id: string;
-  name: string;
-  provider: string;
-  config: Prisma.JsonValue | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 /**
  * StorageProviderConfigService handles instantiation and caching of storage provider config entities.
@@ -61,6 +56,7 @@ export class StorageProviderConfigService {
         provider: data.providerId,
         config: inboundConfig ?? Prisma.JsonNull,
       },
+      select: selectStorageProviderConfig(),
     });
 
     return this.getEntityByConfig({
@@ -198,19 +194,24 @@ export class StorageProviderConfigService {
    * @param config - The database record
    * @returns The config entity
    */
-  private getEntityByConfig(
+  private async getEntityByConfig(
     config: SelectedStorageProviderConfig
-  ): StorageProviderConfigEntity {
+  ): Promise<StorageProviderConfigEntity> {
     const cachedEntity = this.entityCache.get(config.id);
 
     if (cachedEntity) {
       return cachedEntity;
     }
 
+    const provider = await this.storageProviderService.getProviderByIdOrThrow(
+      config.provider,
+      (config.config as ConfigValues) ?? {}
+    );
+
     const entity = new StorageProviderConfigEntity({
       id: config.id,
       name: config.name,
-      provider: config.provider,
+      provider,
       configFromDb: config.config as ConfigValues | null,
       createdAt: config.createdAt,
       updatedAt: config.updatedAt,

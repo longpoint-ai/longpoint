@@ -1,7 +1,11 @@
 import { ConfigSchemaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { StoragePluginManifest } from '@longpoint/devkit';
-import { StorageProviderDto, StorageProviderShortDto } from '../dtos';
+import {
+  StorageProviderDto,
+  StorageProviderShortDto,
+  StorageProviderSummaryDto,
+} from '../dtos';
 
 export interface BaseStorageProviderEntityArgs
   extends Pick<
@@ -48,6 +52,14 @@ export class BaseStorageProviderEntity {
       name: this.displayName,
       image: this.image,
       configSchema: this.configSchema,
+    });
+  }
+
+  toSummaryDto() {
+    return new StorageProviderSummaryDto({
+      id: this.id,
+      name: this.displayName,
+      image: this.image,
     });
   }
 

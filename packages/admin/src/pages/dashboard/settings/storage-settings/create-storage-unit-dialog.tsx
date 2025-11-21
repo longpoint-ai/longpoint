@@ -87,7 +87,7 @@ export function CreateStorageUnitDialog({
     queryKey: ['storage-provider-configs', selectedProviderId],
     queryFn: () =>
       selectedProviderId
-        ? client.storage.listStorageProviderConfigs({
+        ? client.storage.listStorageConfigs({
             providerId: selectedProviderId,
           })
         : Promise.resolve([]),
@@ -137,22 +137,24 @@ export function CreateStorageUnitDialog({
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      if (data.storageProviderConfigId && data.storageProviderConfigId !== '__create_new__') {
-        // Use existing config
+      if (
+        data.storageProviderConfigId &&
+        data.storageProviderConfigId !== '__create_new__'
+      ) {
         return client.storage.createStorageUnit({
           name: data.name,
-          storageProviderConfigId: data.storageProviderConfigId,
+          storageConfigId: data.storageProviderConfigId,
           isDefault: data.isDefault ?? false,
         });
       } else {
-        // Create new config
+        const config = await client.storage.createStorageConfig({
+          name: data.newConfigName || `${data.name} Config`,
+          providerId: data.provider,
+          config: data.config as any,
+        });
         return client.storage.createStorageUnit({
           name: data.name,
-          newConfig: {
-            providerId: data.provider,
-            name: data.newConfigName || `${data.name} Config`,
-            config: data.config as any,
-          },
+          storageConfigId: config.id,
           isDefault: data.isDefault ?? false,
         });
       }
@@ -295,11 +297,14 @@ export function CreateStorageUnitDialog({
                                 {existingConfigs.map((config) => (
                                   <SelectItem key={config.id} value={config.id}>
                                     {config.name}
-                                    {config.usageCount !== undefined &&
-                                      config.usageCount > 0 && (
+                                    {config.storageUnitCount !== undefined &&
+                                      config.storageUnitCount > 0 && (
                                         <span className="ml-2 text-xs text-muted-foreground">
-                                          ({config.usageCount} unit
-                                          {config.usageCount !== 1 ? 's' : ''})
+                                          ({config.storageUnitCount} unit
+                                          {config.storageUnitCount !== 1
+                                            ? 's'
+                                            : ''}
+                                          )
                                         </span>
                                       )}
                                   </SelectItem>
@@ -337,7 +342,8 @@ export function CreateStorageUnitDialog({
                         placeholder="My Config"
                       />
                       <FieldDescription>
-                        Optional. If not provided, will use "{form.watch('name')} Config"
+                        Optional. If not provided, will use "
+                        {form.watch('name')} Config"
                       </FieldDescription>
                     </Field>
                   )}

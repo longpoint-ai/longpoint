@@ -42,6 +42,7 @@ import { DeleteStorageProviderConfigDialog } from './delete-storage-provider-con
 import { DeleteStorageUnitDialog } from './delete-storage-unit-dialog';
 import { EditStorageProviderConfigDialog } from './edit-storage-provider-config-dialog';
 import { EditStorageUnitDialog } from './edit-storage-unit-dialog';
+import { StorageProviderIcon } from './storage-provider-icon';
 
 export function StorageProviderConfigDetail() {
   const { configId } = useParams<{ configId: string }>();
@@ -65,7 +66,7 @@ export function StorageProviderConfigDetail() {
     error,
   } = useQuery({
     queryKey: ['storage-provider-config', configId],
-    queryFn: () => client.storage.getStorageProviderConfig(configId!),
+    queryFn: () => client.storage.getStorageConfig(configId!),
     enabled: !!configId,
   });
 
@@ -185,15 +186,15 @@ export function StorageProviderConfigDetail() {
               <Field>
                 <FieldLabel>Provider</FieldLabel>
                 <div className="flex items-center gap-2">
-                  <HardDrive className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{config.provider}</span>
+                  <StorageProviderIcon image={config.provider.image} />
+                  <span className="text-sm">{config.provider.name}</span>
                 </div>
               </Field>
               <Field>
                 <FieldLabel>Usage</FieldLabel>
                 <Badge variant="secondary" className="w-fit!">
-                  {config.usageCount || 0} storage unit
-                  {config.usageCount !== 1 ? 's' : ''}
+                  {config.storageUnitCount || 0} storage unit
+                  {config.storageUnitCount !== 1 ? 's' : ''}
                 </Badge>
               </Field>
             </FieldGroup>
@@ -405,7 +406,7 @@ export function StorageProviderConfigDetail() {
         onOpenChange={setDeleteDialogOpen}
         configId={config.id}
         configName={config.name}
-        usageCount={config.usageCount || 0}
+        usageCount={config.storageUnitCount || 0}
       />
 
       {selectedStorageUnit && (

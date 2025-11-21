@@ -279,11 +279,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List storage provider configs */
-        get: operations["listStorageProviderConfigs"];
+        /** List storage configs */
+        get: operations["listStorageConfigs"];
         put?: never;
         /** Create a storage provider config */
-        post: operations["createStorageProviderConfig"];
+        post: operations["createStorageConfig"];
         delete?: never;
         options?: never;
         head?: never;
@@ -297,16 +297,16 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a storage provider config */
-        get: operations["getStorageProviderConfig"];
+        /** Get a storage config */
+        get: operations["getStorageConfig"];
         put?: never;
         post?: never;
-        /** Delete a storage provider config */
-        delete: operations["deleteStorageProviderConfig"];
+        /** Delete a storage config */
+        delete: operations["deleteStorageConfig"];
         options?: never;
         head?: never;
-        /** Update a storage provider config */
-        patch: operations["updateStorageProviderConfig"];
+        /** Update a storage config */
+        patch: operations["updateStorageConfig"];
         trace?: never;
     };
     "/storage/providers": {
@@ -879,20 +879,20 @@ export interface components {
              */
             vectorProviderId: string;
         };
-        CreateStorageProviderConfig: {
+        CreateStorageConfig: {
             /**
              * @description Provider-specific configuration
              * @example {}
              */
             config?: Record<string, never>;
             /**
-             * @description The name of the storage provider config
-             * @example My S3 Config
+             * @description The name of the storage config
+             * @example App UGC
              */
             name: string;
             /**
              * @description The storage provider ID
-             * @example s3
+             * @example storage-s3
              */
             providerId: string;
         };
@@ -909,18 +909,10 @@ export interface components {
              */
             name: string;
             /**
-             * @description New config to create (required if not using existing config). Must include providerId and config.
-             * @example {
-             *       "providerId": "s3",
-             *       "config": {}
-             *     }
-             */
-            newConfig?: Record<string, never>;
-            /**
-             * @description The storage provider config ID to use (required if not creating new config)
+             * @description The storage config ID to use
              * @example mbjq36xe6397dsi6x9nq4ghc
              */
-            storageProviderConfigId?: string;
+            storageConfigId: string;
         };
         DeleteMediaContainer: {
             /**
@@ -1048,7 +1040,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T16:15:56.444Z
+             * @example 2025-11-21T18:03:23.282Z
              */
             createdAt: string;
             /**
@@ -1102,7 +1094,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T16:15:56.444Z
+             * @example 2025-11-21T18:03:23.282Z
              */
             createdAt: string;
             /**
@@ -1133,7 +1125,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T16:15:56.444Z
+             * @example 2025-11-21T18:03:23.282Z
              */
             createdAt: string;
             /**
@@ -1269,6 +1261,61 @@ export interface components {
              */
             isFirstTimeSetup: boolean;
         };
+        StorageConfig: {
+            /**
+             * @description Configuration for the provider
+             * @example {}
+             */
+            config: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description When the config was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the storage config
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description The name of the storage config
+             * @example App UGC
+             */
+            name: string;
+            /** @description The storage provider the config is for */
+            provider: components["schemas"]["StorageProviderSummary"];
+            /**
+             * @description Number of storage units using this config
+             * @example 3
+             */
+            storageUnitCount: number;
+            /**
+             * Format: date-time
+             * @description When the config was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        StorageConfigSummary: {
+            /**
+             * @description The ID of the storage config
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description The name of the storage config
+             * @example App UGC
+             */
+            name: string;
+            /** @description The storage provider the config is for */
+            provider: components["schemas"]["StorageProviderSummary"];
+            /**
+             * @description Number of storage units using this config
+             * @example 3
+             */
+            storageUnitCount: number;
+        };
         StorageProvider: {
             /**
              * @description The schema for the storage provider config
@@ -1296,80 +1343,19 @@ export interface components {
              */
             name: string;
         };
-        StorageProviderConfig: {
-            /**
-             * @description Provider-specific configuration (decrypted)
-             * @example {}
-             */
-            config: Record<string, never> | null;
-            /**
-             * Format: date-time
-             * @description When the config was created
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the storage provider config
-             * @example mbjq36xe6397dsi6x9nq4ghc
-             */
-            id: string;
-            /**
-             * @description The name of the storage provider config
-             * @example My S3 Config
-             */
-            name: string;
-            /**
-             * @description The storage provider ID this config is for
-             * @example s3
-             */
-            provider: string;
-            /**
-             * Format: date-time
-             * @description When the config was last updated
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            updatedAt: string;
-            /**
-             * @description Number of storage units using this config
-             * @example 3
-             */
-            usageCount: number;
-        };
-        StorageProviderConfigSummary: {
-            /**
-             * Format: date-time
-             * @description When the config was created
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the storage provider config
-             * @example mbjq36xe6397dsi6x9nq4ghc
-             */
-            id: string;
-            /**
-             * @description The name of the storage provider config
-             * @example My S3 Config
-             */
-            name: string;
-            /**
-             * @description The storage provider ID this config is for
-             * @example s3
-             */
-            provider: string;
-            /**
-             * Format: date-time
-             * @description When the config was last updated
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            updatedAt: string;
-            /**
-             * @description Number of storage units using this config
-             * @example 3
-             */
-            usageCount: number;
-        };
         StorageProviderShort: {
+            /**
+             * @description The ID of the storage provider
+             * @example local
+             */
+            id: string;
+            /**
+             * @description The display name of the storage provider
+             * @example Local
+             */
+            name: string;
+        };
+        StorageProviderSummary: {
             /**
              * @description The ID of the storage provider
              * @example local
@@ -1411,7 +1397,7 @@ export interface components {
              */
             name: string;
             /** @description The storage provider */
-            provider: components["schemas"]["StorageProvider"];
+            provider: components["schemas"]["StorageProviderShort"];
             /**
              * Format: date-time
              * @description When the storage unit was last updated
@@ -1502,20 +1488,20 @@ export interface components {
              */
             path?: string;
         };
-        UpdateStorageProviderConfig: {
+        UpdateStorageConfig: {
             /**
              * @description Provider-specific configuration
              * @example {}
              */
             config?: Record<string, never>;
             /**
-             * @description The name of the storage provider config
-             * @example My S3 Config
+             * @description The name of the storage config
+             * @example App UGC
              */
             name?: string;
             /**
              * @description The storage provider ID
-             * @example s3
+             * @example storage-s3
              */
             providerId?: string;
         };
@@ -1532,18 +1518,10 @@ export interface components {
              */
             name?: string;
             /**
-             * @description New config to create (required if not using existing config). Must include providerId and config.
-             * @example {
-             *       "providerId": "s3",
-             *       "config": {}
-             *     }
-             */
-            newConfig?: Record<string, never>;
-            /**
-             * @description The storage provider config ID to use (required if not creating new config)
+             * @description The storage config ID to use
              * @example mbjq36xe6397dsi6x9nq4ghc
              */
-            storageProviderConfigId?: string;
+            storageConfigId?: string;
         };
         UpdateVectorProviderConfig: {
             /**
@@ -2244,7 +2222,7 @@ export interface operations {
             };
         };
     };
-    listStorageProviderConfigs: {
+    listStorageConfigs: {
         parameters: {
             query: {
                 providerId: string;
@@ -2260,12 +2238,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageProviderConfigSummary"][];
+                    "application/json": components["schemas"]["StorageConfigSummary"][];
                 };
             };
         };
     };
-    createStorageProviderConfig: {
+    createStorageConfig: {
         parameters: {
             query?: never;
             header?: never;
@@ -2274,7 +2252,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateStorageProviderConfig"];
+                "application/json": components["schemas"]["CreateStorageConfig"];
             };
         };
         responses: {
@@ -2283,12 +2261,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageProviderConfig"];
+                    "application/json": components["schemas"]["StorageConfig"];
                 };
             };
         };
     };
-    getStorageProviderConfig: {
+    getStorageConfig: {
         parameters: {
             query?: never;
             header?: never;
@@ -2304,7 +2282,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageProviderConfig"];
+                    "application/json": components["schemas"]["StorageConfig"];
                 };
             };
             /** @description Storage provider config not found */
@@ -2327,7 +2305,7 @@ export interface operations {
             };
         };
     };
-    deleteStorageProviderConfig: {
+    deleteStorageConfig: {
         parameters: {
             query?: never;
             header?: never;
@@ -2338,7 +2316,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The storage provider config was deleted */
+            /** @description The storage config was deleted */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2383,7 +2361,7 @@ export interface operations {
             };
         };
     };
-    updateStorageProviderConfig: {
+    updateStorageConfig: {
         parameters: {
             query?: never;
             header?: never;
@@ -2394,7 +2372,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateStorageProviderConfig"];
+                "application/json": components["schemas"]["UpdateStorageConfig"];
             };
         };
         responses: {
@@ -2403,7 +2381,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageProviderConfig"];
+                    "application/json": components["schemas"]["StorageConfig"];
                 };
             };
             /** @description Storage provider config not found */
@@ -2448,7 +2426,7 @@ export interface operations {
     listStorageUnits: {
         parameters: {
             query?: {
-                /** @description The ID of the storage provider config to filter by */
+                /** @description The ID of the storage config to filter by */
                 configId?: string;
                 /** @description The cursor to the next page */
                 cursor?: string;
