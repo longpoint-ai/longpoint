@@ -110,24 +110,7 @@ export interface paths {
         patch: operations["updateAiProviderConfig"];
         trace?: never;
     };
-    "/library/tree": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the contents of a library tree */
-        get: operations["getTree"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/media": {
+    "/media/containers": {
         parameters: {
             query?: never;
             header?: never;
@@ -147,7 +130,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/media/{containerId}": {
+    "/media/containers/{containerId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -169,7 +152,7 @@ export interface paths {
         patch: operations["updateMedia"];
         trace?: never;
     };
-    "/media/{containerId}/upload": {
+    "/media/containers/{containerId}/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -179,6 +162,23 @@ export interface paths {
         get?: never;
         /** Upload an asset to a media container */
         put: operations["upload"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the contents of a library tree */
+        get: operations["getTree"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1040,7 +1040,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T18:50:49.488Z
+             * @example 2025-11-21T22:50:24.048Z
              */
             createdAt: string;
             /**
@@ -1094,7 +1094,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T18:50:49.488Z
+             * @example 2025-11-21T22:50:24.048Z
              */
             createdAt: string;
             /**
@@ -1125,7 +1125,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T18:50:49.488Z
+             * @example 2025-11-21T22:50:24.048Z
              */
             createdAt: string;
             /**
@@ -1237,8 +1237,6 @@ export interface components {
             vectorProvider: components["schemas"]["VectorProviderShort"];
         };
         SearchQuery: {
-            /** @description Maximum number of results to return */
-            limit?: number;
             /**
              * @description The search query text
              * @example sunset beach
@@ -1882,29 +1880,6 @@ export interface operations {
             };
         };
     };
-    getTree: {
-        parameters: {
-            query?: {
-                /** @description The path to get the tree for */
-                path?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The contents of the library tree */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LibraryTree"];
-                };
-            };
-        };
-    };
     createMedia: {
         parameters: {
             query?: never;
@@ -2090,6 +2065,29 @@ export interface operations {
                         errorCode?: string;
                         messages?: string[];
                     };
+                };
+            };
+        };
+    };
+    getTree: {
+        parameters: {
+            query?: {
+                /** @description The path to get the tree for */
+                path?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The contents of the library tree */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryTree"];
                 };
             };
         };
@@ -2547,7 +2545,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Cannot delete the default storage unit */
+            /** @description Storage unit is in use and cannot be deleted */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2556,7 +2554,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "INVALID_INPUT",
                      *       "messages": [
-                     *         "Cannot delete default storage unit mbjq36xe6397dsi6x9nq4ghc. There must be at least one default storage unit."
+                     *         "Storage unit mbjq36xe6397dsi6x9nq4ghc cannot be deleted because it has media containers"
                      *       ]
                      *     } */
                     "application/json": {

@@ -29,7 +29,7 @@ import {
 } from './media.errors';
 import { MediaContainerService } from './services/media-container.service';
 
-@Controller('media')
+@Controller('media/containers')
 @ApiSdkTag(SdkTag.Media)
 @ApiBearerAuth()
 export class MediaController {

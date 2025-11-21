@@ -6,8 +6,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { GetLibraryTreeQueryDto, LibraryTreeDto } from './dtos';
 import { LibraryService } from './library.service';
 
-@Controller('library')
-@ApiSdkTag(SdkTag.Library)
+@Controller('media')
+@ApiSdkTag(SdkTag.Media)
 @ApiBearerAuth()
 export class LibraryController {
   constructor(private readonly libraryService: LibraryService) {}

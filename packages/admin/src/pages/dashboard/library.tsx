@@ -24,7 +24,7 @@ export function Library() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['library-tree', currentPath],
-    queryFn: () => client.library.getTree({ path: currentPath }),
+    queryFn: () => client.media.getTree({ path: currentPath }),
   });
 
   const handleFolderClick = (path: string) => {
