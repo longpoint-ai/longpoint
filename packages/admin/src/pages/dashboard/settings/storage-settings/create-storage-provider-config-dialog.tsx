@@ -92,7 +92,7 @@ export function CreateStorageProviderConfigDialog({
 
   // Initialize config defaults when provider changes
   React.useEffect(() => {
-    if (configSchema && Object.keys(configSchema).length > 0) {
+    if (configSchema) {
       const defaults: Record<string, any> = {};
       Object.entries(configSchema).forEach(([key, value]: [string, any]) => {
         defaults[key] = getDefaultValueForType(value);

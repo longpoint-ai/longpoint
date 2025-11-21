@@ -1,4 +1,4 @@
-import { ConfigSchema } from '@longpoint/devkit';
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { UseFormSetError } from 'react-hook-form';
 
 export function getDefaultValueForType(value: any): any {
@@ -109,7 +109,7 @@ export function validateFieldAgainstSchema(
 }
 
 export function validateConfigSchema(
-  schema: ConfigSchema | undefined,
+  schema: ConfigSchemaDefinition | undefined,
   values: any,
   namePrefix: string,
   setError: UseFormSetError<any>
