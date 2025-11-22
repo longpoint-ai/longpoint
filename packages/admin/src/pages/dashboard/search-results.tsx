@@ -18,7 +18,19 @@ export function SearchResults() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['search', query],
-    queryFn: () => client.search.searchMedia({ query }),
+    queryFn: async () => {
+      const response = await client.search.searchMedia({ query });
+      const links = await client.media.generateLinks({
+        containers: response.results.map((result) => ({
+          containerId: result.id,
+          w: 500,
+        })),
+      });
+      return {
+        results: response.results,
+        links,
+      };
+    },
     enabled: !!query,
   });
 
@@ -98,7 +110,11 @@ export function SearchResults() {
               </p>
             </div>
           </div>
-          <MediaGrid items={items} isLoading={isLoading} />
+          <MediaGrid
+            items={items}
+            isLoading={isLoading}
+            links={data?.links || {}}
+          />
         </div>
       )}
     </div>
