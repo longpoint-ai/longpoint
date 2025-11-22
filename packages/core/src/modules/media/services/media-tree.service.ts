@@ -3,9 +3,9 @@ import { ConfigService } from '../../common/services';
 import {
   DirectoryTreeItemDto,
   DirectoryTreeItemParams,
-  GetLibraryTreeQueryDto,
-  LibraryTreeDto,
+  GetMediaTreeQueryDto,
   MediaContainerTreeItemDto,
+  MediaTreeDto,
   TreeItemDto,
 } from '../dtos';
 import { TreePathNotFound } from '../media.errors';
@@ -19,7 +19,7 @@ export class MediaTreeService {
     private readonly mediaContainerService: MediaContainerService
   ) {}
 
-  async getTree(query: GetLibraryTreeQueryDto): Promise<LibraryTreeDto> {
+  async getTree(query: GetMediaTreeQueryDto): Promise<MediaTreeDto> {
     const normalizedPath =
       query.path === '/' ? '/' : `/${query.path.replace(/^\/+|\/+$/g, '')}`;
     const containers = await this.mediaContainerService.listContainersByPath(
@@ -51,7 +51,7 @@ export class MediaTreeService {
 
         if (!directories.has(directoryPath)) {
           const baseUrl = this.configService.get('server.baseUrl');
-          const url = new URL('/library/tree', baseUrl);
+          const url = new URL('/media/tree', baseUrl);
           url.searchParams.set('path', directoryPath);
 
           directories.set(directoryPath, {
@@ -73,7 +73,7 @@ export class MediaTreeService {
 
         if (!directories.has(directoryPath)) {
           const baseUrl = this.configService.get('server.baseUrl');
-          const url = new URL('/library/tree', baseUrl);
+          const url = new URL('/media/tree', baseUrl);
           url.searchParams.set('path', directoryPath);
 
           directories.set(directoryPath, {
@@ -98,7 +98,7 @@ export class MediaTreeService {
       throw new TreePathNotFound(normalizedPath);
     }
 
-    return new LibraryTreeDto({
+    return new MediaTreeDto({
       path: normalizedPath,
       items: allItems,
     });

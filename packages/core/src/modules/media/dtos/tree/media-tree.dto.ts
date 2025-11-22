@@ -15,7 +15,7 @@ import {
   MediaContainerTreeItemParams,
 } from './media-container-tree-item.dto';
 
-export interface LibraryTreeParams {
+export interface MediaTreeParams {
   path: string;
   items: TreeItemDto[];
 }
@@ -25,11 +25,11 @@ export type TreeItemParams =
   | MediaContainerTreeItemParams
   | DirectoryTreeItemParams;
 
-@ApiSchema({ name: 'LibraryTree' })
+@ApiSchema({ name: 'MediaTree' })
 @ApiExtraModels(DirectoryTreeItemDto, MediaContainerTreeItemDto)
-export class LibraryTreeDto {
+export class MediaTreeDto {
   @ApiProperty({
-    description: 'The library tree path',
+    description: 'The media tree path',
     example: '/skate-tricks/kickflips',
   })
   path: string;
@@ -53,7 +53,7 @@ export class LibraryTreeDto {
         type: 'DIRECTORY',
         content: {
           path: '/skate-tricks/kickflips/bloopers',
-          url: 'https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips/bloopers',
+          url: 'https://longpoint.example.com/api/media/tree?path=/skate-tricks/kickflips/bloopers',
         },
       },
       {
@@ -80,7 +80,7 @@ export class LibraryTreeDto {
   })
   items: TreeItemDto[];
 
-  constructor(data: LibraryTreeParams) {
+  constructor(data: MediaTreeParams) {
     this.path = data.path;
     this.items = data.items;
   }

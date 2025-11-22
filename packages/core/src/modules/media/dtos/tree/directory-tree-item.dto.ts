@@ -25,7 +25,7 @@ export class DirectoryTreeItemDto implements TreeItem {
   @ApiProperty({
     description: 'The URL to list the contents of the directory',
     example:
-      'https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips',
+      'https://longpoint.example.com/api/media/tree?path=/skate-tricks/kickflips',
   })
   url: string;
 

@@ -170,9 +170,9 @@ class MediaClient {
   }
 
     /**
-   * List the contents of a library tree
+   * List the contents of a media tree
    */
-    async getTree(options?: { path?: string }): Promise<components['schemas']['LibraryTree']> {
+    async getTree(options?: { path?: string }): Promise<components['schemas']['MediaTree']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.path !== undefined) {
@@ -182,6 +182,15 @@ class MediaClient {
         const queryString = params.toString();
         const url = `media/tree${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Generate links for media containers
+   */
+    async generateLinks(data: components['schemas']['GenerateMediaLinks']): Promise<Record<string, any>> {
+        const url = `media/links`;
+        const response = await this.httpClient.post(url, data);
         return response.data;
   }
 

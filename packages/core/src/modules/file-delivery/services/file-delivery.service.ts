@@ -10,10 +10,8 @@ import {
 import { Injectable, NotFoundException } from '@nestjs/common';
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
-import type {
-  TransformParams,
-  TransformParamsDto,
-} from '../dtos/transform-params.dto';
+import { SignedUrlParamsDto } from '../dtos';
+import type { TransformParams } from '../dtos/transform-params.dto';
 import { FileNotFound, InvalidFilePath } from '../file-delivery.errors';
 import { ImageTransformService } from './image-transform.service';
 import { UrlSigningService } from './url-signing.service';
@@ -28,7 +26,7 @@ export class FileDeliveryService {
     private readonly urlSigningService: UrlSigningService
   ) {}
 
-  async serveFile(req: Request, res: Response, query: TransformParamsDto) {
+  async serveFile(req: Request, res: Response, query: SignedUrlParamsDto) {
     const requestPath = req.path.replace(/^\/m\/?/, '');
     const pathPrefix = this.configService.get('storage.pathPrefix');
 
