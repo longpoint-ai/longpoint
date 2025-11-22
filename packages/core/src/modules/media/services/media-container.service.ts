@@ -101,9 +101,9 @@ export class MediaContainerService {
 
     return {
       uploadToken,
-      uploadUrl: `${this.configService.get('server.baseUrl')}/media/${
-        container.id
-      }/upload?token=${uploadToken.token}`,
+      uploadUrl: `${this.configService.get(
+        'server.baseUrl'
+      )}/media/containers/${container.id}/upload?token=${uploadToken.token}`,
       container: new MediaContainerEntity({
         ...container,
         storageUnit,

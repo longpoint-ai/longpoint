@@ -31,7 +31,7 @@ export function Library() {
           .filter((item) => item.treeItemType === 'MEDIA')
           .map((item) => ({
             containerId: item.id,
-            w: 400,
+            w: 500,
           })),
       });
       return { tree, links };

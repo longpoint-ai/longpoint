@@ -29,7 +29,6 @@ export class MediaTreeService {
       containers.map((container) => container.toDto())
     );
 
-    // Extract directories and media items
     const directories = new Map<string, DirectoryTreeItemParams>();
     const mediaItems: TreeItemDto[] = [];
 
@@ -85,16 +84,14 @@ export class MediaTreeService {
       }
     }
 
-    // Convert directories to tree items
     const directoryItems: TreeItemDto[] = Array.from(directories.values()).map(
       (directory) => new DirectoryTreeItemDto(directory)
     );
 
-    // Combine all items
     const allItems = [...directoryItems, ...mediaItems];
 
-    // If no items found, throw exception
-    if (allItems.length === 0) {
+    // Root path can be empty (no containers yet), which is a valid state
+    if (allItems.length === 0 && normalizedPath !== '/') {
       throw new TreePathNotFound(normalizedPath);
     }
 
