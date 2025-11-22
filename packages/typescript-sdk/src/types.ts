@@ -169,6 +169,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/media/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate links for media containers */
+        post: operations["generateLinks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/tree": {
         parameters: {
             query?: never;
@@ -176,7 +193,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the contents of a library tree */
+        /** List the contents of a media tree */
         get: operations["getTree"];
         put?: never;
         post?: never;
@@ -936,49 +953,30 @@ export interface components {
             treeItemType: "DIRECTORY";
             /**
              * @description The URL to list the contents of the directory
-             * @example https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips
+             * @example https://longpoint.example.com/api/media/tree?path=/skate-tricks/kickflips
              */
             url: string;
         };
-        LibraryTree: {
+        GenerateContainerLink: {
             /**
-             * @description The items in the tree
-             * @example [
-             *       {
-             *         "type": "DIRECTORY",
-             *         "content": {
-             *           "path": "/skate-tricks/kickflips/bloopers",
-             *           "url": "https://longpoint.example.com/api/library/tree?path=/skate-tricks/kickflips/bloopers"
-             *         }
-             *       },
-             *       {
-             *         "type": "MEDIA",
-             *         "content": {
-             *           "id": "123",
-             *           "name": "Stairs",
-             *           "type": "IMAGE",
-             *           "status": "READY",
-             *           "createdAt": "2025-10-16T00:00:00.000Z"
-             *         }
-             *       },
-             *       {
-             *         "type": "MEDIA",
-             *         "content": {
-             *           "id": "123",
-             *           "name": "Long gap",
-             *           "type": "IMAGE",
-             *           "status": "READY",
-             *           "createdAt": "2025-10-16T00:00:00.000Z"
-             *         }
-             *       }
-             *     ]
+             * @description The ID of the media container
+             * @example r2qwyd76nvd98cu6ewg8ync2
              */
-            items: (components["schemas"]["DirectoryTreeItem"] | components["schemas"]["MediaContainerTreeItem"])[];
+            containerId: string;
             /**
-             * @description The library tree path
-             * @example /skate-tricks/kickflips
+             * @description The height of the transformed image in pixels
+             * @example 600
              */
-            path: string;
+            h?: number;
+            /**
+             * @description The width of the transformed image in pixels
+             * @example 800
+             */
+            w?: number;
+        };
+        GenerateMediaLinks: {
+            /** @description The containers to generate links for */
+            containers: components["schemas"]["GenerateContainerLink"][];
         };
         ListStorageUnitsResponse: {
             /** @description The storage units in the response */
@@ -1040,7 +1038,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T22:50:24.048Z
+             * @example 2025-11-22T01:21:04.921Z
              */
             createdAt: string;
             /**
@@ -1094,7 +1092,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T22:50:24.048Z
+             * @example 2025-11-22T01:21:04.921Z
              */
             createdAt: string;
             /**
@@ -1125,7 +1123,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-21T22:50:24.048Z
+             * @example 2025-11-22T01:21:04.921Z
              */
             createdAt: string;
             /**
@@ -1157,6 +1155,46 @@ export interface components {
              * @enum {string}
              */
             treeItemType: "MEDIA";
+        };
+        MediaTree: {
+            /**
+             * @description The items in the tree
+             * @example [
+             *       {
+             *         "type": "DIRECTORY",
+             *         "content": {
+             *           "path": "/skate-tricks/kickflips/bloopers",
+             *           "url": "https://longpoint.example.com/api/media/tree?path=/skate-tricks/kickflips/bloopers"
+             *         }
+             *       },
+             *       {
+             *         "type": "MEDIA",
+             *         "content": {
+             *           "id": "123",
+             *           "name": "Stairs",
+             *           "type": "IMAGE",
+             *           "status": "READY",
+             *           "createdAt": "2025-10-16T00:00:00.000Z"
+             *         }
+             *       },
+             *       {
+             *         "type": "MEDIA",
+             *         "content": {
+             *           "id": "123",
+             *           "name": "Long gap",
+             *           "type": "IMAGE",
+             *           "status": "READY",
+             *           "createdAt": "2025-10-16T00:00:00.000Z"
+             *         }
+             *       }
+             *     ]
+             */
+            items: (components["schemas"]["DirectoryTreeItem"] | components["schemas"]["MediaContainerTreeItem"])[];
+            /**
+             * @description The media tree path
+             * @example /skate-tricks/kickflips
+             */
+            path: string;
         };
         PaginationMetadata: {
             /**
@@ -2069,6 +2107,32 @@ export interface operations {
             };
         };
     };
+    generateLinks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateMediaLinks"];
+            };
+        };
+        responses: {
+            /** @description The generated links */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
     getTree: {
         parameters: {
             query?: {
@@ -2081,13 +2145,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The contents of the library tree */
+            /** @description The contents of the media tree */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LibraryTree"];
+                    "application/json": components["schemas"]["MediaTree"];
                 };
             };
         };

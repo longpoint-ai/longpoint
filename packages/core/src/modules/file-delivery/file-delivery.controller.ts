@@ -2,7 +2,7 @@ import { Public } from '@/shared/decorators';
 import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { TransformParamsDto } from './dtos/transform-params.dto';
+import { SignedUrlParamsDto } from './dtos';
 import { FileDeliveryService } from './services/file-delivery.service';
 
 @Controller('m')
@@ -15,7 +15,7 @@ export class StorageController {
   async serveFile(
     @Req() req: Request,
     @Res() res: Response,
-    @Query() query: TransformParamsDto
+    @Query() query: SignedUrlParamsDto
   ) {
     return this.fileDeliveryService.serveFile(req, res, query);
   }

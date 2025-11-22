@@ -24,7 +24,18 @@ export function Library() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['library-tree', currentPath],
-    queryFn: () => client.media.getTree({ path: currentPath }),
+    queryFn: async () => {
+      const tree = await client.media.getTree({ path: currentPath });
+      const links = await client.media.generateLinks({
+        containers: tree.items
+          .filter((item) => item.treeItemType === 'MEDIA')
+          .map((item) => ({
+            containerId: item.id,
+            w: 400,
+          })),
+      });
+      return { tree, links };
+    },
   });
 
   const handleFolderClick = (path: string) => {
@@ -35,7 +46,7 @@ export function Library() {
     openDialog();
   };
 
-  const items = data?.items || [];
+  const items = data?.tree.items || [];
   const isEmpty = !isLoading && items.length === 0 && currentPath === '/';
 
   return (
@@ -113,6 +124,7 @@ export function Library() {
           </div>
           <MediaGrid
             items={items}
+            links={data?.links || {}}
             isLoading={isLoading}
             onFolderClick={handleFolderClick}
           />

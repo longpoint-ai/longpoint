@@ -5,11 +5,16 @@ import { FolderIcon, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MediaGridItemProps {
-  item: components['schemas']['LibraryTree']['items'][number];
+  item: components['schemas']['MediaTree']['items'][number];
   onFolderClick?: (path: string) => void;
+  thumbnailLink?: string;
 }
 
-export function MediaGridItem({ item, onFolderClick }: MediaGridItemProps) {
+export function MediaGridItem({
+  item,
+  onFolderClick,
+  thumbnailLink,
+}: MediaGridItemProps) {
   if (item.treeItemType === 'DIRECTORY') {
     const { path } = item;
     const folderName = path.split('/').pop() || 'Folder';
@@ -47,7 +52,6 @@ export function MediaGridItem({ item, onFolderClick }: MediaGridItemProps) {
   if (item.treeItemType === 'MEDIA') {
     const { id, name, status } = item;
     const isReady = status === 'READY';
-    const thumbnail = item.thumbnails[0];
 
     return (
       <Link to={`/media/${id}`} className="block">
@@ -55,12 +59,11 @@ export function MediaGridItem({ item, onFolderClick }: MediaGridItemProps) {
           <CardContent className="p-0">
             <div className="flex flex-col">
               <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-gray-100 group-hover:to-gray-200 transition-colors relative overflow-hidden">
-                {thumbnail?.url ? (
+                {thumbnailLink ? (
                   <img
-                    src={thumbnail.url}
+                    src={thumbnailLink}
                     alt={name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    style={{ aspectRatio: thumbnail.aspectRatio ?? undefined }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

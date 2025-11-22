@@ -2,8 +2,8 @@ import { IsValidMediaContainerPath } from '@longpoint/validations';
 import { ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
-@ApiSchema({ name: 'GetLibraryTreeQuery' })
-export class GetLibraryTreeQueryDto {
+@ApiSchema({ name: 'GetMediaTreeQuery' })
+export class GetMediaTreeQueryDto {
   @IsValidMediaContainerPath()
   @IsOptional()
   @ApiPropertyOptional({

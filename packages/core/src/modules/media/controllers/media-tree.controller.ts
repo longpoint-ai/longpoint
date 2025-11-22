@@ -3,7 +3,7 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Permission } from '@longpoint/types';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { GetLibraryTreeQueryDto, LibraryTreeDto } from '../dtos';
+import { GetMediaTreeQueryDto, MediaTreeDto } from '../dtos';
 import { MediaTreeService } from '../services/media-tree.service';
 
 @Controller('media')
@@ -20,9 +20,9 @@ export class MediaTreeController {
   })
   @ApiOkResponse({
     description: 'The contents of the media tree',
-    type: LibraryTreeDto,
+    type: MediaTreeDto,
   })
-  async getTree(@Query() query: GetLibraryTreeQueryDto) {
+  async getTree(@Query() query: GetMediaTreeQueryDto) {
     return this.mediaTreeService.getTree(query);
   }
 }

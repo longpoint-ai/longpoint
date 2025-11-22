@@ -3,12 +3,18 @@ import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { MediaGridItem } from './media-grid-item';
 
 export interface MediaGridProps {
-  items: components['schemas']['LibraryTree']['items'];
+  items: components['schemas']['MediaTree']['items'];
   isLoading?: boolean;
   onFolderClick?: (path: string) => void;
+  links: Record<string, string>;
 }
 
-export function MediaGrid({ items, isLoading, onFolderClick }: MediaGridProps) {
+export function MediaGrid({
+  items,
+  isLoading,
+  onFolderClick,
+  links,
+}: MediaGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6">
@@ -34,6 +40,9 @@ export function MediaGrid({ items, isLoading, onFolderClick }: MediaGridProps) {
           key={`${item.treeItemType}-${index}`}
           item={item}
           onFolderClick={onFolderClick}
+          thumbnailLink={
+            item.treeItemType === 'MEDIA' ? links[item.id] : undefined
+          }
         />
       ))}
     </div>
