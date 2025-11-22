@@ -41,9 +41,14 @@ export class MediaLinkGeneratorService {
     );
 
     const links = body.containers.reduce((acc, containerOptions) => {
-      const { mimeType } = containerMap.get(containerOptions.containerId) ?? {};
+      const containerData = containerMap.get(containerOptions.containerId);
+
+      if (!containerData?.mimeType) {
+        return acc;
+      }
+
       const filename = `primary.${mimeTypeToExtension(
-        mimeType as SupportedMimeType
+        containerData.mimeType as SupportedMimeType
       )}`;
       const link = this.urlSigningService.generateSignedUrl(
         containerOptions.containerId,
